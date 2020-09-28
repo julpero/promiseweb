@@ -1,0 +1,2 @@
+// if you are using mongodb, put connection here and rename file as mongo.config.js
+exports.MongoStr = "mongodb://SRV:PORT/?readPreference=primary&appname=NodeMongo&ssl=false";

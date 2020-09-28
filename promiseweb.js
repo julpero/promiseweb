@@ -38,7 +38,15 @@ function initcreateNewGameButton() {
         if (validateNewGame(gameOptions)) createNewGame(gameOptions);
     });
 }
+function initGetGamesButton() {
+    $('#getGamesButton').on('click', function() {
+        console.log('getting games');
+        var socket = io();
+        socket.emit('get games');
+    });
+}
 
 function initButtons() {
     initcreateNewGameButton();
+    initGetGamesButton();
 }

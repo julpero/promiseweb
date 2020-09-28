@@ -2,6 +2,10 @@ var app = require('express')();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 
+const { MongoClient } = require('mongodb');
+var mongoConfig = require(__dirname + '/mongo.config.js');
+const client = new MongoClient(mongoConfig.MongoStr);
+
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
@@ -16,6 +20,13 @@ io.on('connection', (socket) => {
     });
     socket.on('create game', (gameOptions) => {
         console.log(gameOptions);
+    });
+    socket.on('get games', () => {
+        console.log('start to get games');
+        client.connect();
+        const database = client.db('local');
+        const collection = database.collection('promiseweb');
+        console.log('getting games');
     });
 });
 
