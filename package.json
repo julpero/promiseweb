@@ -1,0 +1,11 @@
+{
+    "name": "promiseweb",
+    "version": "0.0.1",
+    "description": "multiplayer promise web card game, uses socket.io",
+    "dependencies": {
+        "@types/jquery": "^3.5.1",
+        "@types/node": "^14.11.2",
+        "express": "^4.17.1",
+        "socket.io": "^2.3.0"
+    }
+}
