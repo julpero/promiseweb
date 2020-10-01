@@ -1,6 +1,7 @@
 var app = require('express')();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
+var doc = require('card-deck');
 
 var mongoUtil = require(__dirname + '/mongoUtil.js');
 
@@ -47,12 +48,12 @@ mongoUtil.connectToServer( function( err, client ) {
                     var socketFree = true;
                     game.humanPlayers.forEach(function(player) {
                         if (player.name == newPlayer.myName) nameFree = false;
-                        if (player.playerId == socket.id) socketFree = false;
+                        if (player.playerId == newPlayer.myId) socketFree = false;
                     });
 
                     if (nameFree && socketFree) {
                         var players = game.humanPlayers;
-                        players.push({name: newPlayer.myName, playerId: socket.id});
+                        players.push({name: newPlayer.myName, playerId: newPlayer.myId});
                         const options = { upsert: true };
                         const updateDoc = {
                             $set: {
@@ -60,6 +61,7 @@ mongoUtil.connectToServer( function( err, client ) {
                             }
                         };
                         const result = await collection.updateOne(query, updateDoc, options);
+                        socket.join(newPlayer.gameId);
                         retVal = 'OK';
                     } else if (!nameFree) {
                         retVal = 'NAMENOTOK';
@@ -91,29 +93,47 @@ mongoUtil.connectToServer( function( err, client ) {
                     humanPlayers: val.humanPlayers,
                     hasPassword: val.password.length > 0,
                 };
+
+                io.emit('update gameinfo', resultGameInfo);
+
                 if (resultGameInfo.humanPlayersCount == resultGameInfo.humanPlayers.length) {
                     // start game
-                    io.emit('start game', resultGameInfo);
-                    resultGameInfo.humanPlayers.forEach(function (humanPlayer) {
-                        io.to(humanPlayer.playerId).emit('testi');
-                    });
                     await startGame(resultGameInfo);
-                } else {
-                    io.emit('update gameinfo', resultGameInfo);
                 }
                 
             }
             
         });
 
-        socket.on('create game', async (gameOptions) => {
+        socket.on('create game', async (gameOptions, fn) => {
             console.log(gameOptions);
             const database = mongoUtil.getDb();
             const collection = database.collection('promiseweb');
-            gameOptions.humanPlayers = [{name: gameOptions.adminName, playerId: socket.id}];
+            //gameOptions.humanPlayers = [{name: gameOptions.adminName, playerId: socket.id}];
 
             const result = await collection.insertOne(gameOptions);
             console.log('gameOptions inserted ' + result.insertedCount + ' with _id: ' + result.insertedId);
+            socket.join(result.insertedId);
+            fn(result.insertedId);
+        });
+
+        socket.on('get round', async (getRound, fn) => {
+            console.log(getRound);
+
+            const database = mongoUtil.getDb();
+            const collection = database.collection('promiseweb');
+            var ObjectId = require('mongodb').ObjectId;
+            var searchId = new ObjectId(getRound.gameId);
+            
+            const query = { gameStatus: 1,
+                _id: searchId,
+                // password: newPlayer.gamePassword,
+                 };
+            const game = await collection.findOne(query);
+            const playerRound = roundToPlayer(getRound.myId, getRound.round, game);
+            console.log(playerRound);
+
+            fn(playerRound);
         });
 
         socket.on('get games', async (data, fn) => {
@@ -139,7 +159,6 @@ mongoUtil.connectToServer( function( err, client ) {
                 
 
             fn(games);
-            // socket.emit('game list', games);
             console.log(games);
         });
     });
@@ -150,10 +169,73 @@ http.listen(3000, () => {
     console.log('listening on *:3000');
 });
 
+function getPlayerIdByName(name, players) {
+    var playerId = null;
+    players.forEach(function(player) {
+        if (player.name == name) playerId = player.playerId;
+    });
+    return playerId;
+}
 
+function getPlayerNameById(id, players) {
+    var playerName = null;
+    players.forEach(function(player) {
+        if (player.playerId == id) playerName = player.name;
+    });
+    return playerName;
+}
 
+function getPlayerCards(name, round) {
+    var cards = null;
+    round.roundPlayers.forEach(function (roundPlayer) {
+        if (roundPlayer.name == name) cards = roundPlayer.cards;
+    });
+    return cards;
+}
+
+function roundPlayers(myName, roundPlayers, dealer) {
+    var players = [];
+    roundPlayers.forEach(function (player, idx) {
+        if (player.name == myName) {
+            players.push({
+                thisIsMe: true,
+                dealer: dealer == idx,
+                name: myName
+            });
+        } else {
+            players.push({
+                thisIsMe: false,
+                dealer: dealer == idx,
+                name: player.name
+            });
+        }
+    });
+    return players;
+}
+
+function roundToPlayer(playerId, roundInd, thisGame) {
+    var round = thisGame.game.rounds[roundInd];
+    var playerName = getPlayerNameById(playerId, thisGame.humanPlayers);
+
+    return {
+        roundInd: roundInd,
+        cardsInRound: round.cardsInRound,
+        dealerPosition: round.dealerPosition,
+        myName: playerName,
+        myCards: getPlayerCards(playerName, round),
+        players: roundPlayers(playerName, round.roundPlayers, round.dealerPosition),
+        round: round
+    };
+}
 
 async function startGame(gameInfo) {
+    var players = initPlayers(gameInfo);
+    var rounds = initRounds(gameInfo, players);
+    var game = {
+        playerOrder: players,
+        rounds: rounds,
+    };
+
     const database = mongoUtil.getDb();
     const collection = database.collection('promiseweb');
     var ObjectId = require('mongodb').ObjectId;
@@ -164,9 +246,108 @@ async function startGame(gameInfo) {
     const updateDoc = {
         $set: {
             gameStatus: 1,
+            game: game,
         }
     };
     const result = await collection.updateOne(query, updateDoc, options);
+    const thisGame = await collection.findOne(query);
+
+    io.to(gameInfo.id).emit('start game', gameInfo);
+
+    // gameInfo.humanPlayers.forEach(function (humanPlayer) {
+    //     io.to(humanPlayer.playerId).emit('round start', roundToPlayer(humanPlayer.playerId, 0, thisGame));
+    // });
 
     console.log('start');
+}
+
+function initPlayers(gameInfo) {
+    // first round is played by this order and the first player is the dealer of the first round
+    var players = [];
+    knuthShuffle(gameInfo.humanPlayers).forEach(function (player) {
+        players.push(player.name);
+    });
+    return players;
+}
+
+function dealerPosition(roundIndex, totalPlayers) {
+    if (roundIndex < totalPlayers) return roundIndex;
+    return dealerPosition(roundIndex - totalPlayers, totalPlayers);
+}
+
+function initRound(roundIndex, cardsInRound, players) {
+    var deck = initDeck();
+
+    var roundPlayers = [];
+    players.forEach(function (player, idx) {
+        roundPlayers.push({
+            name: player,
+            cards: sortCardsDummy(deck.draw(cardsInRound)),
+            promise: null,
+            keeps: null,
+            points: null,
+        });
+    });
+
+    return {
+        roundIndex: roundIndex,
+        cardsInRound: cardsInRound,
+        dealerPosition: dealerPosition(roundIndex, players.length+1),
+        roundPlayers: roundPlayers,
+        trumpCard: deck.draw(),
+        totalPromise: null,
+    };
+}
+
+function initRounds(gameInfo, players) {
+    var rounds = [];
+    var roundIndex = 0;
+    for (var i = gameInfo.startRound; i >= gameInfo.turnRound; i--) {
+        rounds.push(initRound(roundIndex, i, players));
+        roundIndex++;
+    }
+    for (var i = gameInfo.turnRound+1; i <= gameInfo.endRound; i++) {
+        rounds.push(initRound(roundIndex, i, players));
+        roundIndex++;
+    }
+    return rounds;
+}
+
+function knuthShuffle(arr) {
+    var rand, temp, i;
+ 
+    for (i = arr.length - 1; i > 0; i -= 1) {
+        rand = Math.floor((i + 1) * Math.random()); //get random between zero and i (inclusive)
+        temp = arr[rand]; //swap i and the zero-indexed number
+        arr[rand] = arr[i];
+        arr[i] = temp;
+    }
+    return arr;
+}
+
+function sortCardsDummy(cards) {
+    var sortedCards = [];
+    var suits = ['hearts', 'diamonds', 'clubs',  'spades'];
+    suits.forEach(function (suit) {
+        for (var i = 2; i <= 14; i++) {
+            for (var j = 0; j < cards.length; j++) {
+                if (cards[j].suit == suit && cards[j].rank == i) sortedCards.push(cards[j]);
+            }
+        }
+    });
+    return sortedCards;
+}
+
+function initDeck() {
+    var cards = [];
+    var suits = ['hearts', 'diamonds', 'clubs',  'spades'];
+    suits.forEach(function (suit) {
+        for (var i = 2; i <= 14; i++) cards.push({
+            suit: suit,
+            rank: i
+        });
+    });
+    var deck = new doc(cards);
+    deck.shuffle();
+    return deck;
 }

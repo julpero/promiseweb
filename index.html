@@ -171,10 +171,31 @@
         <script>
             $(function () {
                 var joinedGame = '';
+                window.localStorage.setItem('uUID', uuidv4());
                 const socket = io();
+
                 socket.on('update gameinfo', function(gameInfo) {
-                    $("#gamePlayers"+gameInfo.id).text(gamePlayersToStr(gameInfo.humanPlayers, gameInfo.humanPlayersCount, gameInfo.computerPlayersCount));
+                    $('#gamePlayers'+gameInfo.id).text(gamePlayersToStr(gameInfo.humanPlayers, gameInfo.humanPlayersCount, gameInfo.computerPlayersCount));
+                    if (gameInfo.humanPlayers.length == gameInfo.humanPlayersCount-1) {
+                        $('#gameContainerDiv'+gameInfo.id).hide();
+                    }
                 });
+
+                socket.on('start game', function(gameInfo) {
+                    var getRound = {
+                        gameId: gameInfo.id,
+                        myId: window.localStorage.getItem('uUID'),
+                        round: 0,
+                    };
+                    socket.emit('get round', getRound, function(res) {
+                        console.log(res);
+                    });
+                });
+
+                socket.on('round start', function(roundInfo) {
+                    console.log(roundInfo);
+                });
+
                 mainInit(socket);
 
             });

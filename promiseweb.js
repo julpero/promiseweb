@@ -20,8 +20,12 @@ function validateNewGame(gameOptions) {
 
 function createNewGame(socket, gameOptions) {
     console.log(gameOptions);
-    //var socket = io();
-    socket.emit('create game', gameOptions);
+    var gameId;
+    socket.emit('create game', gameOptions, function (createdGameId) {
+        console.log('created game with id: '+createdGameId);
+        gameId = createdGameId;
+    });
+    
 }
 
 function initcreateNewGameButton(socket) {
@@ -35,6 +39,7 @@ function initcreateNewGameButton(socket) {
             adminName: $('#newGameMyName').val(),
             password: $('#newGamePassword').val(),
             gameStatus: 0,
+            humanPlayers: [{ name: $('#newGameMyName').val(), playerId: window.localStorage.getItem('uUID')}],
         };
         if (validateNewGame(gameOptions)) createNewGame(socket, gameOptions);
     });
@@ -59,13 +64,13 @@ function joinGame(socket, id) {
     //var socket = io();
     var gameDetails = { gameId: id,
         myName: $('#myName'+id).val(),
+        myId: window.localStorage.getItem('uUID'),
         gamePassword: $('#password'+id).val(),
     };
     if (validateJoinGame(gameDetails)) {
         socket.emit('join game', gameDetails, function (response) {
             console.log(response);
             if (response == 'OK') {
-                //socket.join(gameDetails.gameId);
                 var $container = document.getElementById('gameTable');
                 var deck = Deck();
                 deck.mount($container);
@@ -91,8 +96,7 @@ function joinGame(socket, id) {
 function showGames(socket, gameList) {
     var gameListContainer = $('#joinGameCollapse');
     gameList.forEach(function (game) {
-        var gameContainer = $('<div id="game' + game.id + '">').addClass('card card-body');
-        var gameContainerDiv = $('<div>').addClass('row');
+        var gameContainerDiv = $('<div id="gameContainerDiv"'+ game.id +'>').addClass('row');
         gameContainerDiv.append($('<div>').addClass('col-2').text(game.startRound + '-' + game.turnRound + '-' + game.endRound));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
         gameContainerDiv.append(($('<div>').addClass('col-3').append($('<input type="text" id="myName'+game.id+'">'))));
@@ -102,7 +106,6 @@ function showGames(socket, gameList) {
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(joinGameButton));
 
         gameListContainer.append(gameContainerDiv);
-        // gameListContainer.append(gameContainer.append(gameContainerDiv));
 
         $('#'+btnId).on('click', function() {
             joinGame(socket, game.id);
@@ -139,3 +142,11 @@ function mainInit(socket) {
     initEvents(socket);
     initButtons(socket);
 }
+
+function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+  
