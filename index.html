@@ -125,13 +125,21 @@
             </div>
         </div>
 
-        <div class="container-fluid" id="gameContainer">
+        <div class="container-fluid" id="gameContainer" style="display: none;">
             <div class="row">
                 <div class="col-10">
                     <!-- container for table -->
                     <div class="row">
                         <div class="col" id="gameTable">
-                            here goes cards and game
+                            <div class="row">
+                                <div class="col" id="otherPlayers">
+                                    other players
+                                </div>
+                            </div>
+
+                            <div class="row" id="myCardsRow">
+
+                            </div>
                         </div>
                     </div>
 
@@ -182,13 +190,16 @@
                 });
 
                 socket.on('start game', function(gameInfo) {
+                    $('#gameChooser').hide();
+                    $('#gameContainer').show();
                     var getRound = {
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
                         round: 0,
                     };
-                    socket.emit('get round', getRound, function(res) {
-                        console.log(res);
+                    socket.emit('get round', getRound, function(myRound) {
+                        console.log(myRound);
+                        drawCards(myRound);
                     });
                 });
 

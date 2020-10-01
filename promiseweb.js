@@ -149,4 +149,47 @@ function uuidv4() {
         return v.toString(16);
     });
 }
-  
+
+function suitToInt(suit) {
+    if (suit == 'spades') return 0;
+    if (suit == 'hearts') return 1;
+    if (suit == 'clubs') return 2;
+    if (suit == 'diamonds') return 3;
+    return null;
+}
+
+function getCardIndex(cards, myCard) {
+    var index = null;
+    cards.forEach(function (card, idx) {
+        if (suitToInt(myCard.suit) == card.suit && myCard.rank == (card.rank == 1 ? 14 : card.rank)) {
+            index = idx;
+            return;
+        }
+    });
+    return index;
+}
+
+function drawCards(myRound) {
+    var deck = Deck();
+    drawMyCards(deck, myRound.myCards);
+}
+
+function drawMyCards(deck, myCards) {
+    
+    var myCardsRow = $('#myCardsRow');
+    myCards.forEach(function (myCard, idx) {
+        myCardsRow.append(drawCard(idx));
+    });
+
+    myCards.forEach(function (myCard, idx) {
+        var $container = document.getElementById('myCardCol'+idx);
+        var card = deck.cards[getCardIndex(deck.cards, myCard)];
+        card.mount($container);
+        card.setSide('front');
+    });
+}
+
+function drawCard(idx) {
+    var cardCol = $('<div id="myCardCol'+idx+'"></div>').addClass('col-1');
+    return cardCol;
+}
