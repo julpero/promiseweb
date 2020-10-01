@@ -47,6 +47,7 @@ function gamePlayersToStr(players, totalHumans, totalComputers) {
     });
     for (i = players.length; i < totalHumans; i++) retStr+= '{}, ';
     if (retStr.length > 2) retStr = retStr.substring(0, retStr.length-2);
+    if (totalComputers > 0) retStr+= ' (+'+totalComputers+')';
     return retStr;
 }
 
@@ -63,7 +64,26 @@ function joinGame(socket, id) {
     if (validateJoinGame(gameDetails)) {
         socket.emit('join game', gameDetails, function (response) {
             console.log(response);
+            if (response == 'OK') {
+                //socket.join(gameDetails.gameId);
+                var $container = document.getElementById('gameTable');
+                var deck = Deck();
+                deck.mount($container);
 
+                deck.cards.forEach(function (card, i) {
+                    card.setSide('front')
+                    
+                    // explode
+                    card.animateTo({
+                        delay: 1000 + i * 2, // wait 1 second + i * 2 ms
+                        duration: 500,
+                        ease: 'quartOut',
+                        
+                        x: Math.random() * window.innerWidth - window.innerWidth / 2,
+                        y: Math.random() * window.innerHeight - window.innerHeight / 2
+                    })
+                })
+            }
         });
     }
 }
@@ -81,7 +101,8 @@ function showGames(socket, gameList) {
         var joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary').text('Join game'));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(joinGameButton));
 
-        gameListContainer.append(gameContainer.append(gameContainerDiv));
+        gameListContainer.append(gameContainerDiv);
+        // gameListContainer.append(gameContainer.append(gameContainerDiv));
 
         $('#'+btnId).on('click', function() {
             joinGame(socket, game.id);

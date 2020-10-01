@@ -12,6 +12,15 @@ mongoUtil.connectToServer( function( err, client ) {
     app.get('/promiseweb.js', (req, res) => {
         res.sendFile(__dirname + '/promiseweb.js');
     });
+    app.get('/deck.js', (req, res) => {
+        res.sendFile(__dirname + '/node_modules/deck-of-cards/dist/deck.min.js');
+    });
+    app.get('/deck.css', (req, res) => {
+        res.sendFile(__dirname + '/cardGallery/cardGallery.css');
+    });
+    app.get('/faces/:face', (req, res) => {
+        res.sendFile(__dirname + '/cardGallery/fourColorFaces/' + req.params.face);
+    });
 
     io.on('connection', (socket) => {
         console.log('a user connected');
@@ -35,11 +44,13 @@ mongoUtil.connectToServer( function( err, client ) {
             if (game !== null) {
                 if (game.humanPlayersCount > game.humanPlayers.length && game.adminName != newPlayer.myName) {
                     var nameFree = true;
+                    var socketFree = true;
                     game.humanPlayers.forEach(function(player) {
                         if (player.name == newPlayer.myName) nameFree = false;
+                        if (player.playerId == socket.id) socketFree = false;
                     });
 
-                    if (nameFree) {
+                    if (nameFree && socketFree) {
                         var players = game.humanPlayers;
                         players.push({name: newPlayer.myName, playerId: socket.id});
                         const options = { upsert: true };
@@ -49,10 +60,13 @@ mongoUtil.connectToServer( function( err, client ) {
                             }
                         };
                         const result = await collection.updateOne(query, updateDoc, options);
-                        // console.log(result);
                         retVal = 'OK';
-                    } else {
+                    } else if (!nameFree) {
                         retVal = 'NAMENOTOK';
+                    } else if (!socketFree) {
+                        retVal = 'SOCKETNOTOK';
+                    } else {
+                        retVal = 'UNKNOWNERROR';
                     }
                 } else {
                     retVal = 'NOTVALID';
@@ -80,6 +94,10 @@ mongoUtil.connectToServer( function( err, client ) {
                 if (resultGameInfo.humanPlayersCount == resultGameInfo.humanPlayers.length) {
                     // start game
                     io.emit('start game', resultGameInfo);
+                    resultGameInfo.humanPlayers.forEach(function (humanPlayer) {
+                        io.to(humanPlayer.playerId).emit('testi');
+                    });
+                    await startGame(resultGameInfo);
                 } else {
                     io.emit('update gameinfo', resultGameInfo);
                 }
@@ -131,3 +149,24 @@ mongoUtil.connectToServer( function( err, client ) {
 http.listen(3000, () => {
     console.log('listening on *:3000');
 });
+
+
+
+
+async function startGame(gameInfo) {
+    const database = mongoUtil.getDb();
+    const collection = database.collection('promiseweb');
+    var ObjectId = require('mongodb').ObjectId;
+    var searchId = new ObjectId(gameInfo.id);
+
+    const query = { _id: searchId };
+    const options = { upsert: true };
+    const updateDoc = {
+        $set: {
+            gameStatus: 1,
+        }
+    };
+    const result = await collection.updateOne(query, updateDoc, options);
+
+    console.log('start');
+}

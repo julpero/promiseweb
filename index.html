@@ -6,8 +6,10 @@
 
         <title>promiseweb - Promise Card Game</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="/deck.css">
     </head>
     <body>
+        
         <div class="container" id="gameChooser">
             <div class="row">
                 <div class="col">
@@ -24,101 +26,135 @@
                         Create game
                     </a>
                     <div class="collapse" id="createGameCollapse">
-                        <div class="card card-body" id="newGame">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col">
-                                        <label for="newGameHumanPlayersCount">
-                                            Total number of human players
-                                        </label>
-                                        <select class="form-control" id="newGameHumanPlayersCount">
-                                            <option value="0">0</option>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                        </select>
-        
-                                    </div>
-                                    <div class="col">
-                                        <label for="newGameBotPlayersCount">
-                                            Total number of ai players
-                                        </label>
-                                        <select class="form-control" id="newGameBotPlayersCount">
-                                            <option value="0">0</option>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                        </select>
-                                                
-                                    </div>
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col">
+                                    <label for="newGameHumanPlayersCount">
+                                        Total number of human players
+                                    </label>
+                                    <select class="form-control" id="newGameHumanPlayersCount">
+                                        <option value="0">0</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                    </select>
+    
+                                </div>
+                                <div class="col">
+                                    <label for="newGameBotPlayersCount">
+                                        Total number of ai players
+                                    </label>
+                                    <select class="form-control" id="newGameBotPlayersCount">
+                                        <option value="0">0</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                    </select>
+                                            
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="newGameTurns">
-                                    Start - Turn - End rounds of the game
-                                </label>
-                                <div class="row">
-                                    <div class="col">
-                                        <select class="form-control" id="newGameStartRound">
-                                            <option value="10">10</option>
-                                            <option value="9">9</option>
-                                            <option value="8">8</option>
-                                            <option value="7">7</option>
-                                            <option value="6">6</option>
-                                            <option value="5">5</option>
-                                            <option value="4">4</option>
-                                            <option value="3">3</option>
-                                            <option value="2">2</option>
-                                            <option value="1">1</option>
-                                        </select>
-                                    </div>
-                                    <div class="col">
-                                        <select class="form-control" id="newGameTurnRound">
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                            <option value="6">6</option>
-                                            <option value="7">7</option>
-                                            <option value="8">8</option>
-                                            <option value="9">9</option>
-                                            <option value="10">10</option>
-                                        </select>
-                                    </div>
-                                    <div class="col">
-                                        <select class="form-control" id="newGameEndRound">
-                                            <option value="10">10</option>
-                                            <option value="9">9</option>
-                                            <option value="8">8</option>
-                                            <option value="7">7</option>
-                                            <option value="6">6</option>
-                                            <option value="5">5</option>
-                                            <option value="4">4</option>
-                                            <option value="3">3</option>
-                                            <option value="2">2</option>
-                                            <option value="1">1</option>
-                                        </select>
-                                    </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="newGameTurns">
+                                Start - Turn - End rounds of the game
+                            </label>
+                            <div class="row">
+                                <div class="col">
+                                    <select class="form-control" id="newGameStartRound">
+                                        <option value="10">10</option>
+                                        <option value="9">9</option>
+                                        <option value="8">8</option>
+                                        <option value="7">7</option>
+                                        <option value="6">6</option>
+                                        <option value="5">5</option>
+                                        <option value="4">4</option>
+                                        <option value="3">3</option>
+                                        <option value="2">2</option>
+                                        <option value="1">1</option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <select class="form-control" id="newGameTurnRound">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <select class="form-control" id="newGameEndRound">
+                                        <option value="10">10</option>
+                                        <option value="9">9</option>
+                                        <option value="8">8</option>
+                                        <option value="7">7</option>
+                                        <option value="6">6</option>
+                                        <option value="5">5</option>
+                                        <option value="4">4</option>
+                                        <option value="3">3</option>
+                                        <option value="2">2</option>
+                                        <option value="1">1</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="newGameMyName">
-                                    My (nick)name in the game
-                                </label>
-                                <input type="text" class="form-control" id="newGameMyName">
-                            </div>
-                            <div class="form-group">
-                                <label for="newGamePassword">
-                                    Password for new game, leave empty if this is a public game
-                                </label>
-                                <input type="text" class="form-control" id="newGamePassword">
-                            </div>
-                            <button type="button" class="btn btn-primary" id="createNewGameButton">Create</button>
+                        </div>
+                        <div class="form-group">
+                            <label for="newGameMyName">
+                                My (nick)name in the game
+                            </label>
+                            <input type="text" class="form-control" id="newGameMyName">
+                        </div>
+                        <div class="form-group">
+                            <label for="newGamePassword">
+                                Password for new game, leave empty if this is a public game
+                            </label>
+                            <input type="text" class="form-control" id="newGamePassword">
+                        </div>
+                        <button type="button" class="btn btn-primary" id="createNewGameButton">Create</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid" id="gameContainer">
+            <div class="row">
+                <div class="col-10">
+                    <!-- container for table -->
+                    <div class="row">
+                        <div class="col" id="gameTable">
+                            here goes cards and game
+                        </div>
+                    </div>
+
+                    <!-- container for promise table -->
+                    <div class="row">
+                        <div class="col" id="promiseTable">
+                            here we will show promises
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-2">
+                    <!-- container for scoreboard -->
+                    <div class="row">
+                        <div class="col" id="scoreboard">
+                            here goes scoreboard
+                        </div>
+                    </div>
+
+                    <!-- container for chat -->
+                    <div class="row">
+                        <div class="col" id="chat">
+                            here we will chat
                         </div>
                     </div>
                 </div>
@@ -130,7 +166,8 @@
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
         <script src="/promiseweb.js"></script>
-        
+        <script src="/deck.js"></script>
+
         <script>
             $(function () {
                 var joinedGame = '';
