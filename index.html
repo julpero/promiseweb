@@ -7,6 +7,11 @@
         <title>promiseweb - Promise Card Game</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="/deck.css">
+        <style>
+            .cardCol {
+                border: 1px solid black;
+            }
+        </style>
     </head>
     <body>
         
@@ -125,18 +130,24 @@
             </div>
         </div>
 
-        <div class="container-fluid" id="gameContainer" style="display: none;">
+        <div class="container-fluid" id="gameContainer" style="display: none; height: 100vh;">
             <div class="row">
-                <div class="col-10">
+                <div class="col-10" style="height: 100vh;">
                     <!-- container for table -->
                     <div class="row">
-                        <div class="col" id="gameTable">
+                        <div class="col" id="gameTable" style="height: 80vh;">
                             <div class="row">
                                 <div class="col" id="otherPlayers">
                                     other players
                                 </div>
                             </div>
 
+                            <div class="row" id="myPromiseRow" style="display: none; text-align: center;">
+                                <div class="col-1"></div>
+                                <div class="col-10" id="myPromiseCol"></div>
+                                <div class="col-1"></div>
+
+                            </div>
                             <div class="row" id="myCardsRow">
 
                             </div>
@@ -145,13 +156,13 @@
 
                     <!-- container for promise table -->
                     <div class="row">
-                        <div class="col" id="promiseTable">
+                        <div class="col" id="promiseTable" style="height: 20vh;">
                             here we will show promises
                         </div>
                     </div>
 
                 </div>
-                <div class="col-2">
+                <div class="col-2" style="height: 100vh;">
                     <!-- container for scoreboard -->
                     <div class="row">
                         <div class="col" id="scoreboard">
@@ -179,7 +190,13 @@
         <script>
             $(function () {
                 var joinedGame = '';
-                window.localStorage.setItem('uUID', uuidv4());
+                if (window.localStorage.getItem('uUID')) {
+                    console.log(window.localStorage.getItem('uUID'));
+                } else {
+                    console.log('uUID set');
+                    window.localStorage.setItem('uUID', uuidv4());
+                }
+                
                 const socket = io();
 
                 socket.on('update gameinfo', function(gameInfo) {
@@ -199,7 +216,27 @@
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
+                        initCardTable(myRound);
+                        initOtherPlayers(myRound);
                         drawCards(myRound);
+                        getPromise(socket, myRound);
+                    });
+                });
+
+                socket.on('promise made', function(gameInfo) {
+                    console.log(gameInfo);
+                    var getRound = {
+                        gameId: gameInfo.id,
+                        myId: window.localStorage.getItem('uUID'),
+                        round: gameInfo.currentRound,
+                    };
+                    socket.emit('get round', getRound, function(myRound) {
+                        console.log(myRound);
+                        if (roundPromised(myRound)) {
+
+                        } else {
+                            getPromise(socket, myRound);
+                        }
                     });
                 });
 

@@ -69,8 +69,8 @@ body {
 .card {
   position: absolute;
   display: inline-block;
-  left: -1.9375rem;
-  top: -2.75rem;
+  /* left: -1.9375rem; */
+  /* top: -2.75rem; */
   width: 3.875rem;
   height: 5.5rem;
   background-color: #fff;
@@ -192,6 +192,7 @@ body {
 .card.rank10:before,
 .card.rank10:after {
   content: "10";
+  overflow-wrap: initial;
 }
 .card.rank11:before,
 .card.rank11:after {
