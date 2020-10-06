@@ -256,66 +256,90 @@ function otherPlayerMapper(idFrom, players) {
 }
 
 function initPlayTableFor3() {
+    var nodeRow = $('<div></div>').addClass('row');
+    var nodeCol = $('<div></div>').addClass('col-12');
+
     var row1= $('<div></div>').addClass('row');
     var col1 = $('<div id="player1TableDiv"></div>').addClass('col-5');
     var col2 = $('<div></div>').addClass('col-2');
     var col3 = $('<div id="player2TableDiv"></div>').addClass('col-5');
+    var row2= $('<div></div>').addClass('row');
     var col4 = $('<div></div>').addClass('col-4');
     var col5 = $('<div id="player0TableDiv"></div>').addClass('col-4');
     var col6 = $('<div></div>').addClass('col-4');
     row1.append(col1);
     row1.append(col2);
     row1.append(col3);
-    row1.append(col4);
-    row1.append(col5);
-    row1.append(col6);
+    row2.append(col4);
+    row2.append(col5);
+    row2.append(col6);
 
-    return row1;
+    nodeCol.append(row1);
+    nodeCol.append(row2);
+    nodeRow.append(nodeCol);
+
+    return nodeRow;
 }
 
 function initMiddleTable(playerCount) {
-    var row1 = $('<div></div>').addClass('row');
-    var col1 = $('<div></div>').addClass('col');
+    var nodeRow = $('<div></div>').addClass('row');
+    var nodeCol = $('<div></div>').addClass('col-12');
 
     var row11= $('<div></div>').addClass('row');
-    var col11 = $('<div id="trumpDiv"></div>').addClass('col');
+    var col11 = $('<div id="trumpDiv"></div>').addClass('col-12');
     row11.append(col11);
-    col1.append(row11);
-
-    if (playerCount == 3) col1.append(initPlayTableFor3());
-    // if (playerCount == 4) col1.append(initPlayTableFor4());
-    // if (playerCount == 5) col1.append(initPlayTableFor5());
     
-    row1.append(col1);
+    nodeCol.append(row11);
 
-    return row1;
+    if (playerCount == 3) nodeCol.append(initPlayTableFor3());
+    // if (playerCount == 4) nodeCol.append(initPlayTableFor4());
+    // if (playerCount == 5) nodeCol.append(initPlayTableFor5());
+    
+    nodeRow.append(nodeCol);
+
+    return nodeRow;
 }
 
 function initPlayerTable(index, align) {
+    var nodeRow = $('<div></div>').addClass('row');
+    var nodeCol = $('<div></div>').addClass('col-12');
+
     var row1 = $('<div id="player'+index+'row"></div>').addClass('row');
     var col1 = $('<div id="player'+index+'NameCol"></div>').addClass('col-12');
-    
     row1.append(col1);
+    
+    var row2 = $('<div></div>').addClass('row');
     for (var i = 0; i < 12; i++) {
-        row1.append($('<div id="player'+index+'CardCol'+i+'"></div>').addClass('col-1'));
+        row2.append($('<div id="player'+index+'CardCol'+i+'"></div>').addClass('col-1'));
     }
 
+    var row3 = $('<div></div>').addClass('row');
     if (align == 'left') {
-        row1.append($('<div id="player'+index+'Promised"></div>').addClass('col-2'));
-        row1.append($('<div id="player'+index+'Keeps"></div>').addClass('col-2'));
-        row1.append($('<div id="player'+index+'WonDeck"></div>').addClass('col-8'));
+        row3.append($('<div id="player'+index+'Promised"></div>').addClass('col-2'));
+        row3.append($('<div id="player'+index+'Keeps"></div>').addClass('col-2'));
+        row3.append($('<div id="player'+index+'Thinking"></div>').addClass('col-1'));
+        row3.append($('<div id="player'+index+'WonDeck"></div>').addClass('col-7'));
     }
     if (align == 'right') {
-        row1.append($('<div id="player'+index+'WonDeck"></div>').addClass('col-8'));
-        row1.append($('<div id="player'+index+'Promised"></div>').addClass('col-2'));
-        row1.append($('<div id="player'+index+'Keeps"></div>').addClass('col-2'));
+        row3.append($('<div id="player'+index+'WonDeck"></div>').addClass('col-7'));
+        row3.append($('<div id="player'+index+'Thinking"></div>').addClass('col-1'));
+        row3.append($('<div id="player'+index+'Promised"></div>').addClass('col-2'));
+        row3.append($('<div id="player'+index+'Keeps"></div>').addClass('col-2'));
     }
 
-    return row1;
+    nodeCol.append(row1);
+    nodeCol.append(row2);
+    nodeCol.append(row3);
+
+    nodeRow.append(nodeCol);
+    return nodeRow;
 }
 
 function initTableFor3() {
     console.log('initTableFor3');
+    var nodeRow = $('<div></div>').addClass('row');
+    var nodeCol = $('<div></div>').addClass('col-12');
+
     var row1 = $('<div></div>').addClass('row');
     var col1 = $('<div></div>').addClass('col-4').css({height: '55vh'});
     col1.append(initPlayerTable(1, 'left'));
@@ -327,7 +351,10 @@ function initTableFor3() {
     row1.append(col1);
     row1.append(col2);
     row1.append(col3);
-    return row1;
+
+    nodeCol.append(row1);
+    nodeRow.append(nodeCol);
+    return nodeRow;
 }
 
 function initCardTable(myRound) {
@@ -350,11 +377,11 @@ function initOtherPlayers(myRound) {
 
 function isMyPlayTurn(myRound) {
     for (var i = 0; i < myRound.players.length; i++) {
-        var chkPos = i + myRound.dealerPosition + 1; // next from dealer
+        var chkPos = i + myRound.playerInCharge;
         if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
-        if (myRound.players[chkPos].promise == null) {
-            // this is next player to promise
-            console.log('isMyPromiseTurn: '+ myRound.players[chkPos].thisIsMe);
+        if (myRound.players[chkPos].cardPlayed == null) {
+            // this is next player to play
+            console.log('isMyPlayTurn: '+ myRound.players[chkPos].thisIsMe);
             return myRound.players[chkPos].thisIsMe;
         }
     }
@@ -374,8 +401,45 @@ function isMyPromiseTurn(myRound) {
     return false;
 }
 
+function showThinking(id) {
+    $('#player'+id+'Thinking').addClass('thinking');
+}
+
+function hideThinkings() {
+    $('.thinking').removeClass('thinking');
+}
+
+function showWhoIsPromising(myRound) {
+    for (var i = 0; i < myRound.players.length; i++) {
+        var chkPos = i + myRound.dealerPosition + 1; // next from dealer
+        if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
+        if (myRound.players[chkPos].promise == null) {
+            // this is next player to promise
+            showThinking(otherPlayerMapper(chkPos, myRound.players));
+            return;
+        }
+    }
+    return;
+}
+
+function showWhoIsPlaying(myRound) {
+    for (var i = 0; i < myRound.players.length; i++) {
+        var chkPos = i + myRound.dealerPosition + 1; // next from dealer
+        if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
+        if (myRound.players[chkPos].cardPlayed == null) {
+            // this player is playing
+            showThinking(otherPlayerMapper(chkPos, myRound.players));
+            return;
+        }
+    }
+    return;
+}
+
 function roundPromised(myRound) {
-    
+    for (var i = 0; i < myRound.players.length; i++) {
+        if (myRound.players[i].promise == null) return false;
+    }
+    return true;
 }
 
 function initPromise(socket, myRound) {
@@ -415,10 +479,127 @@ function showPlayerPromises(myRound) {
 }
 
 function getPromise(socket, myRound) {
+    hideThinkings();
     if (isMyPromiseTurn(myRound)) {
         initPromise(socket, myRound);
+        dimMyCards(myRound, 1.0);
     } else {
         hidePromise();
+        showWhoIsPromising(myRound);
+        dimMyCards(myRound, 0.8);
     }
     showPlayerPromises(myRound);
+}
+
+function amIStarterOfPlay(myRound) {
+    return myRound.cardInCharge == null;
+}
+
+function iHaveSuitInMyHand(suitInCharge, myHand) {
+    for (var i = 0; i < myHand.length; i++) {
+        if (myHand[i].suit == suitInCharge) return true;
+    }
+    return false;
+}
+
+function cardToClassMapper(card) {
+    // note: ace has rank 1 in ui but 14 in server
+    var rank = card.rank == 14 ? 1 : card.rank;
+    var retStr = '.card.';
+    retStr+= card.suit + '.rank' + rank;
+    return retStr;
+}
+
+function rankCard(rank) {
+    // note: ace has rank 1 in ui but 14 in server
+    if (rank == 1) return 14;
+    return rank;
+}
+
+function classToCardMapper(classStr) {
+    var classes = classStr.split(/\s+/);
+    if (classes[1] && classes[2]) {
+        return {
+            suit: classes[1],
+            rank: rankCard(parseInt(classes[2].substring(4), 10)),
+        }
+    }
+    return null;
+}
+
+function initCardEvents(socket, myRound, onlySuit) {
+    for (var i = 0; i < myRound.myCards.length; i++) {
+        var cardMapperStr = cardToClassMapper(myRound.myCards[i]);
+        if (onlySuit == null || myRound.myCards[i].suit == onlySuit) {
+            // activate this card / div
+            console.log('activate this card / div: ' + myRound.myCards[i].suit + ' ' + myRound.myCards[i].rank);
+            console.log(' mapped to: ' + cardMapperStr);
+            $(cardMapperStr+' ').fadeTo('slow', 1);
+            $(cardMapperStr).on('click', function () {
+                console.log(this.className);
+                var card = classToCardMapper(this.className);
+                console.log(card);
+                var playDetails = { gameId: myRound.gameId,
+                    roundInd: myRound.roundInd,
+                    myId: window.localStorage.getItem('uUID'),
+                    playedCard: card,
+                };
+                socket.emit('play card', playDetails, function (playReturn) {
+                    console.log('playReturn:');
+                    console.log(playReturn);
+                });
+            });
+        } else {
+            // fade this card
+            $(cardMapperStr+' ').fadeTo('slow', 0.6);
+        }
+    }
+}
+
+function dimMyCards(myRound, visibility) {
+    for (var i = 0; i < myRound.myCards.length; i++) {
+        var cardMapperStr = cardToClassMapper(myRound.myCards[i]);
+        $(cardMapperStr+' ').fadeTo('slow', visibility);
+    }
+}
+
+function initCardsToPlay(socket, myRound) {
+    if (amIStarterOfPlay(myRound) || !iHaveSuitInMyHand(myRound.cardInCharge.suit, myRound.myCards)) {
+        // i can play any card i want
+        initCardEvents(socket, myRound);
+    } else {
+        // i can play only suit of card in charge
+        initCardEvents(socket, myRound, myRound.cardInCharge.suit);
+    }
+}
+
+function showPlayedCards(myRound, animateLast) {
+    var deck = Deck();
+    var lastPlayed = null;
+    for (var i = 0; i < myRound.players.length; i++) {
+        var chkPos = i + myRound.dealerPosition + 1; // next from dealer
+        if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
+        if (myRound.players[chkPos].cardPlayed != null) {
+            var divId = otherPlayerMapper(chkPos, myRound.players);
+            lastPlayed = chkPos;
+            var cardPlayed = myRound.players[chkPos].cardPlayed;
+
+            var $container = document.getElementById('player'+divId+'TableDiv');
+            var cardIndex = getCardIndex(deck.cards, cardPlayed);
+            var card = deck.cards[cardIndex];
+            card.mount($container);
+            card.setSide('front');
+        }
+    }
+}
+
+function playRound(socket, myRound) {
+    hideThinkings();
+    showPlayedCards(myRound, true);
+    if (isMyPlayTurn(myRound)) {
+        initCardsToPlay(socket, myRound);
+    } else {
+        showWhoIsPlaying(myRound);
+        dimMyCards(myRound, 0.8);
+    }
 }
