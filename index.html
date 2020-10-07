@@ -9,14 +9,19 @@
         <link rel="stylesheet" type="text/css" href="/deck.css">
         <style>
             .cardCol {
+                min-height: 120px;
+                border: 1px solid black;
+            }
+            .nameCol {
+                min-height: 50px;
                 border: 1px solid black;
             }
             .thinking {
                 background: rgba(255, 82, 82, 1);
-                border-radius: 50%;
-                margin: 10px;
-                height: 20px;
-                width: 20px;
+                border-radius: 100%;
+                margin: 30px;
+                height: 40px;
+                width: 40px;
 
                 box-shadow: 0 0 0 0 rgba(255, 82, 82, 1);
                 transform: scale(1);
@@ -25,7 +30,7 @@
 
             @keyframes pulse {
                 0% {
-                    transform: scale(0.95);
+                    transform: scale(0.9);
                     box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
                 }
 
@@ -35,7 +40,7 @@
                 }
 
                 100% {
-                    transform: scale(0.95);
+                    transform: scale(0.9);
                     box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
                 }
             }
@@ -268,11 +273,12 @@
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
                         if (myRound.doReloadInit) {
-                            console.log('reloading...')
+                            console.log('reloading...');
                             initCardTable(myRound);
                             initOtherPlayers(myRound);
                             drawCards(myRound);
                         }
+                        showPlayerPromises(myRound);
                         if (roundPromised(myRound)) {
                             playRound(socket, myRound);
                         } else {
@@ -284,6 +290,21 @@
                 socket.on('card played', function(gameInfo) {
                     console.log('card played');
                     console.log(gameInfo);
+
+                    if (gameInfo.eventInfo != null) {
+                        // animate played card
+                        var playedCard = gameInfo.eventInfo.playedCard;
+                        var cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
+
+                        var $containerFrom = document.getElementById('player'+divId+'CardPlayedDiv');
+                        var $containerTo = document.getElementById('player'+divId+'CardPlayedDiv');
+                        var deck = Deck();
+                        var cardIndex = getCardIndex(deck.cards, playedCard);
+                        var card = deck.cards[cardIndex];
+                        card.mount($container);
+                        card.setSide('front');
+                    }
+
                     var doReloadInit = gameInfo.reloaded;
 
                     var getRound = {
@@ -295,13 +316,14 @@
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
                         if (myRound.doReloadInit) {
-                            console.log('reloading...')
+                            console.log('reloading...');
                             $('#gameChooser').hide();
                             $('#gameContainer').show();
                             initCardTable(myRound);
                             initOtherPlayers(myRound);
                             drawCards(myRound);
                         }
+                        showPlayerPromises(myRound);
                         if (roundPromised(myRound)) {
                             playRound(socket, myRound);
                         } else {

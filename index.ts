@@ -43,8 +43,8 @@ mongoUtil.connectToServer( function( err, client ) {
                         console.log('found game 1');
                         gameFound = true;
                         socket.join(game._id);
-                        var gameInfo = gameToGameInfo(game);
-                        gameInfo.currentRound = currentRoundIndex(game);
+                        var gameInfo = gameToGameInfo(game, player.name);
+                        gameInfo.currentRound = getCurrentRoundIndex(game);
                         gameInfo.reloaded = true;
                         socket.emit('card played', gameInfo);
                     }
@@ -60,7 +60,7 @@ mongoUtil.connectToServer( function( err, client ) {
                         if (player.playerId == gameCheck.myId) {
                             console.log('found game 0');
                             socket.join(game._id);
-                            var gameInfo = gameToGameInfo(game);
+                            var gameInfo = gameToGameInfo(game, player.name);
                             gameInfo.currentRound = 0;
                             gameInfo.reloaded = true;
                             socket.emit('promise made', gameInfo);
@@ -125,7 +125,7 @@ mongoUtil.connectToServer( function( err, client ) {
             if (retVal == 'OK') {
                 // let's update info to clients
                 const val = await collection.findOne(query);
-                var resultGameInfo = gameToGameInfo(val);
+                var resultGameInfo = gameToGameInfo(val, newPlayer.myName);
 
                 io.emit('update gameinfo', resultGameInfo);
 
@@ -204,20 +204,22 @@ mongoUtil.connectToServer( function( err, client ) {
                         }
                     }
                 }
+                const thisGame = await collection.findOne(query);
+                console.log(thisGame);
+    
+                var gameInfo = gameToGameInfo(thisGame, playerName);
+                gameInfo.currentRound = promiseDetails.roundInd;
+                io.to(gameInfo.id).emit('promise made', gameInfo);
+    
+                fn(thisGame); // DEBUG
             }
-            const thisGame = await collection.findOne(query);
-            console.log(thisGame);
-
-            var gameInfo = gameToGameInfo(thisGame);
-            gameInfo.currentRound = promiseDetails.roundInd;
-            io.to(gameInfo.id).emit('promise made', gameInfo);
-
-            fn(thisGame); // DEBUG
 
         });
 
         socket.on('play card', async (playDetails, fn) => {
             console.log(playDetails);
+
+            var eventInfo = null;
 
             const database = mongoUtil.getDb();
             const collection = database.collection('promiseweb');
@@ -233,10 +235,10 @@ mongoUtil.connectToServer( function( err, client ) {
                 var playedCard = playDetails.playedCard;
                 var playerName = getPlayerNameById(playDetails.myId, gameInDb.humanPlayers);
                 if (okToPlayCard(playedCard, playerName, gameInDb)) {
-                    var roundInDb = currentRoundIndex(gameInDb);
+                    var roundInDb = getCurrentRoundIndex(gameInDb);
                     if (roundInDb == playDetails.roundInd) {
                         var round = gameInDb.game.rounds[roundInDb];
-                        var play = currentPlayIndex(round);
+                        var play = getCurrentPlayIndex(round);
                         var playerInd = getPlayerIndexByName(playerName, round.roundPlayers)
                         var newHand = takeCardOut(round.roundPlayers[playerInd].cards, playedCard);
                         round.cardsPlayed[play].push({ name: playerName, card: playedCard });
@@ -244,6 +246,37 @@ mongoUtil.connectToServer( function( err, client ) {
                         var gameAfterPlay = gameInDb.game;
                         gameAfterPlay.rounds[roundInDb].cardsPlayed = round.cardsPlayed;
                         gameAfterPlay.rounds[roundInDb].roundPlayers[playerInd].cards = newHand;
+
+                        var newPlay = false;
+                        var newRound = false;
+                        var gameOver = false;
+                        
+                        if (gameAfterPlay.rounds[roundInDb].cardsPlayed[play].length == gameInDb.humanPlayersCount + gameInDb.botPlayersCount) {
+                            // this was the last card of the play
+                            // let's see who wins this play and will be starter of the next play
+                            newPlay = true;
+                            var winnerName = winnerOfPlay(gameAfterPlay.rounds[roundInDb].cardsPlayed[play], gameAfterPlay.rounds[roundInDb].trumpCard.suit);
+                            var winnerIndex = getPlayerIndexByName(winnerName, round.roundPlayers);
+
+                            gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps++;
+
+                            if (gameAfterPlay.rounds[roundInDb].cardsPlayed.length == gameAfterPlay.rounds[roundInDb].cardsInRound) {
+                                // this was the last card of the round
+                                newRound = true;
+                                gameAfterPlay.rounds[roundInDb].roundStatus = 2;
+
+                                if (gameAfterPlay.rounds.length + 1 == roundInDb) {
+                                    // this was the last round of the game
+                                    gameOver = true;
+                                } else {
+                                    // start next round
+                                    gameAfterPlay.rounds[roundInDb+1].roundStatus = 1;
+                                }
+                            } else {
+                                // start next play
+                                gameAfterPlay.rounds[roundInDb].cardsPlayed.push([]);
+                            }
+                        }
 
                         const options = { upsert: true };
                         const updateDoc = {
@@ -253,18 +286,26 @@ mongoUtil.connectToServer( function( err, client ) {
                         };
                         const result = await collection.updateOne(query, updateDoc, options);
 
+                        eventInfo = {
+                            playedCard: playedCard,
+                            cardPlayedBy: playerName,
+                            newPlay: newPlay,
+                            newRound: newRound,
+                            gameOver: gameOver,
+                        };
+
                     }
                 }
+                const thisGame = await collection.findOne(query);
+                console.log(thisGame);
+    
+                var gameInfo = gameToGameInfo(thisGame, playerName);
+                gameInfo.currentRound = playDetails.roundInd;
+                gameInfo.eventInfo = eventInfo;
+                io.to(gameInfo.id).emit('card played', gameInfo);
+    
+                fn(thisGame); // DEBUG
             }
-
-            const thisGame = await collection.findOne(query);
-            console.log(thisGame);
-
-            var gameInfo = gameToGameInfo(thisGame);
-            gameInfo.currentRound = playDetails.roundInd;
-            io.to(gameInfo.id).emit('card played', gameInfo);
-
-            fn(thisGame); // DEBUG
 
         });
 
@@ -285,7 +326,7 @@ mongoUtil.connectToServer( function( err, client ) {
                     startRound: val.startRound,
                     turnRound: val.turnRound,
                     endRound: val.endRound,
-                    humanPlayers: val.humanPlayers,
+                    humanPlayers: parsedHumanPlayers(val.humanPlayers),
                     hasPassword: val.password.length > 0,
                 });
             });
@@ -302,6 +343,16 @@ http.listen(3000, () => {
     console.log('listening on *:3000');
 });
 
+function parsedHumanPlayers(humanPlayers) {
+    var retVal = [];
+    humanPlayers.forEach(function(humanPlayer) {
+        retVal.push({
+            name: humanPlayer.name,
+        });
+    })
+    return retVal;
+}
+
 function takeCardOut(hand, cardPlayed) {
     var newHand = [];
     for (var i = 0; i < hand.length; i++) {
@@ -312,13 +363,14 @@ function takeCardOut(hand, cardPlayed) {
 }
 
 function currentPlayTurnPlayerName(gameInDb) {
-    var currentRoundNbr = currentRoundIndex(gameInDb);
-    var round = gameInDb.game.rounds[currentRoundNbr];
-    var currentPlayNbr = currentPlayIndex(round);
-    if (round.cardsPlayed[currentPlayNbr].length == 0) return getRoundStarterName(round);
+    var currentRoundIndex = getCurrentRoundIndex(gameInDb);
+    var round = gameInDb.game.rounds[currentRoundIndex];
+    var currentPlayIndex = getCurrentPlayIndex(round);
+    if (currentRoundIndex == 0 && currentPlayIndex == 0) return getRoundStarterName(round);
+    if (round.cardsPlayed[currentPlayIndex].length == 0) return round.roundPlayers[getPlayerInCharge(currentRoundIndex, currentPlayIndex, gameInDb)].name;
 
-    var playerInd = round.starterPosition + round.cardsPlayed.length;
-    if (playerInd > round.starterPosition + round.cardsPlayed.length) playerInd-= round.starterPosition + round.cardsPlayed.length;
+    var playerInd = getPlayerInCharge(currentRoundIndex, currentPlayIndex, gameInDb) + round.cardsPlayed[currentPlayIndex].length;
+    if (playerInd >= round.roundPlayers.length) playerInd-= round.roundPlayers.length;
     return round.roundPlayers[playerInd].name;
 }
 
@@ -344,8 +396,8 @@ function isCardAvailableToPlay(playedCard, cardInCharge, playerCards) {
 function okToPlayCard(playedCard, playerName, gameInDb) {
     var cardInHand = false;
     var playerCards = null;
-    var currentRoundNbr = currentRoundIndex(gameInDb);
-    var currentRound = gameInDb.game.rounds[currentRoundNbr];
+    var currentRoundIndex = getCurrentRoundIndex(gameInDb);
+    var currentRound = gameInDb.game.rounds[currentRoundIndex];
     for (var i = 0; i < currentRound.roundPlayers.length; i++) {
         if (currentRound.roundPlayers[i].name == playerName) {
             playerCards = currentRound.roundPlayers[i].cards;
@@ -356,18 +408,20 @@ function okToPlayCard(playedCard, playerName, gameInDb) {
     return cardInHand && currentPlayTurnPlayerName(gameInDb) == playerName && isCardAvailableToPlay(playedCard, currentRound.cardInCharge, playerCards);
 }
 
-function gameToGameInfo(game) {
+function gameToGameInfo(game, myName) {
     var gameInfo = {
         id: game._id,
+        myName: myName,
         humanPlayersCount: game.humanPlayersCount,
         computerPlayersCount: game.botPlayersCount,
         startRound: game.startRound,
         turnRound: game.turnRound,
         endRound: game.endRound,
-        humanPlayers: game.humanPlayers,
+        humanPlayers: parsedHumanPlayers(game.humanPlayers),
         hasPassword: game.password.length > 0,
         currentRound: null,
         reloaded: false,
+        eventInfo: null,
     };
     return gameInfo;
 }
@@ -440,7 +494,7 @@ function winnerOfPlay(cardsPlayed, trumpSuit) {
     var winningCard = cardsPlayed[0].card;
     for (var i = 1; i < cardsPlayed.length; i++) {
         var wins = false;
-        var currentCard = cardsPlayed[i];
+        var currentCard = cardsPlayed[i].card;
         if (winningCard.suit == trumpSuit) {
             // has to be bigger trump to win
             wins = currentCard.suit == trumpSuit && currentCard.rank > winningCard.rank;
@@ -461,22 +515,19 @@ function winnerOfPlay(cardsPlayed, trumpSuit) {
 }
 
 function getPlayerInCharge(roundInd, playInd, thisGame) {
-    var playerInd = null;
     if (playInd == 0) {
-        playerInd = thisGame.game.rounds[roundInd].dealerPosition + 1; // first play in the round, next from the dealer is in charge
+        return thisGame.game.rounds[roundInd].starterPosition;
     } else {
-        return winnerOfPlay(thisGame.game.rounds[roundInd].cardsPlayed[playInd-1], thisGame.game.rounds[roundInd].trumpCard.suit); // winner of the previous play
+        var winnerName = winnerOfPlay(thisGame.game.rounds[roundInd].cardsPlayed[playInd-1], thisGame.game.rounds[roundInd].trumpCard.suit); // winner of the previous play
+        return getPlayerIndexByName(winnerName, thisGame.game.rounds[roundInd].roundPlayers);
     }
-
-    if (playerInd > thisGame.humanPlayersCount + thisGame.botPlayersCount) playerInd-= (thisGame.humanPlayersCount + thisGame.botPlayersCount);
-    return playerInd;
 }
 
-function currentPlayIndex(round) {
+function getCurrentPlayIndex(round) {
     return round.cardsPlayed.length - 1;
 }
 
-function currentRoundIndex(thisGame) {
+function getCurrentRoundIndex(thisGame) {
     for (var i = 0; i < thisGame.game.rounds.length; i++) {
         if (thisGame.game.rounds[i].roundStatus == 1) return i;
     }
@@ -502,7 +553,7 @@ function roundToPlayer(playerId, roundInd, thisGame, doReloadInit) {
         myCards: getPlayerCards(playerName, round),
         players: getRoundPlayers(playerName, round),
         trumpCard: round.trumpCard,
-        playerInCharge: getPlayerInCharge(roundInd, currentPlayIndex(round), thisGame),
+        playerInCharge: getPlayerInCharge(roundInd, getCurrentPlayIndex(round), thisGame),
         cardInCharge: getCurrentCardInCharge(round.cardsPlayed),
         cardsPlayed: round.cardsPlayed,
         doReloadInit: doReloadInit
@@ -588,8 +639,8 @@ function initRound(roundIndex, cardsInRound, players) {
             name: player,
             cards: sortCardsDummy(deck.draw(cardsInRound)),
             promise: null,
-            keeps: null,
-            points: null,
+            keeps: 0,
+            points: 0,
         });
     });
 
