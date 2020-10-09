@@ -12,9 +12,34 @@
                 min-height: 120px;
                 border: 1px solid black;
             }
+            .cardWonCol {
+                padding-left: 1px;
+                padding-right: 1px;
+            }
             .nameCol {
                 min-height: 50px;
                 border: 1px solid black;
+            }
+            .promiseTableHeader {
+                padding-left: 15px;
+                text-align: center;
+                border-bottom: solid black 1px;
+            }
+            .promiseTableCol {
+                padding-left: 15px;
+                text-align: center;
+                border-bottom: dotted grey 1px;
+            }
+            .promiseKept {
+                font-weight: bold;
+                color: darkgreen;
+            }
+            .promiseOver {
+                color: darkred;
+            }
+            .promiseUnder {
+                font-weight: bold;
+                color: olive;
             }
             .thinking {
                 background: rgba(255, 82, 82, 1);
@@ -188,7 +213,16 @@
                                     <div class="row">
                                         <div class="col">
                                             <div class="row">
-                                                <div id="player0CardsWonDiv" class="col cardCol"></div>
+                                                <div id="player0CardsWon0Div" class="col cardCol cardWonCol"></div>
+                                                <div id="player0CardsWon1Div" class="col cardCol cardWonCol"></div>
+                                                <div id="player0CardsWon2Div" class="col cardCol cardWonCol"></div>
+                                                <div id="player0CardsWon3Div" class="col cardCol cardWonCol"></div>
+                                                <div id="player0CardsWon4Div" class="col cardCol cardWonCol"></div>
+                                                <div id="player0CardsWon5Div" class="col cardCol cardWonCol"></div>
+                                                <div id="player0CardsWon6Div" class="col cardCol cardWonCol"></div>
+                                                <div id="player0CardsWon7Div" class="col cardCol cardWonCol"></div>
+                                                <div id="player0CardsWon8Div" class="col cardCol cardWonCol"></div>
+                                                <div id="player0CardsWon9Div" class="col cardCol cardWonCol"></div>
                                             </div>
                                         </div>
                                         <div class="col">
@@ -216,7 +250,6 @@
                     <!-- container for promise table -->
                     <div class="row fixed-bottom" style="height: 150px;">
                         <div class="col-10" id="promiseTable" style="border: 1px solid black;">
-                            here we will show promises
                         </div>
                         <div class="col-2" id="chat" style="border: 1px solid black;">
                             here we will chat
@@ -322,7 +355,6 @@
                                 if (gameInfo.eventInfo.newPlay) {
                                     var winnerName = gameInfo.eventInfo.winnerName;
                                     await moveCardFromTableToWinDeck(winnerName, players);
-                                    clearPlayedCardsFromTable(players);
                                 }
                             });
                     }

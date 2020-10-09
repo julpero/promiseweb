@@ -266,6 +266,18 @@ mongoUtil.connectToServer( function( err, client ) {
                                 // this was the last card of the round
                                 newRound = true;
                                 gameAfterPlay.rounds[roundInDb].roundStatus = 2;
+                                for (var i = 0; i < gameAfterPlay.rounds[roundInDb].roundPlayers.length; i++) {
+                                    if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].promise == gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps) {
+                                        if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps == 0) {
+                                            gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = gameAfterPlay.rounds[roundInDb].cardsInRound > 5 ? 15 : 5;
+                                        } else {
+                                            gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = 10 + gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps;
+                                        }
+
+                                    } else {
+                                        gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = 0;
+                                    }
+                                }
 
                                 if (gameAfterPlay.rounds.length + 1 == roundInDb) {
                                     // this was the last round of the game
@@ -495,6 +507,7 @@ function getRoundPlayers(myName, round) {
             dealer: round.dealerPositionIndex == idx,
             name: player.name,
             promise: player.promise,
+            keeps: player.keeps,
             cardPlayed: getPlayerPlayedCard(player.name, round.cardsPlayed),
         });
     });
@@ -551,6 +564,36 @@ function getCurrentCardInCharge(cardsPlayed) {
     return cardsPlayed[cardsPlayed.length - 1][0].card;
 }
 
+function getPromiseTable(thisGame) {
+    var promisesByPlayers = [];
+    var rounds = [];
+    for (var i = 0; i < thisGame.game.playerOrder.length; i++) {
+        var playerPromises = [];
+        for (var j = 0; j < thisGame.game.rounds.length; j++) {
+            if (true || thisGame.game.rounds[j].roundStatus > 0) {
+                playerPromises.push({
+                    promise: thisGame.game.rounds[j].roundPlayers[i].promise,
+                    keep: thisGame.game.rounds[j].roundPlayers[i].keeps,
+                    points: thisGame.game.rounds[j].roundPlayers[i].points,
+                });
+            }
+            if (i == 0) {
+                rounds.push({
+                    cardsInRound: thisGame.game.rounds[j].cardsInRound,
+                });
+            }
+        }
+        promisesByPlayers.push(playerPromises);
+    }
+
+    var promiseTable = {
+        players: thisGame.game.playerOrder,
+        promisesByPlayers: promisesByPlayers,
+        rounds: rounds,
+    }
+    return promiseTable;
+}
+
 function roundToPlayer(playerId, roundInd, thisGame, doReloadInit) {
     var round = thisGame.game.rounds[roundInd];
     var playerName = getPlayerNameById(playerId, thisGame.humanPlayers);
@@ -566,6 +609,7 @@ function roundToPlayer(playerId, roundInd, thisGame, doReloadInit) {
         players: getRoundPlayers(playerName, round),
         trumpCard: round.trumpCard,
         playerInCharge: getPlayerInCharge(roundInd, getCurrentPlayIndex(round), thisGame),
+        promiseTable: getPromiseTable(thisGame),
         cardInCharge: getCurrentCardInCharge(round.cardsPlayed),
         cardsPlayed: round.cardsPlayed,
         doReloadInit: doReloadInit
@@ -652,7 +696,7 @@ function initRound(roundIndex, cardsInRound, players) {
             cards: sortCardsDummy(deck.draw(cardsInRound)),
             promise: null,
             keeps: 0,
-            points: 0,
+            points: null,
         });
     });
 

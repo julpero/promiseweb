@@ -324,7 +324,9 @@ function initPlayerTable(index, align) {
 
     var playerInfoRow = $('<div></div>').addClass('row');
     var cardsWonRow = $('<div></div>').addClass('row');
-    cardsWonRow.append($('<div id="player'+index+'CardsWonDiv"></div>').addClass('col cardCol'));
+    for (var i = 0; i < 10; i++) {
+        cardsWonRow.append($('<div id="player'+index+'CardsWon'+i+'Div"></div>').addClass('col cardCol cardWonCol'));
+    }
     var playedCardRow = $('<div></div>').addClass('row');
     
     // where are promises and points aligned
@@ -504,9 +506,11 @@ function showPlayerPromises(myRound) {
     myRound.players.forEach(function (player, idx) {
         if (player.promise != null) {
             var tableIdx = otherPlayerMapper(idx, myRound.players);
-            $('#player'+tableIdx+'Promised').html(player.promise);
+            $('#player'+tableIdx+'Promised').html('prom: '+player.promise);
+            $('#player'+tableIdx+'Keeps').html('keep: '+player.keeps);
         }
     });
+    initPromiseTable(myRound.promiseTable);
 }
 
 function getPromise(socket, myRound) {
@@ -568,6 +572,7 @@ function initCardEvents(socket, myRound, onlySuit) {
             console.log(' mapped to: ' + cardMapperStr);
             $(cardMapperStr+' ').fadeTo('slow', 1);
             $(cardMapperStr).on('click', function () {
+                $('.card').off('click');
                 console.log(this.className);
                 var card = classToCardMapper(this.className);
                 console.log(card);
@@ -644,18 +649,21 @@ function getCardFromDiv(divStr) {
     return null;
 }
 
-function clearPlayedCardsFromTable(players) {
-    for (var i = 0; i < players.length; i++) {
-        //$('#player'+i+'CardPlayedDiv').empty();
+
+function getNextFreeCardWonDiv(playerIndex) {
+    for (var i = 0; i < 10; i++) {
+        if ($('#player'+playerIndex+'CardsWon'+i+'Div').children().length == 0) return i;
     }
+    return 0;
 }
 
 async function moveCardFromTableToWinDeck(winnerName, players) {
     var deck = Deck();
 
     var playerIndex = mapPlayerNameToTable(winnerName);
-    var $containerTo = document.getElementById('player'+playerIndex+'CardsWonDiv');
-    var containerToPosition = $('#player'+playerIndex+'CardsWonDiv').offset();
+    var wonIndex = getNextFreeCardWonDiv(playerIndex);
+    var $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
+    var containerToPosition = $('#player'+playerIndex+'CardsWon'+wonIndex+'Div').offset();
 
     var delay = 200;
     var duration = 1000;
@@ -763,9 +771,62 @@ async function moveCardFromHandToTable(card, playerName) {
 
 }
 
+function createPromiseTable(promiseTable) {
+    var node = $('#promiseTable');
+    var table = $('<table></table>');
+    var tableHeader = $('<thead></thead>');
+    var tableHeaderRow = $('<tr></tr>');
+    
+    tableHeaderRow.append($('<th scope="col"></th>').addClass('promiseTableHeader'));
+    for (var i = 0; i < promiseTable.rounds.length; i++) {
+        var tableHeaderCol = $('<th scope="col"></th>').addClass('promiseTableHeader').html(promiseTable.rounds[i].cardsInRound);
+        tableHeaderRow.append(tableHeaderCol);
+    }
+    tableHeader.append(tableHeaderRow);
+
+    var tableBody = $('<tbody></tbody>');
+    for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
+        var tableBodyRow = $('<tr></tr>');
+        var playerNameCol = $('<th scope="row"></th>').addClass('promiseTableCol').html(promiseTable.players[i]);
+        tableBodyRow.append(playerNameCol);
+        for (var j = 0; j < promiseTable.rounds.length; j++) {
+            var promiseCol = $('<td id="player'+i+'Prom'+j+'"></td>').addClass('promiseTableCol');
+            tableBodyRow.append(promiseCol);
+        }
+        
+        tableBody.append(tableBodyRow);
+    }
+    table.append(tableHeader);
+    table.append(tableBody);
+
+    node.append(table);
+}
+
+function initPromiseTable(promiseTable) {
+    if ($('#promiseTable').children().length == 0) createPromiseTable(promiseTable);
+    
+    for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
+        for (var j = 0; j < promiseTable.rounds.length; j++) {
+            var promise = promiseTable.promisesByPlayers[i][j];
+            var promiseStr = (promise != null) ? promise.promise : '&nbsp;';
+            $('#player'+i+'Prom'+j).html(promiseStr);
+            if (promise.points != null) {
+                if (promise.keep == promise.promise) {
+                    if (!$('#player'+i+'Prom'+j).hasClass('promiseKept')) $('#player'+i+'Prom'+j).addClass('promiseKept');
+                } else if (promise.keep > promise.promise) {
+                    if (!$('#player'+i+'Prom'+j).hasClass('promiseOver')) $('#player'+i+'Prom'+j).addClass('promiseOver');
+                } else {
+                    if (!$('#player'+i+'Prom'+j).hasClass('promiseUnder')) $('#player'+i+'Prom'+j).addClass('promiseUnder');
+                }
+            }
+        }
+    }
+}
+
 function browserReload(myRound) {
     initCardTable(myRound);
     initOtherPlayers(myRound);
+    initPromiseTable(myRound.promiseTable);
     drawCards(myRound);
     showPlayedCards(myRound);
 }
