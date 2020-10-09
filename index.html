@@ -164,15 +164,40 @@
             </div>
         </div>
 
-        <div class="container-fluid" id="gameContainer" style="display: none; height: 100vh;">
+        <div class="container-fluid" id="gameContainer" style="display: none;">
             <div class="row">
-                <div class="col-10" style="height: 100vh;">
+                <div class="col-10">
                     <!-- container for table -->
                     <div class="row">
-                        <div class="col-12" id="gameTable" style="height: 80vh;">
+                        <div class="col-12" id="gameTable">
                             <div class="row">
                                 <div class="col-12" id="otherPlayers">
                                     other players
+                                </div>
+                            </div>
+
+                            <div class="row" id="myInfoRow" >
+                                <div class="col-5"></div>
+                                <div id="player0CardPlayedDiv" class="col-2 cardCol">
+                                </div>
+                                <div class="col-2"></div>
+                                <div class="col-3" id="myInfoCol">
+                                    <div class="row">
+                                        <div id="player0NameCol" class="col nameCol playerNameCol"></div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="row">
+                                                <div id="player0CardsWonDiv" class="col cardCol"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="row">
+                                                <div id="player0Promised" class="col"></div>
+                                                <div id="player0Keeps" class="col"></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -180,8 +205,8 @@
                                 <div class="col-1"></div>
                                 <div class="col-10" id="myPromiseCol"></div>
                                 <div class="col-1"></div>
-
                             </div>
+
                             <div class="row" id="myCardsRow">
 
                             </div>
@@ -189,14 +214,17 @@
                     </div>
 
                     <!-- container for promise table -->
-                    <div class="row">
-                        <div class="col-12" id="promiseTable" style="height: 20vh;">
+                    <div class="row fixed-bottom" style="height: 150px;">
+                        <div class="col-10" id="promiseTable" style="border: 1px solid black;">
                             here we will show promises
+                        </div>
+                        <div class="col-2" id="chat" style="border: 1px solid black;">
+                            here we will chat
                         </div>
                     </div>
 
                 </div>
-                <div class="col-2" style="height: 100vh;">
+                <div class="col-2">
                     <!-- container for scoreboard -->
                     <div class="row">
                         <div class="col-12" id="scoreboard">
@@ -204,12 +232,6 @@
                         </div>
                     </div>
 
-                    <!-- container for chat -->
-                    <div class="row">
-                        <div class="col-12" id="chat">
-                            here we will chat
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -252,9 +274,7 @@
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
-                        initCardTable(myRound);
-                        initOtherPlayers(myRound);
-                        drawCards(myRound);
+                        browserReload(myRound);
                         getPromise(socket, myRound);
                     });
                 });
@@ -274,9 +294,7 @@
                         console.log(myRound);
                         if (myRound.doReloadInit) {
                             console.log('reloading...');
-                            initCardTable(myRound);
-                            initOtherPlayers(myRound);
-                            drawCards(myRound);
+                            browserReload(myRound);
                         }
                         showPlayerPromises(myRound);
                         if (roundPromised(myRound)) {
@@ -287,22 +305,26 @@
                     });
                 });
 
-                socket.on('card played', function(gameInfo) {
+                socket.on('card played', async function(gameInfo) {
                     console.log('card played');
                     console.log(gameInfo);
+                    hideThinkings();
 
                     if (gameInfo.eventInfo != null) {
                         // animate played card
                         var playedCard = gameInfo.eventInfo.playedCard;
                         var cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
-
-                        var $containerFrom = document.getElementById('player'+divId+'CardPlayedDiv');
-                        var $containerTo = document.getElementById('player'+divId+'CardPlayedDiv');
-                        var deck = Deck();
-                        var cardIndex = getCardIndex(deck.cards, playedCard);
-                        var card = deck.cards[cardIndex];
-                        card.mount($container);
-                        card.setSide('front');
+                        var cardPlayedByIndex = gameInfo.eventInfo.cardPlayedByIndex;
+                        var players = gameInfo.humanPlayers;
+                        
+                        await moveCardFromHandToTable(playedCard, cardPlayedBy)
+                            .then(async function() {
+                                if (gameInfo.eventInfo.newPlay) {
+                                    var winnerName = gameInfo.eventInfo.winnerName;
+                                    await moveCardFromTableToWinDeck(winnerName, players);
+                                    clearPlayedCardsFromTable(players);
+                                }
+                            });
                     }
 
                     var doReloadInit = gameInfo.reloaded;
@@ -319,9 +341,7 @@
                             console.log('reloading...');
                             $('#gameChooser').hide();
                             $('#gameContainer').show();
-                            initCardTable(myRound);
-                            initOtherPlayers(myRound);
-                            drawCards(myRound);
+                            browserReload(myRound);
                         }
                         showPlayerPromises(myRound);
                         if (roundPromised(myRound)) {

@@ -43,7 +43,7 @@ mongoUtil.connectToServer( function( err, client ) {
                         console.log('found game 1');
                         gameFound = true;
                         socket.join(game._id);
-                        var gameInfo = gameToGameInfo(game, player.name);
+                        var gameInfo = gameToGameInfo(game);
                         gameInfo.currentRound = getCurrentRoundIndex(game);
                         gameInfo.reloaded = true;
                         socket.emit('card played', gameInfo);
@@ -60,7 +60,7 @@ mongoUtil.connectToServer( function( err, client ) {
                         if (player.playerId == gameCheck.myId) {
                             console.log('found game 0');
                             socket.join(game._id);
-                            var gameInfo = gameToGameInfo(game, player.name);
+                            var gameInfo = gameToGameInfo(game);
                             gameInfo.currentRound = 0;
                             gameInfo.reloaded = true;
                             socket.emit('promise made', gameInfo);
@@ -125,7 +125,7 @@ mongoUtil.connectToServer( function( err, client ) {
             if (retVal == 'OK') {
                 // let's update info to clients
                 const val = await collection.findOne(query);
-                var resultGameInfo = gameToGameInfo(val, newPlayer.myName);
+                var resultGameInfo = gameToGameInfo(val);
 
                 io.emit('update gameinfo', resultGameInfo);
 
@@ -207,7 +207,7 @@ mongoUtil.connectToServer( function( err, client ) {
                 const thisGame = await collection.findOne(query);
                 console.log(thisGame);
     
-                var gameInfo = gameToGameInfo(thisGame, playerName);
+                var gameInfo = gameToGameInfo(thisGame);
                 gameInfo.currentRound = promiseDetails.roundInd;
                 io.to(gameInfo.id).emit('promise made', gameInfo);
     
@@ -240,7 +240,8 @@ mongoUtil.connectToServer( function( err, client ) {
                         var round = gameInDb.game.rounds[roundInDb];
                         var play = getCurrentPlayIndex(round);
                         var playerInd = getPlayerIndexByName(playerName, round.roundPlayers)
-                        var newHand = takeCardOut(round.roundPlayers[playerInd].cards, playedCard);
+                        var newHandObj = takeCardOut(round.roundPlayers[playerInd].cards, playedCard);
+                        var newHand = newHandObj.newHand;
                         round.cardsPlayed[play].push({ name: playerName, card: playedCard });
 
                         var gameAfterPlay = gameInDb.game;
@@ -250,12 +251,13 @@ mongoUtil.connectToServer( function( err, client ) {
                         var newPlay = false;
                         var newRound = false;
                         var gameOver = false;
+                        var winnerName = null;
                         
                         if (gameAfterPlay.rounds[roundInDb].cardsPlayed[play].length == gameInDb.humanPlayersCount + gameInDb.botPlayersCount) {
                             // this was the last card of the play
                             // let's see who wins this play and will be starter of the next play
                             newPlay = true;
-                            var winnerName = winnerOfPlay(gameAfterPlay.rounds[roundInDb].cardsPlayed[play], gameAfterPlay.rounds[roundInDb].trumpCard.suit);
+                            winnerName = winnerOfPlay(gameAfterPlay.rounds[roundInDb].cardsPlayed[play], gameAfterPlay.rounds[roundInDb].trumpCard.suit);
                             var winnerIndex = getPlayerIndexByName(winnerName, round.roundPlayers);
 
                             gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps++;
@@ -289,7 +291,9 @@ mongoUtil.connectToServer( function( err, client ) {
                         eventInfo = {
                             playedCard: playedCard,
                             cardPlayedBy: playerName,
+                            cardPlayedByIndex: playerInd,
                             newPlay: newPlay,
+                            winnerName: newPlay ? winnerName : null,
                             newRound: newRound,
                             gameOver: gameOver,
                         };
@@ -299,7 +303,7 @@ mongoUtil.connectToServer( function( err, client ) {
                 const thisGame = await collection.findOne(query);
                 console.log(thisGame);
     
-                var gameInfo = gameToGameInfo(thisGame, playerName);
+                var gameInfo = gameToGameInfo(thisGame);
                 gameInfo.currentRound = playDetails.roundInd;
                 gameInfo.eventInfo = eventInfo;
                 io.to(gameInfo.id).emit('card played', gameInfo);
@@ -355,18 +359,26 @@ function parsedHumanPlayers(humanPlayers) {
 
 function takeCardOut(hand, cardPlayed) {
     var newHand = [];
+    var takenOutIndex = null;
     for (var i = 0; i < hand.length; i++) {
-        if (hand[i].suit == cardPlayed.suit && hand[i].rank == cardPlayed.rank) continue;
+        if (hand[i].suit == cardPlayed.suit && hand[i].rank == cardPlayed.rank)
+        {
+            takenOutIndex = i;
+            continue;
+        }
         newHand.push(hand[i]);
     }
-    return newHand;
+    return {
+        newHand: newHand,
+        takenOutIndex: takenOutIndex,
+    }
 }
 
 function currentPlayTurnPlayerName(gameInDb) {
     var currentRoundIndex = getCurrentRoundIndex(gameInDb);
     var round = gameInDb.game.rounds[currentRoundIndex];
     var currentPlayIndex = getCurrentPlayIndex(round);
-    if (currentRoundIndex == 0 && currentPlayIndex == 0) return getRoundStarterName(round);
+    if (currentRoundIndex == 0 && currentPlayIndex == 0 && round.cardsPlayed[currentPlayIndex].length == 0) return getRoundStarterName(round);
     if (round.cardsPlayed[currentPlayIndex].length == 0) return round.roundPlayers[getPlayerInCharge(currentRoundIndex, currentPlayIndex, gameInDb)].name;
 
     var playerInd = getPlayerInCharge(currentRoundIndex, currentPlayIndex, gameInDb) + round.cardsPlayed[currentPlayIndex].length;
@@ -408,10 +420,10 @@ function okToPlayCard(playedCard, playerName, gameInDb) {
     return cardInHand && currentPlayTurnPlayerName(gameInDb) == playerName && isCardAvailableToPlay(playedCard, currentRound.cardInCharge, playerCards);
 }
 
-function gameToGameInfo(game, myName) {
+function gameToGameInfo(game) {
     var gameInfo = {
         id: game._id,
-        myName: myName,
+        //myName: myName,
         humanPlayersCount: game.humanPlayersCount,
         computerPlayersCount: game.botPlayersCount,
         startRound: game.startRound,
@@ -427,11 +439,11 @@ function gameToGameInfo(game, myName) {
 }
 
 function getRoundDealerName(round) {
-    return round.roundPlayers[round.dealerPosition].name;
+    return round.roundPlayers[round.dealerPositionIndex].name;
 }
 
 function getRoundStarterName(round) {
-    return round.roundPlayers[round.starterPosition].name;
+    return round.roundPlayers[round.starterPositionIndex].name;
 }
 
 function getPlayerIndexByName(name, players) {
@@ -480,7 +492,7 @@ function getRoundPlayers(myName, round) {
     round.roundPlayers.forEach(function (player, idx) {
         players.push({
             thisIsMe: player.name == myName,
-            dealer: round.dealerPosition == idx,
+            dealer: round.dealerPositionIndex == idx,
             name: player.name,
             promise: player.promise,
             cardPlayed: getPlayerPlayedCard(player.name, round.cardsPlayed),
@@ -516,7 +528,7 @@ function winnerOfPlay(cardsPlayed, trumpSuit) {
 
 function getPlayerInCharge(roundInd, playInd, thisGame) {
     if (playInd == 0) {
-        return thisGame.game.rounds[roundInd].starterPosition;
+        return thisGame.game.rounds[roundInd].starterPositionIndex;
     } else {
         var winnerName = winnerOfPlay(thisGame.game.rounds[roundInd].cardsPlayed[playInd-1], thisGame.game.rounds[roundInd].trumpCard.suit); // winner of the previous play
         return getPlayerIndexByName(winnerName, thisGame.game.rounds[roundInd].roundPlayers);
@@ -547,8 +559,8 @@ function roundToPlayer(playerId, roundInd, thisGame, doReloadInit) {
         gameId: thisGame._id,
         roundInd: roundInd,
         cardsInRound: round.cardsInRound,
-        dealerPosition: round.dealerPosition,
-        starterPosition: round.starterPosition,
+        dealerPositionIndex: round.dealerPositionIndex,
+        starterPositionIndex: round.starterPositionIndex,
         myName: playerName,
         myCards: getPlayerCards(playerName, round),
         players: getRoundPlayers(playerName, round),
@@ -625,9 +637,9 @@ function initPlayers(gameInfo) {
     return players;
 }
 
-function getDealerPosition(roundIndex, totalPlayers) {
+function getdealerPositionIndex(roundIndex, totalPlayers) {
     if (roundIndex < totalPlayers) return roundIndex;
-    return getDealerPosition(roundIndex - totalPlayers, totalPlayers);
+    return getdealerPositionIndex(roundIndex - totalPlayers, totalPlayers);
 }
 
 function initRound(roundIndex, cardsInRound, players) {
@@ -644,9 +656,9 @@ function initRound(roundIndex, cardsInRound, players) {
         });
     });
 
-    var dealerPosition = getDealerPosition(roundIndex, players.length+1);
-    var starterPosition = dealerPosition + 1;
-    if (starterPosition > players.length) starterPosition-= players.length;
+    var dealerPositionIndex = getdealerPositionIndex(roundIndex, players.length);
+    var starterPositionIndex = dealerPositionIndex + 1;
+    if (starterPositionIndex >= players.length) starterPositionIndex-= players.length;
 
     var cardsPlayed = [];
     cardsPlayed.push([]);
@@ -654,8 +666,8 @@ function initRound(roundIndex, cardsInRound, players) {
     return {
         roundIndex: roundIndex,
         cardsInRound: cardsInRound,
-        dealerPosition: dealerPosition,
-        starterPosition: starterPosition,
+        dealerPositionIndex: dealerPositionIndex,
+        starterPositionIndex: starterPositionIndex,
         roundPlayers: roundPlayers,
         trumpCard: deck.draw(),
         totalPromise: null,

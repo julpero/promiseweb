@@ -1,3 +1,5 @@
+const { resolve } = require("path");
+
 function validateNewGame(gameOptions) {
     if (gameOptions.humanPlayersCount + gameOptions.botPlayersCount < 2 || gameOptions.humanPlayersCount + gameOptions.botPlayersCount > 5) {
         alert('Total number of players must be between 2 and 5');
@@ -71,23 +73,6 @@ function joinGame(socket, id) {
         socket.emit('join game', gameDetails, function (response) {
             console.log(response);
             if (response == 'OK') {
-                // var $container = document.getElementById('gameTable');
-                // var deck = Deck();
-                // deck.mount($container);
-
-                // deck.cards.forEach(function (card, i) {
-                //     card.setSide('front')
-                    
-                //     // explode
-                //     card.animateTo({
-                //         delay: 1000 + i * 2, // wait 1 second + i * 2 ms
-                //         duration: 500,
-                //         ease: 'quartOut',
-                        
-                //         x: Math.random() * window.innerWidth - window.innerWidth / 2,
-                //         y: Math.random() * window.innerHeight - window.innerHeight / 2
-                //     })
-                // })
             }
         });
     }
@@ -218,7 +203,7 @@ function drawMyCards(deck, myCards, cardsDrawn) {
     }
 
     myCards.forEach(function (myCard, idx) {
-        var $container = document.getElementById('myCardCol'+idx);
+        var $container = document.getElementById('player0CardCol'+idx);
         var cardIndex = getCardIndex(deck.cards, myCard);
         var card = deck.cards[cardIndex];
         cardsDrawn.push(cardIndex);
@@ -228,8 +213,21 @@ function drawMyCards(deck, myCards, cardsDrawn) {
 }
 
 function drawCardCol(idx) {
-    var cardCol = $('<div id="myCardCol'+idx+'">&nbsp;</div>').addClass('col-1 cardCol');
+    var cardCol = $('<div id="player0CardCol'+idx+'">&nbsp;</div>').addClass('col-1 cardCol');
     return cardCol;
+}
+
+function mapPlayerNameToTable(name) {
+    var divs = $('.playerNameCol:contains("'+name+'")');
+    if (divs.length == 1) {
+        var divId = divs[0].id;
+        if (divId.length > 6) {
+            var divIdNbrStr = divId.substring(6, 7);
+            return parseInt(divIdNbrStr, 10);
+        }
+    }
+
+    return 0;
 }
 
 function otherPlayerMapper(idFrom, players) {
@@ -263,10 +261,10 @@ function initPlayTableFor3() {
     var col1 = $('<div id="player1TableDiv"></div>').addClass('col-5');
     var col2 = $('<div></div>').addClass('col-2');
     var col3 = $('<div id="player2TableDiv"></div>').addClass('col-5');
+    
     var row2= $('<div></div>').addClass('row');
     var col4 = $('<div></div>').addClass('col-4');
     var col5 = $('<div id="player0CardPlayedDiv"></div>').addClass('col-4 cardCol');
-    // var col5 = $('<div id="player0TableDiv"></div>').addClass('col-4');
     var col6 = $('<div></div>').addClass('col-4');
 
     row1.append(col1);
@@ -277,7 +275,7 @@ function initPlayTableFor3() {
     row2.append(col6);
 
     nodeCol.append(row1);
-    nodeCol.append(row2);
+    // nodeCol.append(row2);
     nodeRow.append(nodeCol);
 
     return nodeRow;
@@ -312,7 +310,7 @@ function initPlayerTable(index, align) {
     var nodeCol = $('<div></div>').addClass('col');
 
     var row1 = $('<div id="player'+index+'row"></div>').addClass('row');
-    var col1 = $('<div id="player'+index+'NameCol"></div>').addClass('col nameCol');
+    var col1 = $('<div id="player'+index+'NameCol"></div>').addClass('col nameCol playerNameCol');
     row1.append(col1);
     
     var row2 = $('<div></div>').addClass('row');
@@ -325,23 +323,28 @@ function initPlayerTable(index, align) {
     col32 = $('<div></div>').addClass('col cardCol');
 
     var playerInfoRow = $('<div></div>').addClass('row');
+    var cardsWonRow = $('<div></div>').addClass('row');
+    cardsWonRow.append($('<div id="player'+index+'CardsWonDiv"></div>').addClass('col cardCol'));
     var playedCardRow = $('<div></div>').addClass('row');
-    playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol'));
-
+    
     // where are promises and points aligned
     if (align == 'left') {
         playerInfoRow.append($('<div id="player'+index+'Promised"></div>').addClass('col'));
         playerInfoRow.append($('<div id="player'+index+'Keeps"></div>').addClass('col'));
-        // playerInfoRow.append($('<div id="player'+index+'Thinking"></div>').addClass('col'));
+        playedCardRow.append($('<div id="player'+index+'Thinking"></div>').addClass('col'));
+        playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol'));
         col31.append(playerInfoRow);
+        col31.append(cardsWonRow);
         col32.append(playedCardRow);
     }
     if (align == 'right') {
-        // playerInfoRow.append($('<div id="player'+index+'Thinking"></div>').addClass('col'));
+        playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol'));
+        playedCardRow.append($('<div id="player'+index+'Thinking"></div>').addClass('col'));
         playerInfoRow.append($('<div id="player'+index+'Promised"></div>').addClass('col'));
         playerInfoRow.append($('<div id="player'+index+'Keeps"></div>').addClass('col'));
         col31.append(playedCardRow);
         col32.append(playerInfoRow);
+        col32.append(cardsWonRow);
     }
 
     row3.append(col31);
@@ -361,11 +364,11 @@ function initTableFor3() {
     var nodeCol = $('<div></div>').addClass('col');
 
     var row1 = $('<div></div>').addClass('row');
-    var col1 = $('<div></div>').addClass('col-4').css({height: '55vh'});
+    var col1 = $('<div></div>').addClass('col-5');
     col1.append(initPlayerTable(1, 'left'));
     var col2 = $('<div></div>').addClass('col-2');
     col2.append(initMiddleTable(3));
-    var col3 = $('<div></div>').addClass('col-4').css({height: '55vh'});
+    var col3 = $('<div></div>').addClass('col-5');
     col3.append(initPlayerTable(2, 'right'));
 
     row1.append(col1);
@@ -389,7 +392,7 @@ function initCardTable(myRound) {
 
 function initOtherPlayers(myRound) {
     myRound.players.forEach(function(player, idx) {
-        if (!player.thisIsMe) {
+        if (!player.thisIsMe || true) {
             $('#player'+otherPlayerMapper(idx, myRound.players)+'NameCol').html(player.name);
         }
     });
@@ -410,7 +413,7 @@ function isMyPlayTurn(myRound) {
 
 function isMyPromiseTurn(myRound) {
     for (var i = 0; i < myRound.players.length; i++) {
-        var chkPos = i + myRound.dealerPosition + 1; // next from dealer
+        var chkPos = i + myRound.dealerPositionIndex + 1; // next from dealer
         if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
         if (myRound.players[chkPos].promise == null) {
             // this is next player to promise
@@ -429,7 +432,7 @@ function getThinkinDiv() {
 }
 
 function showThinking(id) {
-    $('#player'+id+'CardPlayedDiv').append(getThinkinDiv());
+    $('#player'+id+'Thinking').append(getThinkinDiv());
 }
 
 function hideThinkings() {
@@ -438,7 +441,7 @@ function hideThinkings() {
 
 function showWhoIsPromising(myRound) {
     for (var i = 0; i < myRound.players.length; i++) {
-        var chkPos = i + myRound.dealerPosition + 1; // next from dealer
+        var chkPos = i + myRound.dealerPositionIndex + 1; // next from dealer
         if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
         if (myRound.players[chkPos].promise == null) {
             // this is next player to promise
@@ -451,7 +454,7 @@ function showWhoIsPromising(myRound) {
 
 function showWhoIsPlaying(myRound) {
     for (var i = 0; i < myRound.players.length; i++) {
-        // var chkPos = i + myRound.dealerPosition + 1; // next from dealer
+        // var chkPos = i + myRound.dealerPositionIndex + 1; // next from dealer
         var chkPos = i + myRound.playerInCharge;
         if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
         if (myRound.players[chkPos].cardPlayed == null) {
@@ -507,6 +510,7 @@ function showPlayerPromises(myRound) {
 }
 
 function getPromise(socket, myRound) {
+    //$('#myInfoRow').hide();
     hideThinkings();
     if (isMyPromiseTurn(myRound)) {
         initPromise(socket, myRound);
@@ -601,15 +605,14 @@ function initCardsToPlay(socket, myRound) {
     }
 }
 
-function showPlayedCards(myRound, animateLast) {
+function showPlayedCards(myRound) {
     var deck = Deck();
-    var lastPlayed = null;
     for (var i = 0; i < myRound.players.length; i++) {
-        var chkPos = i + myRound.dealerPosition + 1; // next from dealer
+        var chkPos = i + myRound.dealerPositionIndex + 1; // next from dealer
         if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
         if (myRound.players[chkPos].cardPlayed != null) {
             var divId = otherPlayerMapper(chkPos, myRound.players);
-            lastPlayed = chkPos;
+            // var lastPlayed = chkPos;
             var cardPlayed = myRound.players[chkPos].cardPlayed;
 
             var $container = document.getElementById('player'+divId+'CardPlayedDiv');
@@ -623,11 +626,146 @@ function showPlayedCards(myRound, animateLast) {
 
 function playRound(socket, myRound) {
     hideThinkings();
-    showPlayedCards(myRound, true);
+    $('#myInfoRow').show();
     if (isMyPlayTurn(myRound)) {
         initCardsToPlay(socket, myRound);
     } else {
         showWhoIsPlaying(myRound);
         dimMyCards(myRound, 0.8);
     }
+}
+
+function getCardFromDiv(divStr) {
+    var div = $('#' + divStr).children();
+    if (div.length == 1) {
+        var classStr = div[0].className;
+        return classToCardMapper(classStr);
+    }
+    return null;
+}
+
+function clearPlayedCardsFromTable(players) {
+    for (var i = 0; i < players.length; i++) {
+        //$('#player'+i+'CardPlayedDiv').empty();
+    }
+}
+
+async function moveCardFromTableToWinDeck(winnerName, players) {
+    var deck = Deck();
+
+    var playerIndex = mapPlayerNameToTable(winnerName);
+    var $containerTo = document.getElementById('player'+playerIndex+'CardsWonDiv');
+    var containerToPosition = $('#player'+playerIndex+'CardsWonDiv').offset();
+
+    var delay = 200;
+    var duration = 1000;
+    var movingCards = [];
+
+    for (var i = 0; i < players.length; i++) {
+        var $containerFrom = document.getElementById('player'+i+'CardPlayedDiv');
+        var containerFromPosition = $('#player'+i+'CardPlayedDiv').offset();
+        var cardIndex = getCardIndex(deck.cards, getCardFromDiv('player'+i+'CardPlayedDiv'));
+        movingCards[i] = deck.cards[cardIndex];
+        $('#player'+i+'CardPlayedDiv').empty();
+        
+        // movingCard.mount($containerFrom);
+        movingCards[i].mount($containerTo);
+        // movingCard.setSide('front');
+        movingCards[i].animateTo({
+            delay: 0,
+            duration: 0,
+            ease: 'quartOut',
+            x: parseInt(containerFromPosition.left - containerToPosition.left, 10),
+            y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
+            onComplete: function() {
+                // console.log(i);
+                // movingCard.mount($containerTo);
+                // movingCard.setSide('back');
+                for (var j = 0; j < movingCards.length; j++) {
+                    movingCards[j].animateTo({
+                        delay: delay,
+                        duration: duration,
+                        ease: 'quartOut',
+                        x: 0,
+                        y: 0,
+                    });
+                }
+                
+            }
+        });
+    }
+    return new Promise(resolve => {
+        setTimeout(resolve, (delay+duration+500));
+    });
+
+}
+
+function getLastCardContainer(playerIndex) {
+    for (var i = 9; i >= 0; i--) {
+        if ($('#player'+playerIndex+'CardCol'+i).children().length > 0) return i;
+    }
+    return 0;
+}
+
+function getCurrentCardContainer(card) {
+    var cardClassStr = cardToClassMapper(card);
+    for (var i = 0; i < 10; i++) {
+        if ($('#player0CardCol'+i).find(cardClassStr).length == 1) return i;
+    }
+    return 0;
+}
+
+async function moveCardFromHandToTable(card, playerName) {
+    var deck = Deck();
+    var cardIndex = getCardIndex(deck.cards, card);
+    var movingCard = deck.cards[cardIndex];
+
+    var playerIndex = mapPlayerNameToTable(playerName);
+    var containerIndex = playerIndex == 0 ? getCurrentCardContainer(card) : getLastCardContainer(playerIndex);
+    $('#player'+playerIndex+'CardCol'+containerIndex).empty();
+
+    var $containerFrom = document.getElementById('player'+playerIndex+'CardCol'+containerIndex);
+    var $containerTo = document.getElementById('player'+playerIndex+'CardPlayedDiv');
+    var containerFromPosition = $('#player'+playerIndex+'CardCol'+containerIndex).offset();
+    var containerToPosition = $('#player'+playerIndex+'CardPlayedDiv').offset();
+    // console.log(containerFromPosition);
+    // console.log(containerToPosition);
+    // console.log('x: ' + parseInt(containerToPosition.left - containerFromPosition.left, 10));
+    // console.log('y: ' + parseInt(containerToPosition.top - containerFromPosition.top, 10));
+
+    var delay = 500;
+    var duration = 1500;
+
+    // movingCard.mount($containerFrom);
+    movingCard.mount($containerTo);
+    movingCard.animateTo({
+        delay: 0,
+        duration: 0,
+        ease: 'quartOut',
+        x: parseInt(containerFromPosition.left - containerToPosition.left, 10),
+        y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
+        onComplete: async function() {
+            movingCard.setSide('front');
+            movingCard.animateTo({
+                delay: delay,
+                duration: duration,
+                ease: 'quartOut',
+                x: 0,
+                y: 0,
+            });
+        }
+    });
+
+
+    return new Promise(resolve => {
+        setTimeout(resolve, (delay+duration+200));
+    });
+
+}
+
+function browserReload(myRound) {
+    initCardTable(myRound);
+    initOtherPlayers(myRound);
+    drawCards(myRound);
+    showPlayedCards(myRound);
 }
