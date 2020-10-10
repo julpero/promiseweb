@@ -1,4 +1,4 @@
-const { resolve } = require("path");
+// const { resolve } = require("path");
 
 function validateNewGame(gameOptions) {
     if (gameOptions.humanPlayersCount + gameOptions.botPlayersCount < 2 || gameOptions.humanPlayersCount + gameOptions.botPlayersCount > 5) {
@@ -195,11 +195,10 @@ function drawTrumpCard(deck, trumpCard, cardsDrawn) {
 }
 
 function drawMyCards(deck, myCards, cardsDrawn) {
-    
-    var myCardsRow = $('#myCardsRow');
+    $('#myCardsRow').empty();
     
     for (var i = 0; i < 10; i++) {
-        myCardsRow.append(drawCardCol(i));
+        $('#myCardsRow').append(drawCardCol(i));
     }
 
     myCards.forEach(function (myCard, idx) {
@@ -504,10 +503,28 @@ function hidePromise() {
 
 function showPlayerPromises(myRound) {
     myRound.players.forEach(function (player, idx) {
+        var tableIdx = otherPlayerMapper(idx, myRound.players);
         if (player.promise != null) {
-            var tableIdx = otherPlayerMapper(idx, myRound.players);
             $('#player'+tableIdx+'Promised').html('prom: '+player.promise);
             $('#player'+tableIdx+'Keeps').html('keep: '+player.keeps);
+            if (player.promise == player.keeps) {
+                $('#player'+tableIdx+'Keeps').removeClass('gamePromiseOver');
+                $('#player'+tableIdx+'Keeps').removeClass('gamePromiseUnder');
+                if (!$('#player'+tableIdx+'Keeps').hasClass('gamePromiseKeeping')) $('#player'+tableIdx+'Keeps').addClass('gamePromiseKeeping');
+            }
+            if (player.promise < player.keeps) {
+                $('#player'+tableIdx+'Keeps').removeClass('gamePromiseKeeping');
+                $('#player'+tableIdx+'Keeps').removeClass('gamePromiseUnder');
+                if (!$('#player'+tableIdx+'Keeps').hasClass('gamePromiseOver')) $('#player'+tableIdx+'Keeps').addClass('gamePromiseOver');
+            }
+            if (player.promise > player.keeps) {
+                $('#player'+tableIdx+'Keeps').removeClass('gamePromiseKeeping');
+                $('#player'+tableIdx+'Keeps').removeClass('gamePromiseOver');
+                if (!$('#player'+tableIdx+'Keeps').hasClass('gamePromiseUnder')) $('#player'+tableIdx+'Keeps').addClass('gamePromiseUnder');
+            }
+        } else {
+            $('#player'+tableIdx+'Promised').empty();
+            $('#player'+tableIdx+'Keeps').empty();
         }
     });
     initPromiseTable(myRound.promiseTable);
@@ -607,8 +624,8 @@ function initCardsToPlay(socket, myRound) {
     } else {
         // i can play only suit of card in charge
         initCardEvents(socket, myRound, myRound.cardInCharge.suit);
-    }
-}
+    }    
+}    
 
 function showPlayedCards(myRound) {
     var deck = Deck();
@@ -625,6 +642,55 @@ function showPlayedCards(myRound) {
             var card = deck.cards[cardIndex];
             card.mount($container);
             card.setSide('front');
+        }
+    }
+}
+
+function winnerOfSinglePlay(cardsPlayed, trumpSuit) {
+    var winner = cardsPlayed[0].name;
+    var winningCard = cardsPlayed[0].card;
+    for (var i = 1; i < cardsPlayed.length; i++) {
+        var wins = false;
+        var currentCard = cardsPlayed[i].card;
+        if (winningCard.suit == trumpSuit) {
+            // has to be bigger trump to win
+            wins = currentCard.suit == trumpSuit && currentCard.rank > winningCard.rank;
+        } else if (currentCard.suit == trumpSuit) {
+            // wins with any trump
+            wins = true;
+        } else {
+            // wins if greater rank of same suit
+            wins = currentCard.suit == winningCard.suit && currentCard.rank > winningCard.rank;
+        }
+        if (wins) {
+            winner = cardsPlayed[i].name;
+            winningCard = currentCard;
+        }
+    }
+
+    return winner;
+}
+
+function clearWonCards() {
+    $('.cardWonCol').empty();
+}
+
+function showWonCards(myRound) {
+    var deck = Deck();
+    var playerCount = myRound.players.length;
+    var cardCount = 0;
+    for (var i = 0; i < myRound.cardsPlayed.length; i++) {
+        var playedCards = myRound.cardsPlayed[i];
+        if (playedCards.length == playerCount) {
+            var winnerName = winnerOfSinglePlay(playedCards, myRound.trumpCard);
+            var playerIndex = mapPlayerNameToTable(winnerName);
+            var wonIndex = getNextFreeCardWonDiv(playerIndex);
+            var $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
+            for (var j = 0; j < playerCount; j++) {
+                var card = deck.cards[cardCount];
+                card.mount($containerTo);
+                cardCount++;
+            }
         }
     }
 }
@@ -670,15 +736,13 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
     var movingCards = [];
 
     for (var i = 0; i < players.length; i++) {
-        var $containerFrom = document.getElementById('player'+i+'CardPlayedDiv');
+        // var $containerFrom = document.getElementById('player'+i+'CardPlayedDiv');
         var containerFromPosition = $('#player'+i+'CardPlayedDiv').offset();
         var cardIndex = getCardIndex(deck.cards, getCardFromDiv('player'+i+'CardPlayedDiv'));
         movingCards[i] = deck.cards[cardIndex];
         $('#player'+i+'CardPlayedDiv').empty();
         
-        // movingCard.mount($containerFrom);
         movingCards[i].mount($containerTo);
-        // movingCard.setSide('front');
         movingCards[i].animateTo({
             delay: 0,
             duration: 0,
@@ -686,9 +750,6 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
             x: parseInt(containerFromPosition.left - containerToPosition.left, 10),
             y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
             onComplete: function() {
-                // console.log(i);
-                // movingCard.mount($containerTo);
-                // movingCard.setSide('back');
                 for (var j = 0; j < movingCards.length; j++) {
                     movingCards[j].animateTo({
                         delay: delay,
@@ -732,19 +793,14 @@ async function moveCardFromHandToTable(card, playerName) {
     var containerIndex = playerIndex == 0 ? getCurrentCardContainer(card) : getLastCardContainer(playerIndex);
     $('#player'+playerIndex+'CardCol'+containerIndex).empty();
 
-    var $containerFrom = document.getElementById('player'+playerIndex+'CardCol'+containerIndex);
+    // var $containerFrom = document.getElementById('player'+playerIndex+'CardCol'+containerIndex);
     var $containerTo = document.getElementById('player'+playerIndex+'CardPlayedDiv');
     var containerFromPosition = $('#player'+playerIndex+'CardCol'+containerIndex).offset();
     var containerToPosition = $('#player'+playerIndex+'CardPlayedDiv').offset();
-    // console.log(containerFromPosition);
-    // console.log(containerToPosition);
-    // console.log('x: ' + parseInt(containerToPosition.left - containerFromPosition.left, 10));
-    // console.log('y: ' + parseInt(containerToPosition.top - containerFromPosition.top, 10));
 
     var delay = 500;
     var duration = 1500;
 
-    // movingCard.mount($containerFrom);
     movingCard.mount($containerTo);
     movingCard.animateTo({
         delay: 0,
@@ -823,10 +879,63 @@ function initPromiseTable(promiseTable) {
     }
 }
 
+
+function createScoreboard(promiseTable) {
+    var node = $('#scoreboard');
+    var table = $('<table></table>');
+    var tableHeader = $('<thead></thead>');
+    var tableHeaderRow = $('<tr></tr>');
+    
+    // tableHeaderRow.append($('<th scope="col"></th>').addClass('scoreboardTableHeader'));
+    for (var i = 0; i < promiseTable.players.length; i++) {
+        var tableHeaderCol = $('<th scope="col"></th>').addClass('scoreboardTableHeader').html(promiseTable.players[i]);
+        tableHeaderRow.append(tableHeaderCol);
+    }
+    tableHeader.append(tableHeaderRow);
+
+    var tableBody = $('<tbody></tbody>');
+    for (var i = 0; i < promiseTable.rounds.length; i++) {
+        var tableBodyRow = $('<tr></tr>');
+        for (var j = 0; j < promiseTable.players.length; j++) {
+            var pointCol = $('<td id="player'+j+'Points'+i+'"></td>').addClass('scoreboardTableCol').html('&nbsp;');
+            tableBodyRow.append(pointCol);
+        }
+        
+        tableBody.append(tableBodyRow);
+    }
+    table.append(tableHeader);
+    table.append(tableBody);
+
+    node.append(table);
+}
+
+
+function initScoreBoard(promiseTable) {
+    if ($('#scoreboard').children().length == 0) createScoreboard(promiseTable);
+    
+    for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
+        var playerPoints = 0;
+        for (var j = 0; j < promiseTable.promisesByPlayers[i].length; j++) {
+            var currentPoints = promiseTable.promisesByPlayers[i][j].points;
+            if (currentPoints > 0) {
+                playerPoints+= currentPoints;
+                $('#player'+i+'Points'+j).html(playerPoints);
+                if (!$('#player'+i+'Points'+j).hasClass('hasPoints')) $('#player'+i+'Points'+j).addClass('hasPoints')
+            } else if (currentPoints == 0) {
+                $('#player'+i+'Points'+j).html('-');
+                if (!$('#player'+i+'Points'+j).hasClass('zeroPoints')) $('#player'+i+'Points'+j).addClass('zeroPoints')
+            }
+        }
+    }
+    
+}
+
 function browserReload(myRound) {
     initCardTable(myRound);
     initOtherPlayers(myRound);
     initPromiseTable(myRound.promiseTable);
+    initScoreBoard(myRound.promiseTable);
     drawCards(myRound);
     showPlayedCards(myRound);
+    showWonCards(myRound);
 }

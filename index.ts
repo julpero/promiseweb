@@ -163,7 +163,7 @@ mongoUtil.connectToServer( function( err, client ) {
                 // password: newPlayer.gamePassword,
                  };
             const game = await collection.findOne(query);
-            const playerRound = roundToPlayer(getRound.myId, getRound.round, game, getRound.doReload);
+            const playerRound = roundToPlayer(getRound.myId, getRound.round, game, getRound.doReload, getRound.newRound);
             console.log(playerRound);
 
             fn(playerRound);
@@ -594,7 +594,7 @@ function getPromiseTable(thisGame) {
     return promiseTable;
 }
 
-function roundToPlayer(playerId, roundInd, thisGame, doReloadInit) {
+function roundToPlayer(playerId, roundInd, thisGame, doReloadInit, newRound) {
     var round = thisGame.game.rounds[roundInd];
     var playerName = getPlayerNameById(playerId, thisGame.humanPlayers);
 
@@ -612,7 +612,8 @@ function roundToPlayer(playerId, roundInd, thisGame, doReloadInit) {
         promiseTable: getPromiseTable(thisGame),
         cardInCharge: getCurrentCardInCharge(round.cardsPlayed),
         cardsPlayed: round.cardsPlayed,
-        doReloadInit: doReloadInit
+        doReloadInit: doReloadInit,
+        newRound: newRound,
         // round: round, // comment this when in production!
     };
 }
@@ -691,9 +692,16 @@ function initRound(roundIndex, cardsInRound, players) {
 
     var roundPlayers = [];
     players.forEach(function (player, idx) {
+        var playerCards = [];
+        if (cardsInRound == 1) {
+            var card = deck.draw(1);
+            playerCards.push(card);
+        } else {
+            playerCards = deck.draw(cardsInRound);
+        }
         roundPlayers.push({
             name: player,
-            cards: sortCardsDummy(deck.draw(cardsInRound)),
+            cards: sortCardsDummy(playerCards),
             promise: null,
             keeps: 0,
             points: null,

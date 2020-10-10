@@ -21,14 +21,32 @@
                 border: 1px solid black;
             }
             .promiseTableHeader {
-                padding-left: 15px;
+                padding-left: 12px;
+                padding-right: 12px;
                 text-align: center;
                 border-bottom: solid black 1px;
+                font-size: smaller;
             }
             .promiseTableCol {
-                padding-left: 15px;
+                padding-left: 12px;
+                padding-right: 12px;
                 text-align: center;
                 border-bottom: dotted grey 1px;
+                font-size: smaller;
+            }
+            .scoreboardTableHeader {
+                padding-left: 10px;
+                padding-right: 10px;
+                text-align: center;
+                border-bottom: solid black 1px;
+                font-size: smaller;
+            }
+            .scoreboardTableCol {
+                padding-left: 10px;
+                padding-right: 10px;
+                text-align: center;
+                border-bottom: dotted grey 1px;
+                font-size: smaller;
             }
             .promiseKept {
                 font-weight: bold;
@@ -39,6 +57,15 @@
             }
             .promiseUnder {
                 font-weight: bold;
+                color: olive;
+            }
+            .gamePromiseKeeping {
+                font-weight: bolder;
+            }
+            .gamePromiseOver {
+                color: darkred;
+            }
+            .gamePromiseUnder {
                 color: olive;
             }
             .thinking {
@@ -242,7 +269,6 @@
                             </div>
 
                             <div class="row" id="myCardsRow">
-
                             </div>
                         </div>
                     </div>
@@ -252,7 +278,7 @@
                         <div class="col-10" id="promiseTable" style="border: 1px solid black;">
                         </div>
                         <div class="col-2" id="chat" style="border: 1px solid black;">
-                            here we will chat
+                            <!-- here we will chat -->
                         </div>
                     </div>
 
@@ -261,7 +287,6 @@
                     <!-- container for scoreboard -->
                     <div class="row">
                         <div class="col-12" id="scoreboard">
-                            here goes scoreboard
                         </div>
                     </div>
 
@@ -342,6 +367,8 @@
                     console.log('card played');
                     console.log(gameInfo);
                     hideThinkings();
+                    var newRound = false;
+                    var gameOver = false;
 
                     if (gameInfo.eventInfo != null) {
                         // animate played card
@@ -349,6 +376,8 @@
                         var cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
                         var cardPlayedByIndex = gameInfo.eventInfo.cardPlayedByIndex;
                         var players = gameInfo.humanPlayers;
+                        newRound = gameInfo.eventInfo.newRound;
+                        gameOver = gameInfo.eventInfo.gameOver;
                         
                         await moveCardFromHandToTable(playedCard, cardPlayedBy)
                             .then(async function() {
@@ -360,12 +389,17 @@
                     }
 
                     var doReloadInit = gameInfo.reloaded;
+                    var getRoundIndex = gameInfo.currentRound;
+                    if (newRound && !gameOver) {
+                        getRoundIndex++;
+                    }
 
                     var getRound = {
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
-                        round: gameInfo.currentRound,
+                        round: getRoundIndex,
                         doReload: doReloadInit,
+                        newRound: newRound,
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
@@ -376,6 +410,11 @@
                             browserReload(myRound);
                         }
                         showPlayerPromises(myRound);
+                        if (myRound.newRound) {
+                            console.log('newRound');
+                            clearWonCards();
+                            browserReload(myRound);
+                        }
                         if (roundPromised(myRound)) {
                             playRound(socket, myRound);
                         } else {
