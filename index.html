@@ -8,9 +8,15 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="/deck.css">
         <style>
+            .myCardsRowClass {
+                padding-left: 60px;
+            }
+            .playerTableCol {
+                border: 1px solid black;
+            }
             .cardCol {
                 min-height: 120px;
-                border: 1px solid black;
+                /* border: 1px solid black; */
             }
             .cardWonCol {
                 padding-left: 1px;
@@ -18,7 +24,7 @@
             }
             .nameCol {
                 min-height: 50px;
-                border: 1px solid black;
+                /* border: 1px solid black; */
             }
             .promiseTableHeader {
                 padding-left: 12px;
@@ -228,40 +234,6 @@
                                 </div>
                             </div>
 
-                            <div class="row" id="myInfoRow" >
-                                <div class="col-5"></div>
-                                <div id="player0CardPlayedDiv" class="col-2 cardCol">
-                                </div>
-                                <div class="col-2"></div>
-                                <div class="col-3" id="myInfoCol">
-                                    <div class="row">
-                                        <div id="player0NameCol" class="col nameCol playerNameCol"></div>
-                                        <div id="player0Promised" class="col"></div>
-                                        <div id="player0Keeps" class="col"></div>
-                                    </div>
-                                    <div class="row">
-                                        <div id="player0CardsWon0Div" class="col cardCol cardWonCol"></div>
-                                        <div id="player0CardsWon1Div" class="col cardCol cardWonCol"></div>
-                                        <div id="player0CardsWon2Div" class="col cardCol cardWonCol"></div>
-                                        <div id="player0CardsWon3Div" class="col cardCol cardWonCol"></div>
-                                        <div id="player0CardsWon4Div" class="col cardCol cardWonCol"></div>
-                                        <div id="player0CardsWon5Div" class="col cardCol cardWonCol"></div>
-                                        <div id="player0CardsWon6Div" class="col cardCol cardWonCol"></div>
-                                        <div id="player0CardsWon7Div" class="col cardCol cardWonCol"></div>
-                                        <div id="player0CardsWon8Div" class="col cardCol cardWonCol"></div>
-                                        <div id="player0CardsWon9Div" class="col cardCol cardWonCol"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row" id="myPromiseRow" style="display: none; text-align: center;">
-                                <div class="col-1"></div>
-                                <div class="col-10" id="myPromiseCol"></div>
-                                <div class="col-1"></div>
-                            </div>
-
-                            <div class="row" id="myCardsRow">
-                            </div>
                         </div>
                     </div>
 
