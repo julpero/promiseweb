@@ -59,6 +59,11 @@ function gamePlayersToStr(players, totalHumans, totalComputers) {
 }
 
 function validateJoinGame(gameDetails) {
+    if (gameDetails.myName.length < 3) {
+        alert('(Nick)name must be at least three charcters!');
+        return false;
+        
+    }
     return true;
 }
 
@@ -280,7 +285,7 @@ function initPlayTableFor3() {
     return nodeRow;
 }
 
-function initMiddleTable(playerCount) {
+function initMiddleTable() {
     var nodeRow = $('<div></div>').addClass('row');
     var nodeCol = $('<div></div>').addClass('col');
 
@@ -293,9 +298,9 @@ function initMiddleTable(playerCount) {
     row11.append(col13);
     
     nodeCol.append(row11);
-    nodeCol.append(($('<div></div>').addClass('row')).append($('<div></div>').addClass('col cardCol')));
+    // nodeCol.append(($('<div></div>').addClass('row')).append($('<div></div>').addClass('col cardCol')));
 
-    if (playerCount == 3) nodeCol.append(initPlayTableFor3());
+    // if (playerCount == 3) nodeCol.append(initPlayTableFor3());
     // if (playerCount == 4) nodeCol.append(initPlayTableFor4());
     // if (playerCount == 5) nodeCol.append(initPlayTableFor5());
     
@@ -311,6 +316,8 @@ function initPlayerTable(index, align) {
     var row1 = $('<div id="player'+index+'row"></div>').addClass('row');
     var col1 = $('<div id="player'+index+'NameCol"></div>').addClass('col nameCol playerNameCol');
     row1.append(col1);
+    row1.append($('<div id="player'+index+'Promised"></div>').addClass('col'));
+    row1.append($('<div id="player'+index+'Keeps"></div>').addClass('col'));
     
     var row2 = $('<div></div>').addClass('row');
     for (var i = 0; i < 12; i++) {
@@ -321,7 +328,7 @@ function initPlayerTable(index, align) {
     col31 = $('<div></div>').addClass('col cardCol');
     col32 = $('<div></div>').addClass('col cardCol');
 
-    var playerInfoRow = $('<div></div>').addClass('row');
+    // var playerInfoRow = $('<div></div>').addClass('row');
     var cardsWonRow = $('<div></div>').addClass('row');
     for (var i = 0; i < 10; i++) {
         cardsWonRow.append($('<div id="player'+index+'CardsWon'+i+'Div"></div>').addClass('col cardCol cardWonCol'));
@@ -330,21 +337,21 @@ function initPlayerTable(index, align) {
     
     // where are promises and points aligned
     if (align == 'left') {
-        playerInfoRow.append($('<div id="player'+index+'Promised"></div>').addClass('col'));
-        playerInfoRow.append($('<div id="player'+index+'Keeps"></div>').addClass('col'));
+        // playerInfoRow.append($('<div id="player'+index+'Promised"></div>').addClass('col'));
+        // playerInfoRow.append($('<div id="player'+index+'Keeps"></div>').addClass('col'));
         playedCardRow.append($('<div id="player'+index+'Thinking"></div>').addClass('col'));
         playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol'));
-        col31.append(playerInfoRow);
+        // col31.append(playerInfoRow);
         col31.append(cardsWonRow);
         col32.append(playedCardRow);
     }
     if (align == 'right') {
         playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol'));
         playedCardRow.append($('<div id="player'+index+'Thinking"></div>').addClass('col'));
-        playerInfoRow.append($('<div id="player'+index+'Promised"></div>').addClass('col'));
-        playerInfoRow.append($('<div id="player'+index+'Keeps"></div>').addClass('col'));
+        // playerInfoRow.append($('<div id="player'+index+'Promised"></div>').addClass('col'));
+        // playerInfoRow.append($('<div id="player'+index+'Keeps"></div>').addClass('col'));
         col31.append(playedCardRow);
-        col32.append(playerInfoRow);
+        // col32.append(playerInfoRow);
         col32.append(cardsWonRow);
     }
 
@@ -368,9 +375,57 @@ function initTableFor3() {
     var col1 = $('<div></div>').addClass('col-5');
     col1.append(initPlayerTable(1, 'left'));
     var col2 = $('<div></div>').addClass('col-2');
-    col2.append(initMiddleTable(3));
+    col2.append(initMiddleTable());
     var col3 = $('<div></div>').addClass('col-5');
     col3.append(initPlayerTable(2, 'right'));
+
+    row1.append(col1);
+    row1.append(col2);
+    row1.append(col3);
+
+    nodeCol.append(row1);
+    nodeRow.append(nodeCol);
+    return nodeRow;
+}
+
+function initTableFor4() {
+    console.log('initTableFor4');
+    var nodeRow = $('<div></div>').addClass('row');
+    var nodeCol = $('<div></div>').addClass('col');
+
+    var row1 = $('<div></div>').addClass('row');
+    var col1 = $('<div></div>').addClass('col-5');
+    col1.append(initPlayerTable(2, 'left'));
+    col1.append(initPlayerTable(1, 'left'));
+    var col2 = $('<div></div>').addClass('col-2');
+    col2.append(initMiddleTable());
+    var col3 = $('<div></div>').addClass('col-5');
+    col3.append(initPlayerTable(3, 'right'));
+
+    row1.append(col1);
+    row1.append(col2);
+    row1.append(col3);
+
+    nodeCol.append(row1);
+    nodeRow.append(nodeCol);
+    return nodeRow;
+}
+
+function initTableFor5() {
+    console.log('initTableFor5');
+    var nodeRow = $('<div></div>').addClass('row');
+    var nodeCol = $('<div></div>').addClass('col');
+
+    var row1 = $('<div></div>').addClass('row');
+    var col1 = $('<div></div>').addClass('col-5');
+    col1.append(initPlayerTable(2, 'left'));
+    col1.append(initPlayerTable(1, 'left'));
+    
+    var col2 = $('<div></div>').addClass('col-2');
+    col2.append(initMiddleTable());
+    var col3 = $('<div></div>').addClass('col-5');
+    col3.append(initPlayerTable(3, 'right'));
+    col3.append(initPlayerTable(4, 'right'));
 
     row1.append(col1);
     row1.append(col2);
@@ -387,8 +442,8 @@ function initCardTable(myRound) {
 
     const playerCount = myRound.players.length;
     if (playerCount == 3) node.append(initTableFor3());
-    // if (playerCount == 4) node.append(initTableFor4());
-    // if (playerCount == 5) node.append(initTableFor5());
+    if (playerCount == 4) node.append(initTableFor4());
+    if (playerCount == 5) node.append(initTableFor5());
 }
 
 function initOtherPlayers(myRound) {
