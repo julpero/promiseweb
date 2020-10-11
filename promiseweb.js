@@ -968,9 +968,10 @@ function createScoreboard(promiseTable) {
 }
 
 
-function initScoreBoard(promiseTable) {
+function initScoreBoard(promiseTable, gameOver) {
     if ($('#scoreboard').children().length == 0) createScoreboard(promiseTable);
     
+    var totalPoints = [];
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
         var playerPoints = 0;
         for (var j = 0; j < promiseTable.promisesByPlayers[i].length; j++) {
@@ -984,6 +985,11 @@ function initScoreBoard(promiseTable) {
                 if (!$('#player'+i+'Points'+j).hasClass('zeroPoints')) $('#player'+i+'Points'+j).addClass('zeroPoints')
             }
         }
+        totalPoints.push(playerPoints);
+    }
+
+    if (gameOver) {
+        console.log(totalPoints);
     }
     
 }
@@ -992,7 +998,7 @@ function browserReload(myRound) {
     initCardTable(myRound);
     initOtherPlayers(myRound);
     initPromiseTable(myRound.promiseTable);
-    initScoreBoard(myRound.promiseTable);
+    initScoreBoard(myRound.promiseTable, myRound.gameOver);
     drawCards(myRound);
     showPlayedCards(myRound);
     showWonCards(myRound);

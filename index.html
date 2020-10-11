@@ -401,7 +401,7 @@
                         if (myRound.gameOver) {
                             showPlayerPromises(myRound);
                             initPromiseTable(myRound.promiseTable);
-                            initScoreBoard(myRound.promiseTable);
+                            initScoreBoard(myRound.promiseTable, myRound.gameOver);
                             return;
                         }
                         if (myRound.doReloadInit) {
