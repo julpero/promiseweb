@@ -216,7 +216,7 @@ mongoUtil.connectToServer( function( err, client ) {
                 gameInfo.currentRound = promiseDetails.roundInd;
                 io.to(gameInfo.id).emit('promise made', gameInfo);
     
-                fn(thisGame); // DEBUG
+                fn(gameInfo); // just DEBUG
             }
 
         });
@@ -335,7 +335,7 @@ mongoUtil.connectToServer( function( err, client ) {
                 gameInfo.eventInfo = eventInfo;
                 io.to(gameInfo.id).emit('card played', gameInfo);
     
-                fn(thisGame); // DEBUG
+                fn(gameInfo); // just DEBUG
             }
 
         });
