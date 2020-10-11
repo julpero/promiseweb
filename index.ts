@@ -157,13 +157,18 @@ mongoUtil.connectToServer( function( err, client ) {
             const collection = database.collection('promiseweb');
             var ObjectId = require('mongodb').ObjectId;
             var searchId = new ObjectId(getRound.gameId);
+
+            const doReload = getRound.doReload;
+            const newRound = getRound.newRound;
+            const gameOver = getRound.gameOver;
+            const gameStatus = gameOver ? 2 : 1;
             
-            const query = { gameStatus: 1,
+            const query = { gameStatus: gameStatus,
                 _id: searchId,
                 // password: newPlayer.gamePassword,
                  };
             const game = await collection.findOne(query);
-            const playerRound = roundToPlayer(getRound.myId, getRound.round, game, getRound.doReload, getRound.newRound);
+            const playerRound = roundToPlayer(getRound.myId, getRound.round, game, doReload, newRound, gameOver);
             console.log(playerRound);
 
             fn(playerRound);
@@ -234,6 +239,7 @@ mongoUtil.connectToServer( function( err, client ) {
             if (gameInDb !== null) {
                 var playedCard = playDetails.playedCard;
                 var playerName = getPlayerNameById(playDetails.myId, gameInDb.humanPlayers);
+                var gameOver = false;
                 if (okToPlayCard(playedCard, playerName, gameInDb)) {
                     var roundInDb = getCurrentRoundIndex(gameInDb);
                     if (roundInDb == playDetails.roundInd) {
@@ -250,8 +256,8 @@ mongoUtil.connectToServer( function( err, client ) {
 
                         var newPlay = false;
                         var newRound = false;
-                        var gameOver = false;
                         var winnerName = null;
+                        var gameStatus = 1;
                         
                         if (gameAfterPlay.rounds[roundInDb].cardsPlayed[play].length == gameInDb.humanPlayersCount + gameInDb.botPlayersCount) {
                             // this was the last card of the play
@@ -279,9 +285,10 @@ mongoUtil.connectToServer( function( err, client ) {
                                     }
                                 }
 
-                                if (gameAfterPlay.rounds.length + 1 == roundInDb) {
+                                if (gameAfterPlay.rounds.length == roundInDb + 1) {
                                     // this was the last round of the game
                                     gameOver = true;
+                                    gameStatus = 2;
                                 } else {
                                     // start next round
                                     gameAfterPlay.rounds[roundInDb+1].roundStatus = 1;
@@ -295,6 +302,7 @@ mongoUtil.connectToServer( function( err, client ) {
                         const options = { upsert: true };
                         const updateDoc = {
                             $set: {
+                                gameStatus: gameStatus,
                                 game: gameAfterPlay,
                             }
                         };
@@ -312,7 +320,14 @@ mongoUtil.connectToServer( function( err, client ) {
 
                     }
                 }
-                const thisGame = await collection.findOne(query);
+                var queryUsed = query;
+                if (gameOver) {
+                    queryUsed = { gameStatus: 2,
+                        _id: searchId,
+                        // password: newPlayer.gamePassword,
+                         };
+                }
+                const thisGame = await collection.findOne(queryUsed);
                 console.log(thisGame);
     
                 var gameInfo = gameToGameInfo(thisGame);
@@ -594,7 +609,7 @@ function getPromiseTable(thisGame) {
     return promiseTable;
 }
 
-function roundToPlayer(playerId, roundInd, thisGame, doReloadInit, newRound) {
+function roundToPlayer(playerId, roundInd, thisGame, doReloadInit, newRound, gameOver) {
     var round = thisGame.game.rounds[roundInd];
     var playerName = getPlayerNameById(playerId, thisGame.humanPlayers);
 
@@ -614,6 +629,7 @@ function roundToPlayer(playerId, roundInd, thisGame, doReloadInit, newRound) {
         cardsPlayed: round.cardsPlayed,
         doReloadInit: doReloadInit,
         newRound: newRound,
+        gameOver: gameOver,
         // round: round, // comment this when in production!
     };
 }

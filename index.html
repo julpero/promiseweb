@@ -236,28 +236,20 @@
                                 <div class="col-3" id="myInfoCol">
                                     <div class="row">
                                         <div id="player0NameCol" class="col nameCol playerNameCol"></div>
+                                        <div id="player0Promised" class="col"></div>
+                                        <div id="player0Keeps" class="col"></div>
                                     </div>
                                     <div class="row">
-                                        <div class="col">
-                                            <div class="row">
-                                                <div id="player0CardsWon0Div" class="col cardCol cardWonCol"></div>
-                                                <div id="player0CardsWon1Div" class="col cardCol cardWonCol"></div>
-                                                <div id="player0CardsWon2Div" class="col cardCol cardWonCol"></div>
-                                                <div id="player0CardsWon3Div" class="col cardCol cardWonCol"></div>
-                                                <div id="player0CardsWon4Div" class="col cardCol cardWonCol"></div>
-                                                <div id="player0CardsWon5Div" class="col cardCol cardWonCol"></div>
-                                                <div id="player0CardsWon6Div" class="col cardCol cardWonCol"></div>
-                                                <div id="player0CardsWon7Div" class="col cardCol cardWonCol"></div>
-                                                <div id="player0CardsWon8Div" class="col cardCol cardWonCol"></div>
-                                                <div id="player0CardsWon9Div" class="col cardCol cardWonCol"></div>
-                                            </div>
-                                        </div>
-                                        <div class="col">
-                                            <div class="row">
-                                                <div id="player0Promised" class="col"></div>
-                                                <div id="player0Keeps" class="col"></div>
-                                            </div>
-                                        </div>
+                                        <div id="player0CardsWon0Div" class="col cardCol cardWonCol"></div>
+                                        <div id="player0CardsWon1Div" class="col cardCol cardWonCol"></div>
+                                        <div id="player0CardsWon2Div" class="col cardCol cardWonCol"></div>
+                                        <div id="player0CardsWon3Div" class="col cardCol cardWonCol"></div>
+                                        <div id="player0CardsWon4Div" class="col cardCol cardWonCol"></div>
+                                        <div id="player0CardsWon5Div" class="col cardCol cardWonCol"></div>
+                                        <div id="player0CardsWon6Div" class="col cardCol cardWonCol"></div>
+                                        <div id="player0CardsWon7Div" class="col cardCol cardWonCol"></div>
+                                        <div id="player0CardsWon8Div" class="col cardCol cardWonCol"></div>
+                                        <div id="player0CardsWon9Div" class="col cardCol cardWonCol"></div>
                                     </div>
                                 </div>
                             </div>
@@ -394,15 +386,24 @@
                         getRoundIndex++;
                     }
 
+                    //if (gameOver) return;
+
                     var getRound = {
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
                         round: getRoundIndex,
                         doReload: doReloadInit,
                         newRound: newRound,
+                        gameOver: gameOver,
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
+                        if (myRound.gameOver) {
+                            showPlayerPromises(myRound);
+                            initPromiseTable(myRound.promiseTable);
+                            initScoreBoard(myRound.promiseTable);
+                            return;
+                        }
                         if (myRound.doReloadInit) {
                             console.log('reloading...');
                             $('#gameChooser').hide();
