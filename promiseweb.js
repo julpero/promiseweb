@@ -26,6 +26,8 @@ function createNewGame(socket, gameOptions) {
     socket.emit('create game', gameOptions, function (createdGameId) {
         console.log('created game with id: '+createdGameId);
         gameId = createdGameId;
+        $('#joinGameCollapse').collapse('show');
+        $('#createGameCollapse').collapse('hide');
     });
     
 }
@@ -43,7 +45,9 @@ function initcreateNewGameButton(socket) {
             gameStatus: 0,
             humanPlayers: [{ name: $('#newGameMyName').val(), playerId: window.localStorage.getItem('uUID')}],
         };
-        if (validateNewGame(gameOptions)) createNewGame(socket, gameOptions);
+        if (validateNewGame(gameOptions)) {
+            createNewGame(socket, gameOptions);
+        }
     });
 }
 
@@ -91,10 +95,10 @@ function showGames(socket, gameList) {
         var gameContainerDiv = $('<div id="gameContainerDiv"'+ game.id +'>').addClass('row');
         gameContainerDiv.append($('<div>').addClass('col-2').text(game.startRound + '-' + game.turnRound + '-' + game.endRound));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
-        gameContainerDiv.append(($('<div>').addClass('col-3').append($('<input type="text" id="myName'+game.id+'">'))));
+        gameContainerDiv.append(($('<div>').addClass('col-3').append($('<input type="text" id="myName'+game.id+'">').addClass('newGameMyNameInput'))));
         gameContainerDiv.append(($('<div>').addClass('col-3').append($('<input disabled type="text" id="password'+game.id+'">'))));
         var btnId = 'joinGameButton' + game.id;
-        var joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary').text('Join game'));
+        var joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton').text('Join game'));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(joinGameButton));
 
         gameListContainer.append(gameContainerDiv);
@@ -111,7 +115,6 @@ function showGames(socket, gameList) {
 
 function initGameListEvent(socket) {
     $('#joinGameCollapse').on('shown.bs.collapse', function () {
-        //var socket = io();
         socket.emit('get games', {}, function (response) {
             console.log(response);
             showGames(socket, response);
