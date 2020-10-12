@@ -24,10 +24,14 @@ function createNewGame(socket, gameOptions) {
     console.log(gameOptions);
     var gameId;
     socket.emit('create game', gameOptions, function (createdGameId) {
-        console.log('created game with id: '+createdGameId);
-        gameId = createdGameId;
-        $('#joinGameCollapse').collapse('show');
-        $('#createGameCollapse').collapse('hide');
+        if (createdGameId == 'NOT OK') {
+            alert('You have already created game!');
+        } else {
+            console.log('created game with id: '+createdGameId);
+            gameId = createdGameId;
+            $('#joinGameCollapse').collapse('show');
+            $('#createGameCollapse').collapse('hide');
+        }
     });
     
 }
@@ -72,7 +76,6 @@ function validateJoinGame(gameDetails) {
 }
 
 function joinGame(socket, id) {
-    //var socket = io();
     var gameDetails = { gameId: id,
         myName: $('#myName'+id).val(),
         myId: window.localStorage.getItem('uUID'),
@@ -81,10 +84,25 @@ function joinGame(socket, id) {
     if (validateJoinGame(gameDetails)) {
         socket.emit('join game', gameDetails, function (response) {
             console.log(response);
-            if (response == 'OK') {
+            if (joiningResult.response == 'OK') {
+                $('.joinThisGameButton').prop('disabled', true);
+                $('#leaveGameButton'+joiningResult.gameId).prop('disabled', false);
             }
         });
     }
+}
+
+function leaveGame(socket, id) {
+    var gameDetails = { gameId: id,
+        myId: window.localStorage.getItem('uUID'),
+    };
+    socket.emit('leave game', gameDetails, function (response) {
+        console.log(response);
+        if (joiningResult.response == 'OK') {
+            $('.joinThisGameButton').prop('disabled', true);
+            $('#leaveGameButton'+joiningResult.gameId).prop('disabled', false);
+        }
+    });
 }
 
 function showGames(socket, gameList) {
@@ -93,18 +111,24 @@ function showGames(socket, gameList) {
     gameList.forEach(function (game) {
         if (firstId ==  '') firstId = game.id;
         var gameContainerDiv = $('<div id="gameContainerDiv"'+ game.id +'>').addClass('row');
-        gameContainerDiv.append($('<div>').addClass('col-2').text(game.startRound + '-' + game.turnRound + '-' + game.endRound));
+        gameContainerDiv.append($('<div>').addClass('col-1').text(game.startRound + '-' + game.turnRound + '-' + game.endRound));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
-        gameContainerDiv.append(($('<div>').addClass('col-3').append($('<input type="text" id="myName'+game.id+'">').addClass('newGameMyNameInput'))));
-        gameContainerDiv.append(($('<div>').addClass('col-3').append($('<input disabled type="text" id="password'+game.id+'">'))));
+        gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input type="text" id="myName'+game.id+'">').addClass('newGameMyNameInput'))));
+        gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input disabled type="text" id="password'+game.id+'">'))));
         var btnId = 'joinGameButton' + game.id;
-        var joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton').text('Join game'));
-        gameContainerDiv.append(($('<div>').addClass('col-1')).append(joinGameButton));
+        var leaveBtnId = 'leaveGameButton' + game.id;
+        var joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton').text('Join'));
+        var leaveGameButton = ($('<button id="'+leaveBtnId+'">').addClass('btn btn-primary leaveThisGameButton disabled').text('Leave'));
+        gameContainerDiv.append(($('<div>').addClass('col-2')).append(joinGameButton));
+        gameContainerDiv.append(($('<div>').addClass('col-1')).append(leaveGameButton));
 
         gameListContainer.append(gameContainerDiv);
 
         $('#'+btnId).on('click', function() {
             joinGame(socket, game.id);
+        });
+        $('#'+leaveBtnId).on('click', function() {
+            leaveGame(socket, game.id);
         });
 
         console.log(game);

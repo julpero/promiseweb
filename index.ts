@@ -71,8 +71,59 @@ mongoUtil.connectToServer( function( err, client ) {
 
         });
 
+        socket.on('leave game', async (leaveGame, fn) => {
+            var leavingResult = 'NOTSET';
+            var ObjectId = require('mongodb').ObjectId;
+            var searchId = new ObjectId(leaveGame.gameId);
+            const database = mongoUtil.getDb();
+            const collection = database.collection('promiseweb');
+            const query = { gameStatus: 0,
+                            _id: searchId,
+                             };
+            const game = await collection.findOne(query);
+            console.log(game);
+            var retVal = {
+                leavingResult: null,
+                gameId: leaveGame.gameId,
+            }
+            if (game !== null) {
+                var newHumanPlayers = [];
+                for (var i = 0; i < game.humanPlayers.length; i++) {
+                    if (game.humanPlayers[i].playerId != leaveGame.myId) {
+                        newHumanPlayers.push(game.humanPlayers[i]);
+                    }
+                }
+                if (newHumanPlayers.length == game.humanPlayers.length - 1) {
+                    const options = { upsert: true };
+                    const updateDoc = {
+                        $set: {
+                            humanPlayers: newHumanPlayers,
+                        }
+                    };
+                    const result = await collection.updateOne(query, updateDoc, options);
+                    if (result.modifiedCount == 1) {
+                        console.log(result);
+                        socket.leave(leaveGame.gameId);
+                        leavingResult = 'LEAVED';
+                    }
+                }
+            }
+
+            retVal.leavingResult = leavingResult;
+
+            fn(retVal);
+
+            if (leavingResult == 'LEAVED') {
+                // let's update info to clients
+                const val = await collection.findOne(query);
+                var resultGameInfo = gameToGameInfo(val);
+
+                io.emit('update gameinfo', resultGameInfo);
+            }
+        });
+
         socket.on('join game', async (newPlayer, fn) => {
-            var retVal = 'NOTSET';
+            var joiningResult = 'NOTSET';
             console.log(newPlayer);
             var ObjectId = require('mongodb').ObjectId;
             var searchId = new ObjectId(newPlayer.gameId);
@@ -84,6 +135,10 @@ mongoUtil.connectToServer( function( err, client ) {
                              };
             const game = await collection.findOne(query);
             console.log(game);
+            var retVal = {
+                joiningResult: null,
+                gameId: newPlayer.gameId,
+            }
             if (game !== null) {
                 if (game.humanPlayersCount > game.humanPlayers.length && game.adminName != newPlayer.myName) {
                     var nameFree = true;
@@ -104,25 +159,27 @@ mongoUtil.connectToServer( function( err, client ) {
                         };
                         const result = await collection.updateOne(query, updateDoc, options);
                         socket.join(newPlayer.gameId);
-                        retVal = 'OK';
+                        joiningResult = 'OK';
                     } else if (!nameFree) {
-                        retVal = 'NAMENOTOK';
+                        joiningResult = 'NAMENOTOK';
                     } else if (!socketFree) {
-                        retVal = 'SOCKETNOTOK';
+                        joiningResult = 'SOCKETNOTOK';
                     } else {
-                        retVal = 'UNKNOWNERROR';
+                        joiningResult = 'UNKNOWNERROR';
                     }
                 } else {
-                    retVal = 'NOTVALID';
+                    joiningResult = 'NOTVALID';
                 }
             } else {
-                retVal = 'GAMENOTFOUND';
+                joiningResult = 'GAMENOTFOUND';
             }
+
+            retVal.joiningResult = joiningResult;
 
             fn(retVal);
 
-            console.log(retVal);
-            if (retVal == 'OK') {
+            console.log(joiningResult);
+            if (joiningResult == 'OK') {
                 // let's update info to clients
                 const val = await collection.findOne(query);
                 var resultGameInfo = gameToGameInfo(val);
@@ -139,14 +196,31 @@ mongoUtil.connectToServer( function( err, client ) {
         });
 
         socket.on('create game', async (gameOptions, fn) => {
+            var okToCreate = true;
+
             console.log(gameOptions);
             const database = mongoUtil.getDb();
             const collection = database.collection('promiseweb');
 
-            const result = await collection.insertOne(gameOptions);
-            console.log('gameOptions inserted ' + result.insertedCount + ' with _id: ' + result.insertedId);
-            socket.join(result.insertedId);
-            fn(result.insertedId);
+            const query = { gameStatus: { $lte: 1 } };
+            const cursor = await collection.find(query);
+            await cursor.forEach(function(val) {
+                for (var i = 0; i < val.humanPlayers.length; i++) {
+                    if (val.humanPlayers[i].playerId == gameOptions.humanPlayers[0].playerId) {
+                        okToCreate = false;
+                        return;
+                    }
+                }
+            });
+            
+            if (okToCreate) {
+                const result = await collection.insertOne(gameOptions);
+                console.log('gameOptions inserted ' + result.insertedCount + ' with _id: ' + result.insertedId);
+                socket.join(result.insertedId);
+                fn(result.insertedId);
+            } else {
+                fn('NOT OK');
+            }
         });
 
         socket.on('get round', async (getRound, fn) => {
@@ -167,10 +241,12 @@ mongoUtil.connectToServer( function( err, client ) {
                 // password: newPlayer.gamePassword,
                  };
             const game = await collection.findOne(query);
-            const playerRound = roundToPlayer(getRound.myId, getRound.round, game, doReload, newRound, gameOver);
-            console.log(playerRound);
-
-            fn(playerRound);
+            if (game != null) {
+                const playerRound = roundToPlayer(getRound.myId, getRound.round, game, doReload, newRound, gameOver);
+                console.log(playerRound);
+    
+                fn(playerRound);
+            }
         });
 
         socket.on('make promise', async (promiseDetails, fn) => {
