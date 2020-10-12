@@ -218,8 +218,6 @@ function initMyPromiseRow() {
 
 function initMyCardsContainer() {
     var node = $('<div></div>').addClass('row myCardsRowClass');
-    // $('#myCardsRow').empty();
-    // $('#myCardsRow').addClass('myCardsRowClass');
     
     for (var i = 0; i < 10; i++) {
         node.append(drawCardCol(i));
@@ -279,34 +277,6 @@ function otherPlayerMapper(idFrom, players) {
     } else {
         return (me < idFrom) ? idFrom - me : idFrom + players.length - me;
     }
-}
-
-function initPlayTableFor3() {
-    var nodeRow = $('<div></div>').addClass('row');
-    var nodeCol = $('<div></div>').addClass('col');
-
-    var row1= $('<div></div>').addClass('row');
-    var col1 = $('<div id="player1TableDiv"></div>').addClass('col-5');
-    var col2 = $('<div></div>').addClass('col-2');
-    var col3 = $('<div id="player2TableDiv"></div>').addClass('col-5');
-    
-    var row2= $('<div></div>').addClass('row');
-    var col4 = $('<div></div>').addClass('col-4');
-    var col5 = $('<div id="player0CardPlayedDiv"></div>').addClass('col-4 cardCol');
-    var col6 = $('<div></div>').addClass('col-4');
-
-    row1.append(col1);
-    row1.append(col2);
-    row1.append(col3);
-    row2.append(col4);
-    row2.append(col5);
-    row2.append(col6);
-
-    nodeCol.append(row1);
-    // nodeCol.append(row2);
-    nodeRow.append(nodeCol);
-
-    return nodeRow;
 }
 
 function initTrumpTable() {
@@ -651,7 +621,6 @@ function showWhoIsPromising(myRound) {
 
 function showWhoIsPlaying(myRound) {
     for (var i = 0; i < myRound.players.length; i++) {
-        // var chkPos = i + myRound.dealerPositionIndex + 1; // next from dealer
         var chkPos = i + myRound.playerInCharge;
         if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
         if (myRound.players[chkPos].cardPlayed == null) {
@@ -727,7 +696,6 @@ function showPlayerPromises(myRound) {
 }
 
 function getPromise(socket, myRound) {
-    //$('#myInfoRow').hide();
     hideThinkings();
     if (isMyPromiseTurn(myRound)) {
         initPromise(socket, myRound);
@@ -735,9 +703,8 @@ function getPromise(socket, myRound) {
     } else {
         hidePromise();
         showWhoIsPromising(myRound);
-        dimMyCards(myRound, 0.8);
+        dimMyCards(myRound, 0.7);
     }
-    // showPlayerPromises(myRound);
 }
 
 function amIStarterOfPlay(myRound) {
@@ -809,7 +776,7 @@ function initCardEvents(socket, myRound, onlySuit) {
 function dimMyCards(myRound, visibility) {
     for (var i = 0; i < myRound.myCards.length; i++) {
         var cardMapperStr = cardToClassMapper(myRound.myCards[i]);
-        $(cardMapperStr+' ').fadeTo('slow', visibility);
+        $(cardMapperStr+' ').fadeTo(400, visibility);
     }
 }
 
@@ -994,8 +961,8 @@ async function moveCardFromHandToTable(card, playerName) {
     var containerFromPosition = $('#player'+playerIndex+'CardCol'+containerIndex).offset();
     var containerToPosition = $('#player'+playerIndex+'CardPlayedDiv').offset();
 
-    var delay = 500;
-    var duration = 1500;
+    var delay = 400;
+    var duration = 1000;
 
     movingCard.mount($containerTo);
     movingCard.animateTo({
@@ -1082,7 +1049,6 @@ function createScoreboard(promiseTable) {
     var tableHeader = $('<thead></thead>');
     var tableHeaderRow = $('<tr></tr>');
     
-    // tableHeaderRow.append($('<th scope="col"></th>').addClass('scoreboardTableHeader'));
     for (var i = 0; i < promiseTable.players.length; i++) {
         var tableHeaderCol = $('<th scope="col"></th>').addClass('scoreboardTableHeader').html(promiseTable.players[i]);
         tableHeaderRow.append(tableHeaderCol);

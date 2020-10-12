@@ -142,7 +142,6 @@ mongoUtil.connectToServer( function( err, client ) {
             console.log(gameOptions);
             const database = mongoUtil.getDb();
             const collection = database.collection('promiseweb');
-            //gameOptions.humanPlayers = [{name: gameOptions.adminName, playerId: socket.id}];
 
             const result = await collection.insertOne(gameOptions);
             console.log('gameOptions inserted ' + result.insertedCount + ' with _id: ' + result.insertedId);
@@ -450,7 +449,6 @@ function okToPlayCard(playedCard, playerName, gameInDb) {
 function gameToGameInfo(game) {
     var gameInfo = {
         id: game._id,
-        //myName: myName,
         humanPlayersCount: game.humanPlayersCount,
         computerPlayersCount: game.botPlayersCount,
         startRound: game.startRound,
@@ -682,7 +680,6 @@ async function startGame(gameInfo) {
     const result = await collection.updateOne(query, updateDoc, options);
     console.log('game started');
 
-    // const thisGame = await collection.findOne(query);
     await startRound(gameInfo, 0);
 
     io.to(gameInfo.id).emit('start game', gameInfo);
