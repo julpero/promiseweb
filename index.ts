@@ -10,461 +10,467 @@ server.listen(port, () => {
 });
 
 var doc = require('card-deck');
-var mongoUtil = require(__dirname + '/mongoUtil.js');
 
-mongoUtil.connectToServer( function( err, client ) {
-    if (err) console.log(err);
-    app.get('/', (req, res) => {
-        res.sendFile( 'index.html', { root: __dirname });
-    });
-    app.get('/promiseweb.js', (req, res) => {
-        res.sendFile('promiseweb.js', { root: __dirname });
-    });
-    app.get('/deck.js', (req, res) => {
-        try {
-            res.sendFile('node_modules/deck-of-cards/dist/deck.min.js', { root: __dirname });
-        } catch(error) {
-            const err = JSON.stringify(error);
-            res.status(500).send('Request error: ' + err);
-        }
-    });
-    app.get('/deck.css', (req, res) => {
-        try {
-            res.sendFile('cardGallery/cardGallery.css', { root: __dirname });
-        } catch(error) {
-            const err = JSON.stringify(error);
-            res.status(500).send('Request error: ' + err);
-        }
-    });
-    app.get('/faces/:face', (req, res) => {
-        try {
-            res.sendFile('cardGallery/fourColorFaces/' + req.params.face, { root: __dirname });
-        } catch(error) {
-            const err = JSON.stringify(error);
-            res.status(500).send('Request error: ' + err);
-        }
-    });
-
-    io.on('connection', (socket) => {
-        console.log('a user connected');
-        socket.on('disconnect', () => {
-            console.log('user disconnected');
+try {
+    var mongoUtil = require(__dirname + '/mongoUtil.js');
+    mongoUtil.connectToServer( function( err, client ) {
+        if (err) console.log(err);
+        app.get('/', (req, res) => {
+            res.sendFile(__dirname + '/index.html');
         });
-
-        socket.on('check game', async (gameCheck) => {
-            console.log(gameCheck);
-            var gameFound = false;
-            const database = mongoUtil.getDb();
-            const collection = database.collection('promiseweb');
-            const query = { gameStatus: 1, // check first ongoing game
-                             };
-            const games = collection.find(query);
-            await games.forEach(function (game) {
-                game.humanPlayers.forEach( function(player) {
-                    if (player.playerId == gameCheck.myId) {
-                        console.log('found game 1');
-                        gameFound = true;
-                        socket.join(game._id);
-                        var gameInfo = gameToGameInfo(game);
-                        gameInfo.currentRound = getCurrentRoundIndex(game);
-                        gameInfo.reloaded = true;
-                        socket.emit('card played', gameInfo);
-                    }
-                });
+        app.get('/promiseweb.js', (req, res) => {
+            res.sendFile(__dirname + '/promiseweb.js');
+        });
+        app.get('/deck.js', (req, res) => {
+            try {
+                res.sendFile(__dirname + '/node_modules/deck-of-cards/dist/deck.min.js');
+            } catch(error) {
+                const err = JSON.stringify(error);
+                res.status(500).send('Request error: ' + err);
+            }
+        });
+        app.get('/deck.css', (req, res) => {
+            try {
+                res.sendFile(__dirname + '/cardGallery/cardGallery.css');
+            } catch(error) {
+                const err = JSON.stringify(error);
+                res.status(500).send('Request error: ' + err);
+            }
+        });
+        app.get('/faces/:face', (req, res) => {
+            try {
+                res.sendFile(__dirname + '/cardGallery/fourColorFaces/' + req.params.face);
+            } catch(error) {
+                const err = JSON.stringify(error);
+                res.status(500).send('Request error: ' + err);
+            }
+        });
+    
+        io.on('connection', (socket) => {
+            console.log('a user connected');
+            socket.on('disconnect', () => {
+                console.log('user disconnected');
             });
-
-            if (!gameFound) {
-                const query = { gameStatus: 0, // check promised ongoing game
-                                };
+    
+            socket.on('check game', async (gameCheck) => {
+                console.log(gameCheck);
+                var gameFound = false;
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const query = { gameStatus: 1, // check first ongoing game
+                                 };
                 const games = collection.find(query);
                 await games.forEach(function (game) {
                     game.humanPlayers.forEach( function(player) {
                         if (player.playerId == gameCheck.myId) {
-                            console.log('found game 0');
+                            console.log('found game 1');
+                            gameFound = true;
                             socket.join(game._id);
                             var gameInfo = gameToGameInfo(game);
-                            gameInfo.currentRound = 0;
+                            gameInfo.currentRound = getCurrentRoundIndex(game);
                             gameInfo.reloaded = true;
-                            socket.emit('promise made', gameInfo);
+                            socket.emit('card played', gameInfo);
                         }
                     });
                 });
-            }
-
-        });
-
-        socket.on('leave game', async (leaveGame, fn) => {
-            var leavingResult = 'NOTSET';
-            var ObjectId = require('mongodb').ObjectId;
-            var searchId = new ObjectId(leaveGame.gameId);
-            const database = mongoUtil.getDb();
-            const collection = database.collection('promiseweb');
-            const query = { gameStatus: 0,
-                            _id: searchId,
-                             };
-            const game = await collection.findOne(query);
-            console.log(game);
-            var retVal = {
-                leavingResult: null,
-                gameId: leaveGame.gameId,
-            }
-            if (game !== null) {
-                var newHumanPlayers = [];
-                for (var i = 0; i < game.humanPlayers.length; i++) {
-                    if (game.humanPlayers[i].playerId != leaveGame.myId) {
-                        newHumanPlayers.push(game.humanPlayers[i]);
-                    }
-                }
-                if (newHumanPlayers.length == game.humanPlayers.length - 1) {
-                    const options = { upsert: true };
-                    const updateDoc = {
-                        $set: {
-                            humanPlayers: newHumanPlayers,
-                        }
-                    };
-                    const result = await collection.updateOne(query, updateDoc, options);
-                    if (result.modifiedCount == 1) {
-                        console.log(result);
-                        socket.leave(leaveGame.gameId);
-                        leavingResult = 'LEAVED';
-                    }
-                }
-            }
-
-            retVal.leavingResult = leavingResult;
-
-            fn(retVal);
-
-            if (leavingResult == 'LEAVED') {
-                // let's update info to clients
-                const val = await collection.findOne(query);
-                var resultGameInfo = gameToGameInfo(val);
-
-                io.emit('update gameinfo', resultGameInfo);
-            }
-        });
-
-        socket.on('join game', async (newPlayer, fn) => {
-            var joiningResult = 'NOTSET';
-            console.log(newPlayer);
-            var ObjectId = require('mongodb').ObjectId;
-            var searchId = new ObjectId(newPlayer.gameId);
-            const database = mongoUtil.getDb();
-            const collection = database.collection('promiseweb');
-            const query = { gameStatus: 0,
-                            _id: searchId,
-                            password: newPlayer.gamePassword
-                             };
-            const game = await collection.findOne(query);
-            console.log(game);
-            var retVal = {
-                joiningResult: null,
-                gameId: newPlayer.gameId,
-            }
-            if (game !== null) {
-                if (game.humanPlayersCount > game.humanPlayers.length && game.adminName != newPlayer.myName) {
-                    var nameFree = true;
-                    var socketFree = true;
-                    game.humanPlayers.forEach(function(player) {
-                        if (player.name == newPlayer.myName) nameFree = false;
-                        if (player.playerId == newPlayer.myId) socketFree = false;
+    
+                if (!gameFound) {
+                    const query = { gameStatus: 0, // check promised ongoing game
+                                    };
+                    const games = collection.find(query);
+                    await games.forEach(function (game) {
+                        game.humanPlayers.forEach( function(player) {
+                            if (player.playerId == gameCheck.myId) {
+                                console.log('found game 0');
+                                socket.join(game._id);
+                                var gameInfo = gameToGameInfo(game);
+                                gameInfo.currentRound = 0;
+                                gameInfo.reloaded = true;
+                                socket.emit('promise made', gameInfo);
+                            }
+                        });
                     });
-
-                    if (nameFree && socketFree) {
-                        var players = game.humanPlayers;
-                        players.push({name: newPlayer.myName, playerId: newPlayer.myId});
+                }
+    
+            });
+    
+            socket.on('leave game', async (leaveGame, fn) => {
+                var leavingResult = 'NOTSET';
+                var ObjectId = require('mongodb').ObjectId;
+                var searchId = new ObjectId(leaveGame.gameId);
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const query = { gameStatus: 0,
+                                _id: searchId,
+                                 };
+                const game = await collection.findOne(query);
+                console.log(game);
+                var retVal = {
+                    leavingResult: null,
+                    gameId: leaveGame.gameId,
+                }
+                if (game !== null) {
+                    var newHumanPlayers = [];
+                    for (var i = 0; i < game.humanPlayers.length; i++) {
+                        if (game.humanPlayers[i].playerId != leaveGame.myId) {
+                            newHumanPlayers.push(game.humanPlayers[i]);
+                        }
+                    }
+                    if (newHumanPlayers.length == game.humanPlayers.length - 1) {
                         const options = { upsert: true };
                         const updateDoc = {
                             $set: {
-                                humanPlayers: players,
+                                humanPlayers: newHumanPlayers,
                             }
                         };
                         const result = await collection.updateOne(query, updateDoc, options);
-                        socket.join(newPlayer.gameId);
-                        joiningResult = 'OK';
-                    } else if (!nameFree) {
-                        joiningResult = 'NAMENOTOK';
-                    } else if (!socketFree) {
-                        joiningResult = 'SOCKETNOTOK';
-                    } else {
-                        joiningResult = 'UNKNOWNERROR';
+                        if (result.modifiedCount == 1) {
+                            console.log(result);
+                            socket.leave(leaveGame.gameId);
+                            leavingResult = 'LEAVED';
+                        }
                     }
-                } else {
-                    joiningResult = 'NOTVALID';
                 }
-            } else {
-                joiningResult = 'GAMENOTFOUND';
-            }
-
-            retVal.joiningResult = joiningResult;
-
-            fn(retVal);
-
-            console.log(joiningResult);
-            if (joiningResult == 'OK') {
-                // let's update info to clients
-                const val = await collection.findOne(query);
-                var resultGameInfo = gameToGameInfo(val);
-
-                io.emit('update gameinfo', resultGameInfo);
-
-                if (resultGameInfo.humanPlayersCount == resultGameInfo.humanPlayers.length) {
-                    // start game
-                    await startGame(resultGameInfo);
-                }
-                
-            }
-            
-        });
-
-        socket.on('create game', async (gameOptions, fn) => {
-            var okToCreate = true;
-
-            console.log(gameOptions);
-            const database = mongoUtil.getDb();
-            const collection = database.collection('promiseweb');
-
-            const query = { gameStatus: { $lte: 1 } };
-            const cursor = await collection.find(query);
-            await cursor.forEach(function(val) {
-                for (var i = 0; i < val.humanPlayers.length; i++) {
-                    if (val.humanPlayers[i].playerId == gameOptions.humanPlayers[0].playerId) {
-                        okToCreate = false;
-                        return;
-                    }
+    
+                retVal.leavingResult = leavingResult;
+    
+                fn(retVal);
+    
+                if (leavingResult == 'LEAVED') {
+                    // let's update info to clients
+                    const val = await collection.findOne(query);
+                    var resultGameInfo = gameToGameInfo(val);
+    
+                    io.emit('update gameinfo', resultGameInfo);
                 }
             });
-            
-            if (okToCreate) {
-                const result = await collection.insertOne(gameOptions);
-                console.log('gameOptions inserted ' + result.insertedCount + ' with _id: ' + result.insertedId);
-                socket.join(result.insertedId);
-                fn(result.insertedId);
-            } else {
-                fn('NOT OK');
-            }
-        });
-
-        socket.on('get round', async (getRound, fn) => {
-            console.log(getRound);
-
-            const database = mongoUtil.getDb();
-            const collection = database.collection('promiseweb');
-            var ObjectId = require('mongodb').ObjectId;
-            var searchId = new ObjectId(getRound.gameId);
-
-            const doReload = getRound.doReload;
-            const newRound = getRound.newRound;
-            const gameOver = getRound.gameOver;
-            const gameStatus = gameOver ? 2 : 1;
-            
-            const query = { gameStatus: gameStatus,
-                _id: searchId,
-                // password: newPlayer.gamePassword,
-                 };
-            const game = await collection.findOne(query);
-            if (game != null) {
-                const playerRound = roundToPlayer(getRound.myId, getRound.round, game, doReload, newRound, gameOver);
-                console.log(playerRound);
     
-                fn(playerRound);
-            }
-        });
-
-        socket.on('make promise', async (promiseDetails, fn) => {
-            console.log(promiseDetails);
-
-            const database = mongoUtil.getDb();
-            const collection = database.collection('promiseweb');
-            var ObjectId = require('mongodb').ObjectId;
-            var searchId = new ObjectId(promiseDetails.gameId);
-            
-            const query = { gameStatus: 1,
-                _id: searchId,
-                // password: newPlayer.gamePassword,
-                 };
-            var gameInDb = await collection.findOne(query);
-            if (gameInDb !== null) {
-                var promiseInt = parseInt(promiseDetails.promise, 10);
-                var playerName = getPlayerNameById(promiseDetails.myId, gameInDb.humanPlayers);
-                for (var i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
-                    var chkInd = 1 + i; // start from next to dealer
-                    if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-=  (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
-                    if (gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise == null) {
-                        // this should be same as playerName
-                        if (gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].name == playerName) {
-                            // update promise
-                            gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise = promiseInt;
+            socket.on('join game', async (newPlayer, fn) => {
+                var joiningResult = 'NOTSET';
+                console.log(newPlayer);
+                var ObjectId = require('mongodb').ObjectId;
+                var searchId = new ObjectId(newPlayer.gameId);
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const query = { gameStatus: 0,
+                                _id: searchId,
+                                password: newPlayer.gamePassword
+                                 };
+                const game = await collection.findOne(query);
+                console.log(game);
+                var retVal = {
+                    joiningResult: null,
+                    gameId: newPlayer.gameId,
+                }
+                if (game !== null) {
+                    if (game.humanPlayersCount > game.humanPlayers.length && game.adminName != newPlayer.myName) {
+                        var nameFree = true;
+                        var socketFree = true;
+                        game.humanPlayers.forEach(function(player) {
+                            if (player.name == newPlayer.myName) nameFree = false;
+                            if (player.playerId == newPlayer.myId) socketFree = false;
+                        });
+    
+                        if (nameFree && socketFree) {
+                            var players = game.humanPlayers;
+                            players.push({name: newPlayer.myName, playerId: newPlayer.myId});
                             const options = { upsert: true };
                             const updateDoc = {
                                 $set: {
-                                    game: gameInDb.game,
+                                    humanPlayers: players,
                                 }
                             };
                             const result = await collection.updateOne(query, updateDoc, options);
-                            break;
+                            socket.join(newPlayer.gameId);
+                            joiningResult = 'OK';
+                        } else if (!nameFree) {
+                            joiningResult = 'NAMENOTOK';
+                        } else if (!socketFree) {
+                            joiningResult = 'SOCKETNOTOK';
+                        } else {
+                            joiningResult = 'UNKNOWNERROR';
                         }
+                    } else {
+                        joiningResult = 'NOTVALID';
                     }
+                } else {
+                    joiningResult = 'GAMENOTFOUND';
                 }
-                const thisGame = await collection.findOne(query);
-                console.log(thisGame);
     
-                var gameInfo = gameToGameInfo(thisGame);
-                gameInfo.currentRound = promiseDetails.roundInd;
-                io.to(gameInfo.id).emit('promise made', gameInfo);
+                retVal.joiningResult = joiningResult;
     
-                fn(gameInfo); // just DEBUG
-            }
-
-        });
-
-        socket.on('play card', async (playDetails, fn) => {
-            console.log(playDetails);
-
-            var eventInfo = null;
-
-            const database = mongoUtil.getDb();
-            const collection = database.collection('promiseweb');
-            var ObjectId = require('mongodb').ObjectId;
-            var searchId = new ObjectId(playDetails.gameId);
-            
-            const query = { gameStatus: 1,
-                _id: searchId,
-                // password: newPlayer.gamePassword,
-                 };
-            const gameInDb = await collection.findOne(query);
-            if (gameInDb !== null) {
-                var playedCard = playDetails.playedCard;
-                var playerName = getPlayerNameById(playDetails.myId, gameInDb.humanPlayers);
-                var gameOver = false;
-                if (okToPlayCard(playedCard, playerName, gameInDb)) {
-                    var roundInDb = getCurrentRoundIndex(gameInDb);
-                    if (roundInDb == playDetails.roundInd) {
-                        var round = gameInDb.game.rounds[roundInDb];
-                        var play = getCurrentPlayIndex(round);
-                        var playerInd = getPlayerIndexByName(playerName, round.roundPlayers)
-                        var newHandObj = takeCardOut(round.roundPlayers[playerInd].cards, playedCard);
-                        var newHand = newHandObj.newHand;
-                        round.cardsPlayed[play].push({ name: playerName, card: playedCard });
-
-                        var gameAfterPlay = gameInDb.game;
-                        gameAfterPlay.rounds[roundInDb].cardsPlayed = round.cardsPlayed;
-                        gameAfterPlay.rounds[roundInDb].roundPlayers[playerInd].cards = newHand;
-
-                        var newPlay = false;
-                        var newRound = false;
-                        var winnerName = null;
-                        var gameStatus = 1;
-                        
-                        if (gameAfterPlay.rounds[roundInDb].cardsPlayed[play].length == gameInDb.humanPlayersCount + gameInDb.botPlayersCount) {
-                            // this was the last card of the play
-                            // let's see who wins this play and will be starter of the next play
-                            newPlay = true;
-                            winnerName = winnerOfPlay(gameAfterPlay.rounds[roundInDb].cardsPlayed[play], gameAfterPlay.rounds[roundInDb].trumpCard.suit);
-                            var winnerIndex = getPlayerIndexByName(winnerName, round.roundPlayers);
-
-                            gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps++;
-
-                            if (gameAfterPlay.rounds[roundInDb].cardsPlayed.length == gameAfterPlay.rounds[roundInDb].cardsInRound) {
-                                // this was the last card of the round
-                                newRound = true;
-                                gameAfterPlay.rounds[roundInDb].roundStatus = 2;
-                                for (var i = 0; i < gameAfterPlay.rounds[roundInDb].roundPlayers.length; i++) {
-                                    if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].promise == gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps) {
-                                        if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps == 0) {
-                                            gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = gameAfterPlay.rounds[roundInDb].cardsInRound > 5 ? 15 : 5;
-                                        } else {
-                                            gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = 10 + gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps;
-                                        }
-
-                                    } else {
-                                        gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = 0;
-                                    }
-                                }
-
-                                if (gameAfterPlay.rounds.length == roundInDb + 1) {
-                                    // this was the last round of the game
-                                    gameOver = true;
-                                    gameStatus = 2;
-                                } else {
-                                    // start next round
-                                    gameAfterPlay.rounds[roundInDb+1].roundStatus = 1;
-                                }
-                            } else {
-                                // start next play
-                                gameAfterPlay.rounds[roundInDb].cardsPlayed.push([]);
-                            }
-                        }
-
-                        const options = { upsert: true };
-                        const updateDoc = {
-                            $set: {
-                                gameStatus: gameStatus,
-                                game: gameAfterPlay,
-                            }
-                        };
-                        const result = await collection.updateOne(query, updateDoc, options);
-
-                        eventInfo = {
-                            playedCard: playedCard,
-                            cardPlayedBy: playerName,
-                            cardPlayedByIndex: playerInd,
-                            newPlay: newPlay,
-                            winnerName: newPlay ? winnerName : null,
-                            newRound: newRound,
-                            gameOver: gameOver,
-                        };
-
+                fn(retVal);
+    
+                console.log(joiningResult);
+                if (joiningResult == 'OK') {
+                    // let's update info to clients
+                    const val = await collection.findOne(query);
+                    var resultGameInfo = gameToGameInfo(val);
+    
+                    io.emit('update gameinfo', resultGameInfo);
+    
+                    if (resultGameInfo.humanPlayersCount == resultGameInfo.humanPlayers.length) {
+                        // start game
+                        await startGame(resultGameInfo);
                     }
+                    
                 }
-                var queryUsed = query;
-                if (gameOver) {
-                    queryUsed = { gameStatus: 2,
-                        _id: searchId,
-                        // password: newPlayer.gamePassword,
-                         };
-                }
-                const thisGame = await collection.findOne(queryUsed);
-                console.log(thisGame);
-    
-                var gameInfo = gameToGameInfo(thisGame);
-                gameInfo.currentRound = playDetails.roundInd;
-                gameInfo.eventInfo = eventInfo;
-                io.to(gameInfo.id).emit('card played', gameInfo);
-    
-                fn(gameInfo); // just DEBUG
-            }
-
-        });
-
-
-        socket.on('get games', async (data, fn) => {
-            console.log('start to get games');
-            const database = mongoUtil.getDb();
-            const collection = database.collection('promiseweb');
-            const query = { gameStatus: 0 };
-            const cursor = await collection.find(query);
-
-            var games = [];
-            await cursor.forEach(function(val) {
-                games.push({
-                    id: val._id,
-                    humanPlayersCount: val.humanPlayersCount,
-                    computerPlayersCount: val.botPlayersCount,
-                    startRound: val.startRound,
-                    turnRound: val.turnRound,
-                    endRound: val.endRound,
-                    humanPlayers: parsedHumanPlayers(val.humanPlayers),
-                    hasPassword: val.password.length > 0,
-                });
+                
             });
-
-            fn(games);
-            console.log(games);
-        });
-    });
     
-});
+            socket.on('create game', async (gameOptions, fn) => {
+                var okToCreate = true;
+    
+                console.log(gameOptions);
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+    
+                const query = { gameStatus: { $lte: 1 } };
+                const cursor = await collection.find(query);
+                await cursor.forEach(function(val) {
+                    for (var i = 0; i < val.humanPlayers.length; i++) {
+                        if (val.humanPlayers[i].playerId == gameOptions.humanPlayers[0].playerId) {
+                            okToCreate = false;
+                            return;
+                        }
+                    }
+                });
+                
+                if (okToCreate) {
+                    const result = await collection.insertOne(gameOptions);
+                    console.log('gameOptions inserted ' + result.insertedCount + ' with _id: ' + result.insertedId);
+                    socket.join(result.insertedId);
+                    fn(result.insertedId);
+                } else {
+                    fn('NOT OK');
+                }
+            });
+    
+            socket.on('get round', async (getRound, fn) => {
+                console.log(getRound);
+    
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                var ObjectId = require('mongodb').ObjectId;
+                var searchId = new ObjectId(getRound.gameId);
+    
+                const doReload = getRound.doReload;
+                const newRound = getRound.newRound;
+                const gameOver = getRound.gameOver;
+                const gameStatus = gameOver ? 2 : 1;
+                
+                const query = { gameStatus: gameStatus,
+                    _id: searchId,
+                    // password: newPlayer.gamePassword,
+                     };
+                const game = await collection.findOne(query);
+                if (game != null) {
+                    const playerRound = roundToPlayer(getRound.myId, getRound.round, game, doReload, newRound, gameOver);
+                    console.log(playerRound);
+        
+                    fn(playerRound);
+                }
+            });
+    
+            socket.on('make promise', async (promiseDetails, fn) => {
+                console.log(promiseDetails);
+    
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                var ObjectId = require('mongodb').ObjectId;
+                var searchId = new ObjectId(promiseDetails.gameId);
+                
+                const query = { gameStatus: 1,
+                    _id: searchId,
+                    // password: newPlayer.gamePassword,
+                     };
+                var gameInDb = await collection.findOne(query);
+                if (gameInDb !== null) {
+                    var promiseInt = parseInt(promiseDetails.promise, 10);
+                    var playerName = getPlayerNameById(promiseDetails.myId, gameInDb.humanPlayers);
+                    for (var i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
+                        var chkInd = 1 + i; // start from next to dealer
+                        if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-=  (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
+                        if (gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise == null) {
+                            // this should be same as playerName
+                            if (gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].name == playerName) {
+                                // update promise
+                                gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise = promiseInt;
+                                const options = { upsert: true };
+                                const updateDoc = {
+                                    $set: {
+                                        game: gameInDb.game,
+                                    }
+                                };
+                                const result = await collection.updateOne(query, updateDoc, options);
+                                break;
+                            }
+                        }
+                    }
+                    const thisGame = await collection.findOne(query);
+                    console.log(thisGame);
+        
+                    var gameInfo = gameToGameInfo(thisGame);
+                    gameInfo.currentRound = promiseDetails.roundInd;
+                    io.to(gameInfo.id).emit('promise made', gameInfo);
+        
+                    fn(gameInfo); // just DEBUG
+                }
+    
+            });
+    
+            socket.on('play card', async (playDetails, fn) => {
+                console.log(playDetails);
+    
+                var eventInfo = null;
+    
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                var ObjectId = require('mongodb').ObjectId;
+                var searchId = new ObjectId(playDetails.gameId);
+                
+                const query = { gameStatus: 1,
+                    _id: searchId,
+                    // password: newPlayer.gamePassword,
+                     };
+                const gameInDb = await collection.findOne(query);
+                if (gameInDb !== null) {
+                    var playedCard = playDetails.playedCard;
+                    var playerName = getPlayerNameById(playDetails.myId, gameInDb.humanPlayers);
+                    var gameOver = false;
+                    if (okToPlayCard(playedCard, playerName, gameInDb)) {
+                        var roundInDb = getCurrentRoundIndex(gameInDb);
+                        if (roundInDb == playDetails.roundInd) {
+                            var round = gameInDb.game.rounds[roundInDb];
+                            var play = getCurrentPlayIndex(round);
+                            var playerInd = getPlayerIndexByName(playerName, round.roundPlayers)
+                            var newHandObj = takeCardOut(round.roundPlayers[playerInd].cards, playedCard);
+                            var newHand = newHandObj.newHand;
+                            round.cardsPlayed[play].push({ name: playerName, card: playedCard });
+    
+                            var gameAfterPlay = gameInDb.game;
+                            gameAfterPlay.rounds[roundInDb].cardsPlayed = round.cardsPlayed;
+                            gameAfterPlay.rounds[roundInDb].roundPlayers[playerInd].cards = newHand;
+    
+                            var newPlay = false;
+                            var newRound = false;
+                            var winnerName = null;
+                            var gameStatus = 1;
+                            
+                            if (gameAfterPlay.rounds[roundInDb].cardsPlayed[play].length == gameInDb.humanPlayersCount + gameInDb.botPlayersCount) {
+                                // this was the last card of the play
+                                // let's see who wins this play and will be starter of the next play
+                                newPlay = true;
+                                winnerName = winnerOfPlay(gameAfterPlay.rounds[roundInDb].cardsPlayed[play], gameAfterPlay.rounds[roundInDb].trumpCard.suit);
+                                var winnerIndex = getPlayerIndexByName(winnerName, round.roundPlayers);
+    
+                                gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps++;
+    
+                                if (gameAfterPlay.rounds[roundInDb].cardsPlayed.length == gameAfterPlay.rounds[roundInDb].cardsInRound) {
+                                    // this was the last card of the round
+                                    newRound = true;
+                                    gameAfterPlay.rounds[roundInDb].roundStatus = 2;
+                                    for (var i = 0; i < gameAfterPlay.rounds[roundInDb].roundPlayers.length; i++) {
+                                        if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].promise == gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps) {
+                                            if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps == 0) {
+                                                gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = gameAfterPlay.rounds[roundInDb].cardsInRound > 5 ? 15 : 5;
+                                            } else {
+                                                gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = 10 + gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps;
+                                            }
+    
+                                        } else {
+                                            gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = 0;
+                                        }
+                                    }
+    
+                                    if (gameAfterPlay.rounds.length == roundInDb + 1) {
+                                        // this was the last round of the game
+                                        gameOver = true;
+                                        gameStatus = 2;
+                                    } else {
+                                        // start next round
+                                        gameAfterPlay.rounds[roundInDb+1].roundStatus = 1;
+                                    }
+                                } else {
+                                    // start next play
+                                    gameAfterPlay.rounds[roundInDb].cardsPlayed.push([]);
+                                }
+                            }
+    
+                            const options = { upsert: true };
+                            const updateDoc = {
+                                $set: {
+                                    gameStatus: gameStatus,
+                                    game: gameAfterPlay,
+                                }
+                            };
+                            const result = await collection.updateOne(query, updateDoc, options);
+    
+                            eventInfo = {
+                                playedCard: playedCard,
+                                cardPlayedBy: playerName,
+                                cardPlayedByIndex: playerInd,
+                                newPlay: newPlay,
+                                winnerName: newPlay ? winnerName : null,
+                                newRound: newRound,
+                                gameOver: gameOver,
+                            };
+    
+                        }
+                    }
+                    var queryUsed = query;
+                    if (gameOver) {
+                        queryUsed = { gameStatus: 2,
+                            _id: searchId,
+                            // password: newPlayer.gamePassword,
+                             };
+                    }
+                    const thisGame = await collection.findOne(queryUsed);
+                    console.log(thisGame);
+        
+                    var gameInfo = gameToGameInfo(thisGame);
+                    gameInfo.currentRound = playDetails.roundInd;
+                    gameInfo.eventInfo = eventInfo;
+                    io.to(gameInfo.id).emit('card played', gameInfo);
+        
+                    fn(gameInfo); // just DEBUG
+                }
+    
+            });
+    
+    
+            socket.on('get games', async (data, fn) => {
+                console.log('start to get games');
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const query = { gameStatus: 0 };
+                const cursor = await collection.find(query);
+    
+                var games = [];
+                await cursor.forEach(function(val) {
+                    games.push({
+                        id: val._id,
+                        humanPlayersCount: val.humanPlayersCount,
+                        computerPlayersCount: val.botPlayersCount,
+                        startRound: val.startRound,
+                        turnRound: val.turnRound,
+                        endRound: val.endRound,
+                        humanPlayers: parsedHumanPlayers(val.humanPlayers),
+                        hasPassword: val.password.length > 0,
+                    });
+                });
+    
+                fn(games);
+                console.log(games);
+            });
+        });
+        
+    });
+} catch (error) {
+    const err = JSON.stringify(error);
+    console.log('Error while connecting to MongoDB: ' + error);
+}
+
 
 function parsedHumanPlayers(humanPlayers) {
     var retVal = [];
