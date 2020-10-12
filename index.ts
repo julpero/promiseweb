@@ -21,13 +21,28 @@ mongoUtil.connectToServer( function( err, client ) {
         res.sendFile('promiseweb.js', { root: __dirname });
     });
     app.get('/deck.js', (req, res) => {
-        res.sendFile('node_modules/deck-of-cards/dist/deck.min.js', { root: __dirname });
+        try {
+            res.sendFile('node_modules/deck-of-cards/dist/deck.min.js', { root: __dirname });
+        } catch(error) {
+            const err = JSON.stringify(error);
+            res.status(500).send('Request error: ' + err);
+        }
     });
     app.get('/deck.css', (req, res) => {
-        res.sendFile('cardGallery/cardGallery.css', { root: __dirname });
+        try {
+            res.sendFile('cardGallery/cardGallery.css', { root: __dirname });
+        } catch(error) {
+            const err = JSON.stringify(error);
+            res.status(500).send('Request error: ' + err);
+        }
     });
     app.get('/faces/:face', (req, res) => {
-        res.sendFile('cardGallery/fourColorFaces/' + req.params.face, { root: __dirname });
+        try {
+            res.sendFile('cardGallery/fourColorFaces/' + req.params.face, { root: __dirname });
+        } catch(error) {
+            const err = JSON.stringify(error);
+            res.status(500).send('Request error: ' + err);
+        }
     });
 
     io.on('connection', (socket) => {
