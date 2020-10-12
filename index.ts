@@ -13,7 +13,15 @@ var doc = require('card-deck');
 
 try {
     var mongoUtil = require(__dirname + '/mongoUtil.js');
-    mongoUtil.connectToServer( function( err, client ) {
+    mongoUtil.connectToServer( async function( err, client ) {
+
+        const dbTest = mongoUtil.getDb();
+        const collectionTest = dbTest.collection('promiseweb');
+        const queryTest = { gameStatus: 1, // check first ongoing game
+                         };
+        const gameTest = await collectionTest.findOne(queryTest);
+        console.log(gameTest);
+
         if (err) console.log(err);
         app.get('/', (req, res) => {
             res.sendFile(__dirname + '/index.html');

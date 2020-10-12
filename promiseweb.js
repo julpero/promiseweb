@@ -48,6 +48,7 @@ function initcreateNewGameButton(socket) {
             password: $('#newGamePassword').val(),
             gameStatus: 0,
             humanPlayers: [{ name: $('#newGameMyName').val(), playerId: window.localStorage.getItem('uUID')}],
+            createDateTime: new Date(),
         };
         if (validateNewGame(gameOptions)) {
             createNewGame(socket, gameOptions);
