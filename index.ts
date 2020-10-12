@@ -1,26 +1,33 @@
-var app = require('express')();
-var http = require('http').createServer(app);
-var io = require('socket.io')(http);
-var doc = require('card-deck');
+var express = require('express');
+var app = express()
+  , http = require('http')
+  , server = http.createServer(app)
+  , io = require('socket.io').listen(server);
 
+var port = process.env.PORT || 3000;
+server.listen(port, () => {
+    console.log('listening on *:' + port);
+});
+
+var doc = require('card-deck');
 var mongoUtil = require(__dirname + '/mongoUtil.js');
 
 mongoUtil.connectToServer( function( err, client ) {
     if (err) console.log(err);
     app.get('/', (req, res) => {
-        res.sendFile(__dirname + '/index.html');
+        res.sendFile( 'index.html', { root: __dirname });
     });
     app.get('/promiseweb.js', (req, res) => {
-        res.sendFile(__dirname + '/promiseweb.js');
+        res.sendFile('promiseweb.js', { root: __dirname });
     });
     app.get('/deck.js', (req, res) => {
-        res.sendFile(__dirname + '/node_modules/deck-of-cards/dist/deck.min.js');
+        res.sendFile('node_modules/deck-of-cards/dist/deck.min.js', { root: __dirname });
     });
     app.get('/deck.css', (req, res) => {
-        res.sendFile(__dirname + '/cardGallery/cardGallery.css');
+        res.sendFile('cardGallery/cardGallery.css', { root: __dirname });
     });
     app.get('/faces/:face', (req, res) => {
-        res.sendFile(__dirname + '/cardGallery/fourColorFaces/' + req.params.face);
+        res.sendFile('cardGallery/fourColorFaces/' + req.params.face, { root: __dirname });
     });
 
     io.on('connection', (socket) => {
@@ -436,17 +443,12 @@ mongoUtil.connectToServer( function( err, client ) {
                     hasPassword: val.password.length > 0,
                 });
             });
-                
 
             fn(games);
             console.log(games);
         });
     });
     
-});
-
-http.listen(3000, () => {
-    console.log('listening on *:3000');
 });
 
 function parsedHumanPlayers(humanPlayers) {
@@ -788,12 +790,14 @@ function initRound(roundIndex, cardsInRound, players) {
         } else {
             playerCards = deck.draw(cardsInRound);
         }
+        var sortedPlayerCards = sortCardsDummy(playerCards);
         roundPlayers.push({
             name: player,
-            cards: sortCardsDummy(playerCards),
+            cards: sortedPlayerCards,
             promise: null,
             keeps: 0,
             points: null,
+            cardsToDebug: sortedPlayerCards,
         });
     });
 

@@ -1,5 +1,5 @@
 const MongoClient = require( 'mongodb' ).MongoClient;
-var mongoConfig = require(__dirname + '/mongo.config.js');
+var mongoConfig = require('mongo.config.js', { root: __dirname });
 const url = mongoConfig.MongoStr;
 
 var _db;
