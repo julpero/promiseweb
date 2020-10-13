@@ -15,13 +15,6 @@ try {
     var mongoUtil = require(__dirname + '/mongoUtil.js');
     mongoUtil.connectToServer( async function( err, client ) {
 
-        const dbTest = mongoUtil.getDb();
-        const collectionTest = dbTest.collection('promiseweb');
-        const queryTest = { gameStatus: 1, // check first ongoing game
-                         };
-        const gameTest = await collectionTest.findOne(queryTest);
-        console.log(gameTest);
-
         if (err) console.log(err);
         app.get('/', (req, res) => {
             res.sendFile(__dirname + '/index.html');
@@ -189,8 +182,10 @@ try {
                                 }
                             };
                             const result = await collection.updateOne(query, updateDoc, options);
-                            socket.join(newPlayer.gameId);
-                            joiningResult = 'OK';
+                            if (result.modifiedCount == 1) {
+                                socket.join(newPlayer.gameId);
+                                joiningResult = 'OK';
+                            }
                         } else if (!nameFree) {
                             joiningResult = 'NAMENOTOK';
                         } else if (!socketFree) {
@@ -282,6 +277,8 @@ try {
     
             socket.on('make promise', async (promiseDetails, fn) => {
                 console.log(promiseDetails);
+
+                var promiseMadeOk = false;
     
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
@@ -311,24 +308,32 @@ try {
                                     }
                                 };
                                 const result = await collection.updateOne(query, updateDoc, options);
-                                break;
+                                if (result.modifiedCount == 1) {
+                                    promiseMadeOk = true;
+                                    break;
+                                }
                             }
                         }
                     }
-                    const thisGame = await collection.findOne(query);
-                    console.log(thisGame);
-        
-                    var gameInfo = gameToGameInfo(thisGame);
-                    gameInfo.currentRound = promiseDetails.roundInd;
-                    io.to(gameInfo.id).emit('promise made', gameInfo);
-        
-                    fn(gameInfo); // just DEBUG
+
+                    if (promiseMadeOk) {
+                        const thisGame = await collection.findOne(query);
+                        console.log(thisGame);
+            
+                        var gameInfo = gameToGameInfo(thisGame);
+                        gameInfo.currentRound = promiseDetails.roundInd;
+                        io.to(gameInfo.id).emit('promise made', gameInfo);
+            
+                        fn(gameInfo); // just DEBUG
+                    }
                 }
     
             });
     
             socket.on('play card', async (playDetails, fn) => {
                 console.log(playDetails);
+
+                var cardPlayedOk = false;
     
                 var eventInfo = null;
     
@@ -413,35 +418,41 @@ try {
                                 }
                             };
                             const result = await collection.updateOne(query, updateDoc, options);
-    
-                            eventInfo = {
-                                playedCard: playedCard,
-                                cardPlayedBy: playerName,
-                                cardPlayedByIndex: playerInd,
-                                newPlay: newPlay,
-                                winnerName: newPlay ? winnerName : null,
-                                newRound: newRound,
-                                gameOver: gameOver,
-                            };
-    
+
+                            if (result.modifiedCount == 1) {
+                                cardPlayedOk = true;
+                                
+                                eventInfo = {
+                                    playedCard: playedCard,
+                                    cardPlayedBy: playerName,
+                                    cardPlayedByIndex: playerInd,
+                                    newPlay: newPlay,
+                                    winnerName: newPlay ? winnerName : null,
+                                    newRound: newRound,
+                                    gameOver: gameOver,
+                                };
+                            }
                         }
                     }
-                    var queryUsed = query;
-                    if (gameOver) {
-                        queryUsed = { gameStatus: 2,
-                            _id: searchId,
-                            // password: newPlayer.gamePassword,
-                             };
+
+                    if (cardPlayedOk) {
+                        var queryUsed = query;
+                        if (gameOver) {
+                            queryUsed = { gameStatus: 2,
+                                _id: searchId,
+                                // password: newPlayer.gamePassword,
+                                 };
+                        }
+                        const thisGame = await collection.findOne(queryUsed);
+                        console.log(thisGame);
+            
+                        var gameInfo = gameToGameInfo(thisGame);
+                        gameInfo.currentRound = playDetails.roundInd;
+                        gameInfo.eventInfo = eventInfo;
+                        io.to(gameInfo.id).emit('card played', gameInfo);
+            
+                        fn(gameInfo); // just DEBUG
                     }
-                    const thisGame = await collection.findOne(queryUsed);
-                    console.log(thisGame);
-        
-                    var gameInfo = gameToGameInfo(thisGame);
-                    gameInfo.currentRound = playDetails.roundInd;
-                    gameInfo.eventInfo = eventInfo;
-                    io.to(gameInfo.id).emit('card played', gameInfo);
-        
-                    fn(gameInfo); // just DEBUG
                 }
     
             });
