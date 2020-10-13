@@ -152,8 +152,48 @@ function initGameListEvent(socket) {
     });
 }
 
+function initJoinByIdButton(socket) {
+    $('#joinByIdButton').on('click', function() {
+        var uuid = $('#joinById').val();
+        var gameId = $('#joinGameId').val();
+        if (uuid.length == 36 && gameId.length > 5) {
+            window.localStorage.setItem('uUID', uuid);
+            console.log('new uUID set: ' + uuid);
+
+            var joiningDetails = { gameId: gameId,
+                myId: window.localStorage.getItem('uUID'),
+            };
+            socket.emit('join game by id', joiningDetails, function (response) {
+                console.log('joining game by id: ' + response);
+                if (response.joiningResult == 'OK') {
+                    alert('You can now play as ' + response.newName + '. Please click OK and then refresh this page.');
+                }
+            });
+        }
+    });
+}
+
+function initLeavingButtons(socket) {
+    $('#dontLeaveButton').on('click', function() {
+        $('#leaveGameCollapse').collapse('hide');
+    });
+    $('#leaveButton').on('click', function() {
+        $('#leavingUId').val(window.localStorage.getItem('uUID'));
+    });
+    $('#leavingGameModal').on('hidden.bs.modal', function() {
+        var uuid = uuidv4();
+        console.log('new uUID set: ' + uuid);
+        window.localStorage.setItem('uUID', uuid);
+        socket.emit('leave ongoing game', $('#joinGameId').val(), function() {
+            alert('You have now leaved game. Please click OK and then refresh this page.');
+        });
+    });
+}
+
 function initButtons(socket) {
     initcreateNewGameButton(socket);
+    initLeavingButtons(socket);
+    initJoinByIdButton(socket);
 }
 
 function initEvents(socket) {

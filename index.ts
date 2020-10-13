@@ -97,6 +97,10 @@ try {
                 }
     
             });
+
+            socket.on('leave ongoing game', async (gameId) => {
+                socket.leave(gameId);
+            });
     
             socket.on('leave game', async (leaveGame, fn) => {
                 var leavingResult = 'NOTSET';
@@ -146,6 +150,47 @@ try {
                     var resultGameInfo = gameToGameInfo(val);
     
                     io.emit('update gameinfo', resultGameInfo);
+                }
+            });
+
+            socket.on('join game by id', async (joiningDetails, fn) => {
+                var joiningResult = 'NOTSET';
+                console.log('join game by id');
+                console.log(joiningDetails);
+                var ObjectId = require('mongodb').ObjectId;
+                var searchId = new ObjectId(joiningDetails.gameId);
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const query = { gameStatus: 1,
+                                _id: searchId,
+                                 };
+                const game = await collection.findOne(query);
+                console.log(game);
+                var retVal = {
+                    joiningResult: null,
+                    gameId: joiningDetails.gameId,
+                }
+                var playAsName = null;
+                if (game !== null) {
+                    var idInGame = false;
+                    game.humanPlayers.forEach(function(player) {
+                        if (player.playerId == joiningDetails.myId) {
+                            idInGame = false;
+                            playAsName = player.name;
+                            socket.join(joiningDetails.gameId);
+                            joiningResult = 'OK';
+                            return;
+                        }
+                    });
+                }
+
+                if (joiningResult == 'OK') {
+                    var result = {
+                        joiningResult: joiningResult,
+                        newName: playAsName,
+                    }
+                    fn(result);
+
                 }
             });
     
