@@ -26,103 +26,7 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
         <!-- <link rel="stylesheet" type="text/css" href="/deck.css"> -->
         <link rel="stylesheet" type="text/css" href="/css/cardGallery.css">
-        <style>
-            .myCardsRowClass {
-                padding-left: 60px;
-            }
-            .playerTableCol {
-                border: 1px solid black;
-            }
-            .cardCol {
-                min-height: 120px;
-                /* border: 1px solid black; */
-            }
-            .cardWonCol {
-                padding-left: 1px;
-                padding-right: 1px;
-            }
-            .nameCol {
-                min-height: 50px;
-                /* border: 1px solid black; */
-            }
-            .promiseTableHeader {
-                padding-left: 12px;
-                padding-right: 12px;
-                text-align: center;
-                border-bottom: solid black 1px;
-                font-size: smaller;
-            }
-            .promiseTableCol {
-                padding-left: 12px;
-                padding-right: 12px;
-                text-align: center;
-                border-bottom: dotted grey 1px;
-                font-size: smaller;
-            }
-            .scoreboardTableHeader {
-                padding-left: 10px;
-                padding-right: 10px;
-                text-align: center;
-                border-bottom: solid black 1px;
-                font-size: smaller;
-            }
-            .scoreboardTableCol {
-                padding-left: 10px;
-                padding-right: 10px;
-                text-align: center;
-                border-bottom: dotted grey 1px;
-                font-size: smaller;
-            }
-            .promiseKept {
-                font-weight: bold;
-                color: darkgreen;
-            }
-            .promiseOver {
-                color: darkred;
-            }
-            .promiseUnder {
-                font-weight: bold;
-                color: olive;
-            }
-            .gamePromiseKeeping {
-                font-weight: bolder;
-            }
-            .gamePromiseOver {
-                color: darkred;
-            }
-            .gamePromiseUnder {
-                color: olive;
-            }
-            .thinking {
-                background: rgba(255, 82, 82, 1);
-                border-radius: 100%;
-                margin: 30px;
-                height: 40px;
-                width: 40px;
-
-                box-shadow: 0 0 0 0 rgba(255, 82, 82, 1);
-                transform: scale(1);
-                animation: pulse 2s infinite;
-            }
-
-            @keyframes pulse {
-                0% {
-                    transform: scale(0.9);
-                    box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
-                }
-
-                70% {
-                    transform: scale(1);
-                    box-shadow: 0 0 0 10px rgba(255, 82, 82, 0);
-                }
-
-                100% {
-                    transform: scale(0.9);
-                    box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
-                }
-            }
-
-        </style>
+        <link rel="stylesheet" type="text/css" href="/css/cardTable.css">
     </head>
     <body>
         
@@ -258,10 +162,13 @@
 
                     <!-- container for promise table -->
                     <div class="row fixed-bottom" style="height: 150px;">
-                        <div class="col-10" id="promiseTable" style="border: 1px solid black;">
+                        <div class="col-8" id="promiseTable" style="border: 1px solid black;">
                         </div>
                         <div class="col-2" id="chat" style="border: 1px solid black;">
                             <!-- here we will chat -->
+                        </div>
+                        <div class="col-2" id="menu" style="border: 1px solid black;">
+                            <button>
                         </div>
                     </div>
 
