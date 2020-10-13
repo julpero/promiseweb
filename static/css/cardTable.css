@@ -16,6 +16,9 @@
     min-height: 50px;
     /* border: 1px solid black; */
 }
+.makePromiseButton {
+    margin: '5px';
+}
 .promiseTableHeader {
     padding-left: 12px;
     padding-right: 12px;

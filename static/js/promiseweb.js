@@ -716,11 +716,13 @@ function roundPromised(myRound) {
 }
 
 function initPromise(socket, myRound) {
+    $('#myPromiseCol').empty();
     var node = $('#myPromiseCol');
 
     for (var i = 0; i < myRound.cardsInRound + 1; i++) {
-        node.append($('<button id="makePromiseButton'+i+'" value="'+i+'"></button>').addClass('btn btn-primary').css({margin: '5px'}).text(i));
+        node.append($('<button id="makePromiseButton'+i+'" value="'+i+'"></button>').addClass('btn btn-primary makePromiseButton').text(i));
         $('#makePromiseButton'+i).on('click', function() {
+            $('.makePromiseButton').off('click');
             var promiseDetails = { gameId: myRound.gameId,
                 roundInd: myRound.roundInd,
                 myId: window.localStorage.getItem('uUID'),
@@ -739,7 +741,7 @@ function initPromise(socket, myRound) {
 
 function hidePromise() {
     $('#myPromiseRow').hide();
-    $('#myPromiseCol').html('');
+    $('#myPromiseCol').empty();
 }
 
 function showPlayerPromises(myRound) {
@@ -1098,6 +1100,7 @@ function createPromiseTable(promiseTable) {
 }
 
 function initPromiseTable(promiseTable) {
+    console.log('initPromiseTable');
     if ($('#promiseTable').children().length == 0) createPromiseTable(promiseTable);
     
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
