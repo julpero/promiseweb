@@ -10,6 +10,7 @@ server.listen(port, () => {
 });
 
 app.use(express.static('static'))
+app.use(express.static('node_modules/deck-of-cards/dist'))
 
 var doc = require('card-deck');
 
@@ -19,19 +20,19 @@ try {
 
         if (err) console.log(err);
         app.get('/', (req, res) => {
-            res.sendFile(__dirname + '/index.html');
+            res.sendFile('index.html');
         });
         // app.get('/promiseweb.js', (req, res) => {
         //     res.sendFile(__dirname + '/promiseweb.js');
         // });
-        app.get('/deck.js', (req, res) => {
-            try {
-                res.sendFile(__dirname + '/node_modules/deck-of-cards/dist/deck.min.js');
-            } catch(error) {
-                const err = JSON.stringify(error);
-                res.status(500).send('Request error: ' + err);
-            }
-        });
+        // app.get('/deck.js', (req, res) => {
+        //     try {
+        //         res.sendFile(__dirname + '/node_modules/deck-of-cards/dist/deck.min.js');
+        //     } catch(error) {
+        //         const err = JSON.stringify(error);
+        //         res.status(500).send('Request error: ' + err);
+        //     }
+        // });
         // app.get('/deck.css', (req, res) => {
         //     try {
         //         res.sendFile(__dirname + '/cardGallery/cardGallery.css');
