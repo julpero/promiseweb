@@ -438,12 +438,12 @@ function initPlayerTable(index, align) {
     // where are promises and points aligned
     if (align == 'left') {
         playedCardRow.append($('<div id="player'+index+'Thinking"></div>').addClass('col'));
-        playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol'));
+        if (index != 0) playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol'));
         col31.append(cardsWonRow);
         col32.append(playedCardRow);
     }
     if (align == 'right') {
-        playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol'));
+        if (index != 0) playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol'));
         playedCardRow.append($('<div id="player'+index+'Thinking"></div>').addClass('col'));
         col31.append(playedCardRow);
         col32.append(cardsWonRow);
@@ -701,15 +701,19 @@ function isMyPromiseTurn(myRound) {
     return false;
 }
 
-function getThinkinDiv() {
+function getThinkinDiv(type) {
     var nodeRow = $('<div id="pulsingRow"></div>');
-    var nodeCol = $('<div id="pulsingCol"></div>').addClass('thinking');
+    var nodeCol = $('<div id="pulsingCol"></div>').addClass('thinking'+type);
     nodeRow.append(nodeCol);
     return nodeRow;
 }
 
 function showThinking(id) {
-    $('#player'+id+'Thinking').append(getThinkinDiv());
+    $('#player'+id+'Thinking').append(getThinkinDiv('red'));
+}
+
+function showMyTurn() {
+    $('#player0Thinking').append(getThinkinDiv('green'));
 }
 
 function hideThinkings() {
@@ -810,6 +814,7 @@ function showPlayerPromises(myRound) {
 function getPromise(socket, myRound) {
     hideThinkings();
     if (isMyPromiseTurn(myRound)) {
+        showMyTurn();
         initPromise(socket, myRound);
         dimMyCards(myRound, 1.0);
     } else {
@@ -974,6 +979,7 @@ function playRound(socket, myRound) {
     hideThinkings();
     $('#myInfoRow').show();
     if (isMyPlayTurn(myRound)) {
+        showMyTurn();
         initCardsToPlay(socket, myRound);
     } else {
         showWhoIsPlaying(myRound);
