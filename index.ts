@@ -9,6 +9,8 @@ server.listen(port, () => {
     console.log('listening on *:' + port);
 });
 
+app.use(express.static('static'))
+
 var doc = require('card-deck');
 
 try {
@@ -19,9 +21,9 @@ try {
         app.get('/', (req, res) => {
             res.sendFile(__dirname + '/index.html');
         });
-        app.get('/promiseweb.js', (req, res) => {
-            res.sendFile(__dirname + '/promiseweb.js');
-        });
+        // app.get('/promiseweb.js', (req, res) => {
+        //     res.sendFile(__dirname + '/promiseweb.js');
+        // });
         app.get('/deck.js', (req, res) => {
             try {
                 res.sendFile(__dirname + '/node_modules/deck-of-cards/dist/deck.min.js');
@@ -30,15 +32,15 @@ try {
                 res.status(500).send('Request error: ' + err);
             }
         });
-        app.get('/deck.css', (req, res) => {
-            try {
-                res.sendFile(__dirname + '/cardGallery/cardGallery.css');
-            } catch(error) {
-                const err = JSON.stringify(error);
-                res.status(500).send('Request error: ' + err);
-            }
-        });
-        app.get('/faces/:face', (req, res) => {
+        // app.get('/deck.css', (req, res) => {
+        //     try {
+        //         res.sendFile(__dirname + '/cardGallery/cardGallery.css');
+        //     } catch(error) {
+        //         const err = JSON.stringify(error);
+        //         res.status(500).send('Request error: ' + err);
+        //     }
+        // });
+        app.get('/css/faces/:face', (req, res) => {
             try {
                 res.sendFile(__dirname + '/cardGallery/fourColorFaces/' + req.params.face);
             } catch(error) {
