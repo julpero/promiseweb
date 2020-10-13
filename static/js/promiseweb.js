@@ -1150,11 +1150,17 @@ function initPromiseTable(promiseTable) {
             var totalPromise = promiseTable.rounds[j].totalPromise;
             if (totalPromise != null) {
                 if (cardsInRound == totalPromise) {
-                    if (!$('#promiseTableHeader'+j).hasClass('promiseKept')) $('#promiseTableHeader'+j).addClass('promiseKept');
+                    $('#promiseTableHeader'+j).removeClass('promiseOver');
+                    $('#promiseTableHeader'+j).removeClass('promiseUnder');
+                    $('#promiseTableHeader'+j).addClass('promiseKept');
                 } else if (cardsInRound < totalPromise) {
-                    if (!$('#promiseTableHeader'+j).hasClass('promiseOver')) $('#promiseTableHeader'+j).addClass('promiseOver');
+                    $('#promiseTableHeader'+j).removeClass('promiseKept');
+                    $('#promiseTableHeader'+j).removeClass('promiseUnder');
+                    $('#promiseTableHeader'+j).addClass('promiseOver');
                 } else {
-                    if (!$('#promiseTableHeader'+j).hasClass('promiseUnder')) $('#promiseTableHeader'+j).addClass('promiseUnder');
+                    $('#promiseTableHeader'+j).removeClass('promiseKept');
+                    $('#promiseTableHeader'+j).removeClass('promiseOver');
+                    $('#promiseTableHeader'+j).addClass('promiseUnder');
                 }
             }
             var promise = promiseTable.promisesByPlayers[i][j];
