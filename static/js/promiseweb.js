@@ -1,5 +1,3 @@
-// const { resolve } = require("path");
-
 function validateNewGame(gameOptions) {
     if (gameOptions.humanPlayersCount + gameOptions.botPlayersCount < 2 || gameOptions.humanPlayersCount + gameOptions.botPlayersCount > 5) {
         alert('Total number of players must be between 2 and 5');

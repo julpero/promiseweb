@@ -372,7 +372,7 @@ try {
                         gameInfo.currentRound = promiseDetails.roundInd;
                         io.to(gameInfo.id).emit('promise made', gameInfo);
             
-                        fn(gameInfo); // just DEBUG
+                        // fn(gameInfo); // just DEBUG
                     }
                 }
     
@@ -499,7 +499,7 @@ try {
                         gameInfo.eventInfo = eventInfo;
                         io.to(gameInfo.id).emit('card played', gameInfo);
             
-                        fn(gameInfo); // just DEBUG
+                        // fn(gameInfo); // just DEBUG
                     }
                 }
     
