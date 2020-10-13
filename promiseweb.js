@@ -196,21 +196,34 @@ function drawCards(myRound) {
     var cardsDrawn = [];
     drawMyCards(deck, myRound.myCards, cardsDrawn);
     drawTrumpCard(deck, myRound.trumpCard, cardsDrawn);
-    drawOtherPlayerCards(deck, myRound.players, myRound.cardsInRound, cardsDrawn);
-
+    drawOtherPlayerCards(deck, myRound.players, myRound.cardsInRound, cardsDrawn, myRound.cardsPlayed);
 }
 
-function drawOtherPlayerCards(deck, players, cardsInRound, cardsDrawn) {
-    for (var i = 1; i < players.length; i++) {
-        for (j = 0; j < cardsInRound; j++) {
-            var $deckDiv = document.getElementById('player'+i+'CardCol'+j);
-            for (d = 0; d < 52; d++) {
-                if ($.inArray(d, cardsDrawn) == -1) {
-                    var card = deck.cards[d];
-                    cardsDrawn.push(d);
-                    card.mount($deckDiv);
-                    card.setSide('back');
-                    break;
+function playerHasPlayedCards(playerName, cardsPlayed) {
+    var retVal = 0;
+    for (var i = 0; i < cardsPlayed.length; i++) {
+        for (var j = 0; j < cardsPlayed[i].length; j++) {
+            if (cardsPlayed[i][j].name == playerName) retVal++;
+        }
+    }
+    return retVal;
+}
+
+function drawOtherPlayerCards(deck, players, cardsInRound, cardsDrawn, cardsPlayed) {
+    for (var i = 0; i < players.length; i++) {
+        if (!players[i].thisIsMe) {
+            var playerName = players[i].name;
+            var tableIndex = otherPlayerMapper(i, players);
+            for (j = 0; j < cardsInRound - playerHasPlayedCards(playerName, cardsPlayed); j++) {
+                var $deckDiv = document.getElementById('player'+tableIndex+'CardCol'+j);
+                for (d = 0; d < 52; d++) {
+                    if ($.inArray(d, cardsDrawn) == -1) {
+                        var card = deck.cards[d];
+                        cardsDrawn.push(d);
+                        card.mount($deckDiv);
+                        card.setSide('back');
+                        break;
+                    }
                 }
             }
         }
