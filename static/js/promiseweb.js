@@ -1116,7 +1116,7 @@ function createPromiseTable(promiseTable) {
     
     tableHeaderRow.append($('<th scope="col"></th>').addClass('promiseTableHeader'));
     for (var i = 0; i < promiseTable.rounds.length; i++) {
-        var tableHeaderCol = $('<th scope="col"></th>').addClass('promiseTableHeader').html(promiseTable.rounds[i].cardsInRound);
+        var tableHeaderCol = $('<th scope="col" id="promiseTableHeader'+i+'"></th>').addClass('promiseTableHeader').html(promiseTable.rounds[i].cardsInRound);
         tableHeaderRow.append(tableHeaderCol);
     }
     tableHeader.append(tableHeaderRow);
@@ -1145,6 +1145,17 @@ function initPromiseTable(promiseTable) {
     
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
         for (var j = 0; j < promiseTable.rounds.length; j++) {
+            var cardsInRound = promiseTable.rounds[j].cardsInRound;
+            var totalPromise = promiseTable.rounds[j].totalPromise;
+            if (totalPromise != null) {
+                if (cardsInRound == totalPromise) {
+                    if (!$('#promiseTableHeader'+j).hasClass('promiseKept')) $('#promiseTableHeader'+j).addClass('promiseKept');
+                } else if (cardsInRound < totalPromise) {
+                    if (!$('#promiseTableHeader'+j).hasClass('promiseOver')) $('#promiseTableHeader'+j).addClass('promiseOver');
+                } else {
+                    if (!$('#promiseTableHeader'+j).hasClass('promiseUnder')) $('#promiseTableHeader'+j).addClass('promiseUnder');
+                }
+            }
             var promise = promiseTable.promisesByPlayers[i][j];
             var promiseStr = (promise != null) ? promise.promise : '&nbsp;';
             $('#player'+i+'Prom'+j).html(promiseStr);

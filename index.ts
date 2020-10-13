@@ -356,6 +356,8 @@ try {
                             if (gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].name == playerName) {
                                 // update promise
                                 gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise = promiseInt;
+                                if (gameInDb.game.rounds[promiseDetails.roundInd].totalPromise == null) gameInDb.game.rounds[promiseDetails.roundInd].totalPromise = 0;
+                                gameInDb.game.rounds[promiseDetails.roundInd].totalPromise += promiseInt;
                                 const options = { upsert: true };
                                 const updateDoc = {
                                     $set: {
@@ -756,16 +758,15 @@ function getPromiseTable(thisGame) {
     for (var i = 0; i < thisGame.game.playerOrder.length; i++) {
         var playerPromises = [];
         for (var j = 0; j < thisGame.game.rounds.length; j++) {
-            if (true || thisGame.game.rounds[j].roundStatus > 0) {
-                playerPromises.push({
-                    promise: thisGame.game.rounds[j].roundPlayers[i].promise,
-                    keep: thisGame.game.rounds[j].roundPlayers[i].keeps,
-                    points: thisGame.game.rounds[j].roundPlayers[i].points,
-                });
-            }
+            playerPromises.push({
+                promise: thisGame.game.rounds[j].roundPlayers[i].promise,
+                keep: thisGame.game.rounds[j].roundPlayers[i].keeps,
+                points: thisGame.game.rounds[j].roundPlayers[i].points,
+            });
             if (i == 0) {
                 rounds.push({
                     cardsInRound: thisGame.game.rounds[j].cardsInRound,
+                    totalPromise: thisGame.game.rounds[j].totalPromise,
                 });
             }
         }
