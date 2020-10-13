@@ -67,6 +67,9 @@
 .gamePromiseUnder {
     color: olive;
 }
+.chatTextBox {
+    font-size: xx-small;
+}
 .thinking {
     background: rgba(255, 82, 82, 1);
     border-radius: 100%;

@@ -55,6 +55,12 @@ try {
             socket.on('disconnect', () => {
                 console.log('user disconnected');
             });
+
+            socket.on('write chat', async (chatObj, fn) => {
+                var chatLine = chatObj.myName + ': ' + chatObj.chatLine;
+                io.to(chatObj.gameId).emit('new chat line', chatLine);
+                fn();
+            });
     
             socket.on('check game', async (gameCheck) => {
                 console.log(gameCheck);

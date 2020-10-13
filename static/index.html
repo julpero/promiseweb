@@ -197,9 +197,23 @@
                     <div class="row fixed-bottom" style="height: 150px;">
                         <div class="col-8" id="promiseTable" style="border: 1px solid black;">
                         </div>
+
                         <div class="col-2" id="chat" style="border: 1px solid black;">
-                            <!-- here we will chat -->
+                            <div class="row">
+                                <div class="col">
+                                    <textarea id="chatTextArea" class="form-control chatTextBox" rows="5" readonly></textarea>
+                                </div>
+                                <div class="w-100"></div>
+                                <div class="col-10">
+                                    <input type="text" id="newChatLine" class="form-control chatTextBox">
+                                </div>
+                                <div class="col-2">
+                                    <button type="button" class="btn btn-primary btn-sm" id="sendChatButton">&gt;</button>
+                                </div>
+                            </div>
+
                         </div>
+
                         <div class="col-2" id="menu" style="border: 1px solid black;">
                             <a class="btn btn-primary" data-toggle="collapse" href="#leaveGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                                 Leave game
@@ -238,7 +252,8 @@
                 </div>
                 <div class="modal-body">
                     <p>If you want to leave game and someone else is continuing it, give this game id to him/her:</p>
-                    <input type="text" id="leavingGameId" class="form-control" readonly>
+                    <input type="text" id="myName" hidden>
+                    <input type="text" id="currentGameId" class="form-control" readonly>
                     <p>... and also your id:</p>
                     <input type="text" id="leavingUId" class="form-control" readonly>
                 </div>
@@ -277,8 +292,13 @@
                     }
                 });
 
+                socket.on('new chat line', function(chatLine) {
+                    appendToChat(chatLine);
+                });
+
                 socket.on('start game', function(gameInfo) {
-                    $('#leavingGameId').val(gameInfo.id);
+                    $('#currentGameId').val(gameInfo.id);
+                    $('#myName').val(gameInfo.myName);
                     $('#gameChooser').hide();
                     $('#gameContainer').show();
                     var getRound = {
@@ -288,17 +308,18 @@
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
+                        $('#myName').val(myRound.myName);
                         browserReload(myRound);
                         getPromise(socket, myRound);
                     });
                 });
 
                 socket.on('promise made', function(gameInfo) {
-                    $('#leavingGameId').val(gameInfo.id);
+                    $('#currentGameId').val(gameInfo.id);
                     console.log('promise made');
                     console.log(gameInfo);
                     var doReloadInit = gameInfo.reloaded;
-
+                    
                     var getRound = {
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
@@ -307,6 +328,7 @@
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
+                        $('#myName').val(myRound.myName);
                         if (myRound.doReloadInit) {
                             console.log('reloading...');
                             browserReload(myRound);
@@ -321,7 +343,7 @@
                 });
 
                 socket.on('card played', async function(gameInfo) {
-                    $('#leavingGameId').val(gameInfo.id);
+                    $('#currentGameId').val(gameInfo.id);
                     console.log('card played');
                     console.log(gameInfo);
                     hideThinkings();
@@ -362,6 +384,7 @@
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
+                        $('#myName').val(myRound.myName);
                         if (myRound.gameOver) {
                             showPlayerPromises(myRound);
                             initPromiseTable(myRound.promiseTable);

@@ -83,7 +83,7 @@ function joinGame(socket, id) {
     if (validateJoinGame(gameDetails)) {
         socket.emit('join game', gameDetails, function (response) {
             console.log(response);
-            if (joiningResult.response == 'OK') {
+            if (response.joiningResult == 'OK') {
                 $('.joinThisGameButton').prop('disabled', true);
                 $('#leaveGameButton'+joiningResult.gameId).prop('disabled', false);
             }
@@ -97,9 +97,9 @@ function leaveGame(socket, id) {
     };
     socket.emit('leave game', gameDetails, function (response) {
         console.log(response);
-        if (joiningResult.response == 'OK') {
+        if (response.leavingResult == 'OK') {
             $('.joinThisGameButton').prop('disabled', true);
-            $('#leaveGameButton'+joiningResult.gameId).prop('disabled', false);
+            $('#leaveGameButton'+leavingResult.gameId).prop('disabled', false);
         }
     });
 }
@@ -188,10 +188,44 @@ function initLeavingButtons(socket) {
     });
 }
 
+function initChatButton(socket) {
+    $('#sendChatButton').on('click', function() {
+        var newLine = $('#newChatLine').val().trim();
+        var myName = $('#myName').val().trim();
+        if (newLine.length > 0) {
+            var chatObj = {
+                gameId: $('#currentGameId').val(),
+                chatLine: newLine,
+                myName: myName,
+            }
+            socket.emit('write chat', chatObj, function() {
+                $('#newChatLine').val('');
+            });
+        }
+    });
+    $('#newChatLine').on('keypress', function(e) {
+        if (e.which == 13) {
+            var newLine = $('#newChatLine').val().trim();
+            var myName = $('#myName').val().trim();
+            if (newLine.length > 0) {
+                var chatObj = {
+                    gameId: $('#currentGameId').val(),
+                    chatLine: newLine,
+                    myName: myName,
+                }
+                socket.emit('write chat', chatObj, function() {
+                    $('#newChatLine').val('');
+                });
+            }
+        }
+    });
+}
+
 function initButtons(socket) {
     initcreateNewGameButton(socket);
     initLeavingButtons(socket);
     initJoinByIdButton(socket);
+    initChatButton(socket);
 }
 
 function initEvents(socket) {
@@ -1185,4 +1219,11 @@ function browserReload(myRound) {
     drawCards(myRound);
     showPlayedCards(myRound);
     showWonCards(myRound);
+}
+
+
+function appendToChat(text) {
+    $('#chatTextArea').val($('#chatTextArea').val() +'\n'+ text);
+    var textArea = document.getElementById('chatTextArea');
+    textArea.scrollTop = textArea.scrollHeight;
 }
