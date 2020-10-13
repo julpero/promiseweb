@@ -977,6 +977,7 @@ function showWonCards(myRound) {
 
 function playRound(socket, myRound) {
     hideThinkings();
+    hidePromise();
     $('#myInfoRow').show();
     if (isMyPlayTurn(myRound)) {
         showMyTurn();
