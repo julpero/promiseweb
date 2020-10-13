@@ -104,8 +104,9 @@ try {
     
             });
 
-            socket.on('leave ongoing game', async (gameId) => {
+            socket.on('leave ongoing game', async (gameId, fn) => {
                 socket.leave(gameId);
+                fn();
             });
     
             socket.on('leave game', async (leaveGame, fn) => {
