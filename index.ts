@@ -13,6 +13,7 @@ app.use(express.static('static'))
 app.use(express.static('node_modules/deck-of-cards/dist'))
 
 var doc = require('card-deck');
+const userSocketIdMap = new Map(); //a map of online usernames and their clients
 
 try {
     var mongoUtil = require(__dirname + '/mongoUtil.js');
@@ -53,7 +54,20 @@ try {
         io.on('connection', (socket) => {
             console.log('a user connected');
             socket.on('disconnect', () => {
-                console.log('user disconnected');
+                var gameId = null;
+                var userName = getClientNameFromMap(socket.id);
+                var mapping = userSocketIdMap.get(userName);
+                if (mapping != null && mapping.games != null) {
+                    var gameIds = Array.from(mapping.games.values());
+                    gameId = gameIds != null && gameIds.length > 0 ? gameIds[0] : null;
+                }
+                if (userName == null) userName = 'unknown';
+                var chatLine = 'player ' + userName + ' disconnected';
+                console.log(chatLine);
+                if (gameId != null) {
+                    io.to(gameId).emit('new chat line', chatLine);
+                }
+                removeClientFromMap(userName, socket.id, gameId);
             });
 
             socket.on('write chat', async (chatObj, fn) => {
@@ -75,7 +89,10 @@ try {
                         if (player.playerId == gameCheck.myId) {
                             console.log('found game 1');
                             gameFound = true;
-                            socket.join(game._id);
+                            socket.join(game._id.toString());
+                            addClientToMap(player.name, socket.id, game._id.toString());
+                            var chatLine = 'player ' + player.name + ' connected';
+                            io.to(game._id.toString()).emit('new chat line', chatLine);
                             var gameInfo = gameToGameInfo(game);
                             gameInfo.currentRound = getCurrentRoundIndex(game);
                             gameInfo.reloaded = true;
@@ -92,7 +109,10 @@ try {
                         game.humanPlayers.forEach( function(player) {
                             if (player.playerId == gameCheck.myId) {
                                 console.log('found game 0');
-                                socket.join(game._id);
+                                socket.join(game._id.toString());
+                                addClientToMap(player.name, socket.id, game._id.toString());
+                                var chatLine = 'player ' + player.name + ' connected';
+                                io.to(game._id.toString()).emit('new chat line', chatLine);
                                 var gameInfo = gameToGameInfo(game);
                                 gameInfo.currentRound = 0;
                                 gameInfo.reloaded = true;
@@ -173,18 +193,15 @@ try {
                                  };
                 const game = await collection.findOne(query);
                 console.log(game);
-                var retVal = {
-                    joiningResult: null,
-                    gameId: joiningDetails.gameId,
-                }
                 var playAsName = null;
                 if (game !== null) {
-                    var idInGame = false;
                     game.humanPlayers.forEach(function(player) {
                         if (player.playerId == joiningDetails.myId) {
-                            idInGame = false;
                             playAsName = player.name;
                             socket.join(joiningDetails.gameId);
+                            addClientToMap(playAsName, socket.id, joiningDetails.gameId);
+                            var chatLine = 'player ' + player.name + ' connected';
+                            io.to(game._id.toString()).emit('new chat line', chatLine);
                             joiningResult = 'OK';
                             return;
                         }
@@ -239,6 +256,9 @@ try {
                             const result = await collection.updateOne(query, updateDoc, options);
                             if (result.modifiedCount == 1) {
                                 socket.join(newPlayer.gameId);
+                                addClientToMap(newPlayer.myName, socket.id, newPlayer.gameId);
+                                var chatLine = 'player ' + newPlayer.myName + ' connected';
+                                io.to(newPlayer.gameId).emit('new chat line', chatLine);
                                 joiningResult = 'OK';
                             }
                         } else if (!nameFree) {
@@ -298,6 +318,7 @@ try {
                     const result = await collection.insertOne(gameOptions);
                     console.log('gameOptions inserted ' + result.insertedCount + ' with _id: ' + result.insertedId);
                     socket.join(result.insertedId);
+                    addClientToMap(gameOptions.adminName, socket.id, result.insertedId);
                     fn(result.insertedId);
                 } else {
                     fn('NOT OK');
@@ -968,4 +989,43 @@ function initDeck() {
     var deck = new doc(cards);
     deck.shuffle();
     return deck;
+}
+
+
+function addClientToMap(userName, socketId, gameId){
+    if (!userSocketIdMap.has(userName)) {
+        //when user is joining first time
+        userSocketIdMap.set(userName, { sockets: new Set([socketId]), games: new Set([gameId])});
+    } else {
+        //user had already joined from one client and now joining using another client
+        userSocketIdMap.get(userName).sockets.add(socketId);
+        userSocketIdMap.get(userName).games.add(gameId);
+    }
+}
+
+function removeClientFromMap(userName, socketId, gameId){
+    if (userSocketIdMap.has(userName)) {
+        let userSocketIdSet = userSocketIdMap.get(userName);
+        userSocketIdSet.sockets.delete(socketId);
+        userSocketIdSet.games.delete(gameId);
+        //if there are no clients for a user, remove that user from online list (map)
+        if (userSocketIdSet.size == 0 ) {
+            userSocketIdMap.delete(userName);
+        }
+    }
+}
+
+function getClientNameFromMap(socketId) {
+    var name = null;
+    userSocketIdMap.forEach(function(value, key) {
+        console.log(value);
+        var sockets = Array.from(value.sockets);
+        for (var i = 0; i < sockets.length; i++) {
+            console.log(sockets[i]);
+            if (sockets[i] == socketId) {
+                name = key;
+            }
+        }
+    });
+    return name;
 }
