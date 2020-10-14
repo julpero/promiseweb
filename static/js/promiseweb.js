@@ -294,6 +294,11 @@ function drawOtherPlayerCards(deck, players, cardsInRound, cardsDrawn, cardsPlay
                         cardsDrawn.push(d);
                         card.mount($deckDiv);
                         card.setSide('back');
+                        card.animateTo({
+                            delay: 0,
+                            duration: 0,
+                            rot: Math.floor(Math.random() * 10) - 5,
+                        });
                         break;
                     }
                 }
@@ -310,6 +315,11 @@ function drawTrumpCard(deck, trumpCard, cardsDrawn) {
     cardsDrawn.push(cardIndex);
     card.mount($deckDiv);
     card.setSide('front');
+    card.animateTo({
+        delay: 0,
+        duration: 0,
+        rot: Math.floor(Math.random() * 10) - 5,
+    });
 }
 
 function initMyPromiseRow() {
@@ -345,6 +355,11 @@ function drawMyCards(deck, myCards, cardsDrawn) {
         cardsDrawn.push(cardIndex);
         card.mount($container);
         card.setSide('front');
+        card.animateTo({
+            delay: 0,
+            duration: 0,
+            rot: Math.floor(Math.random() * 10) - 5,
+        });
     });
 }
 
@@ -922,6 +937,11 @@ function showPlayedCards(myRound) {
             var card = deck.cards[cardIndex];
             card.mount($container);
             card.setSide('front');
+            card.animateTo({
+                delay: 0,
+                duration: 0,
+                rot: Math.floor(Math.random() * 10) - 5,
+            });
         }
     }
 }
@@ -969,6 +989,11 @@ function showWonCards(myRound) {
             for (var j = 0; j < playerCount; j++) {
                 var card = deck.cards[cardCount];
                 card.mount($containerTo);
+                card.animateTo({
+                    delay: 0,
+                    duration: 0,
+                    rot: Math.floor(Math.random() * 10) - 5,
+                })
                 cardCount++;
             }
         }
@@ -1031,6 +1056,7 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
             ease: 'quartOut',
             x: parseInt(containerFromPosition.left - containerToPosition.left, 10),
             y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
+            rot: Math.floor(Math.random() * 10) - 5,
             onComplete: function() {
                 for (var j = 0; j < movingCards.length; j++) {
                     movingCards[j].animateTo({
@@ -1039,6 +1065,7 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
                         ease: 'quartOut',
                         x: 0,
                         y: 0,
+                        rot: Math.floor(Math.random() * 10) - 5,
                     });
                 }
                 
@@ -1090,6 +1117,7 @@ async function moveCardFromHandToTable(card, playerName) {
         ease: 'quartOut',
         x: parseInt(containerFromPosition.left - containerToPosition.left, 10),
         y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
+        rot: Math.floor(Math.random() * 10) - 5,
         onComplete: async function() {
             movingCard.setSide('front');
             movingCard.animateTo({
@@ -1098,6 +1126,7 @@ async function moveCardFromHandToTable(card, playerName) {
                 ease: 'quartOut',
                 x: 0,
                 y: 0,
+                rot: Math.floor(Math.random() * 10) - 5,
             });
         }
     });
