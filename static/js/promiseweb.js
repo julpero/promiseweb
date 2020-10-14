@@ -602,7 +602,7 @@ function initTableFor4() {
 
 
 function initTableFor5() {
-    console.log('initTableFor4');
+    console.log('initTableFor5');
     var nodeRow = $('<div></div>').addClass('row');
     var nodeCol = $('<div></div>').addClass('col');
 
