@@ -1,5 +1,5 @@
 function validateNewGame(gameOptions) {
-    if (gameOptions.humanPlayersCount + gameOptions.botPlayersCount < 2 || gameOptions.humanPlayersCount + gameOptions.botPlayersCount > 5) {
+    if (gameOptions.humanPlayersCount + gameOptions.botPlayersCount < 2 || gameOptions.humanPlayersCount + gameOptions.botPlayersCount > 6) {
         alert('Total number of players must be between 2 and 5');
         return false;
     }
@@ -15,12 +15,15 @@ function validateNewGame(gameOptions) {
         alert('Your (nick)name must be at least four characters long');
         return false;
     }
+    if (gameOptions.humanPlayersCount > 5 && (gameOptions.startRound > 8 || gameOptions.endRound > 8)) {
+        alert('For six players eight is maximum start and end round');
+        return false;
+    }
     return true;
 }
 
 function createNewGame(socket, gameOptions) {
     console.log(gameOptions);
-    var gameId;
     socket.emit('create game', gameOptions, function (createdGameId) {
         if (createdGameId == 'NOT OK') {
             alert('You have already created game!');
@@ -336,10 +339,10 @@ function initMyPromiseRow() {
 
 }
 
-function initMyCardsContainer() {
+function initMyCardsContainer(maxCards) {
     var node = $('<div></div>').addClass('row myCardsRowClass');
     
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < maxCards; i++) {
         node.append(drawCardCol(i));
     }
 
@@ -402,292 +405,6 @@ function otherPlayerMapper(idFrom, players) {
     } else {
         return (me < idFrom) ? idFrom - me : idFrom + players.length - me;
     }
-}
-
-function initTrumpTable() {
-    var nodeRow = $('<div></div>').addClass('row');
-    var nodeCol = $('<div></div>').addClass('col');
-
-    var row11= $('<div></div>').addClass('row');
-    var col11 = $('<div>Valtti</div>').addClass('col nameCol');
-    var col12 = $('<div></div>').addClass('w-100');
-    var col13 = $('<div id="trumpDiv"></div>').addClass('col cardCol');
-    row11.append(col11);
-    row11.append(col12);
-    row11.append(col13);
-    
-    nodeCol.append(row11);
-    
-    nodeRow.append(nodeCol);
-
-    return nodeRow;
-}
-
-function initPlayerTable(index, align) {
-    var nodeRow = $('<div></div>').addClass('row');
-    var nodeCol = $('<div></div>').addClass('col playerTableCol');
-
-    var row1 = $('<div id="player'+index+'row"></div>').addClass('row');
-    var col1 = $('<div id="player'+index+'NameCol"></div>').addClass('col nameCol playerNameCol');
-    row1.append(col1);
-    row1.append($('<div id="player'+index+'Promised"></div>').addClass('col'));
-    row1.append($('<div id="player'+index+'Keeps"></div>').addClass('col'));
-    
-    if (index > 0) {
-        var row2 = $('<div></div>').addClass('row');
-        for (var i = 0; i < 12; i++) {
-            row2.append($('<div id="player'+index+'CardCol'+i+'"></div>').addClass('col cardCol'));
-        }
-    }
-
-    var row3 = $('<div></div>').addClass('row');
-    col31 = $('<div></div>').addClass('col cardCol');
-    col32 = $('<div></div>').addClass('col cardCol');
-
-    var cardsWonRow = $('<div></div>').addClass('row');
-    for (var i = 0; i < 10; i++) {
-        cardsWonRow.append($('<div id="player'+index+'CardsWon'+i+'Div"></div>').addClass('col cardCol cardWonCol'));
-    }
-    var playedCardRow = $('<div></div>').addClass('row');
-    
-    // where are promises and points aligned
-    if (align == 'left') {
-        playedCardRow.append($('<div id="player'+index+'Thinking"></div>').addClass('col'));
-        if (index != 0) playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol'));
-        col31.append(cardsWonRow);
-        col32.append(playedCardRow);
-    }
-    if (align == 'right') {
-        if (index != 0) playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol'));
-        playedCardRow.append($('<div id="player'+index+'Thinking"></div>').addClass('col'));
-        col31.append(playedCardRow);
-        col32.append(cardsWonRow);
-    }
-
-    row3.append(col31);
-    row3.append(col32);
-
-    nodeCol.append(row1);
-    if (index > 0) nodeCol.append(row2);
-    nodeCol.append(row3);
-
-    nodeRow.append(nodeCol);
-    return nodeRow;
-}
-
-function myPlayedCardDiv() {
-    var nodeRow = $('<div></div>').addClass('row');
-    var nodeCol = $('<div id="player0CardPlayedDiv"></div>').addClass('col cardCol');
-    nodeRow.append(nodeCol);
-    return nodeRow;
-}
-
-function initTableFor3() {
-    console.log('initTableFor3');
-    var nodeRow = $('<div></div>').addClass('row');
-    var nodeCol = $('<div></div>').addClass('col');
-
-    var row1 = $('<div></div>').addClass('row');
-    var col1 = $('<div></div>').addClass('col-5');
-    col1.append(initPlayerTable(1, 'left'));
-    var col2 = $('<div></div>').addClass('col-2');
-    col2.append(initTrumpTable());
-    var col3 = $('<div></div>').addClass('col-5');
-    col3.append(initPlayerTable(2, 'right'));
-
-    row1.append(col1);
-    row1.append(col2);
-    row1.append(col3);
-
-    var row2 = $('<div></div>').addClass('row');
-    var col21 = $('<div></div>').addClass('col-6');
-    var col22 = $('<div></div>').addClass('col-2');
-    col22.append(myPlayedCardDiv());
-    var col23 = $('<div></div>').addClass('col-4');
-    
-    row2.append(col21);
-    row2.append(col22);
-    row2.append(col23);
-
-    var row3 = $('<div></div>').addClass('row');
-    var col31 = $('<div></div>').addClass('col-3');
-    col31.append(initPlayerTable(0, 'left'));
-    
-    var col32 = $('<div></div>').addClass('col-9');
-    var myCardsRow = initMyCardsContainer();
-    var myPromiseRow = initMyPromiseRow();
-    
-    col32.append(myPromiseRow);
-    col32.append(myCardsRow);
-
-    row3.append(col31);
-    row3.append(col32);
-    
-    
-    nodeCol.append(row1);
-    nodeCol.append(row2);
-    nodeCol.append(row3);
-    nodeRow.append(nodeCol);
-    return nodeRow;
-}
-
-function initTableFor4() {
-    console.log('initTableFor4');
-    var nodeRow = $('<div></div>').addClass('row');
-    var nodeCol = $('<div></div>').addClass('col');
-
-    var row1 = $('<div></div>').addClass('row');
-    var col1 = $('<div></div>').addClass('col-5');
-    col1.append(initPlayerTable(2, 'left'));
-    var col2 = $('<div></div>').addClass('col-2');
-    col2.append(initTrumpTable());
-
-    var col3 = $('<div></div>').addClass('col-5');
-    col3.append(initPlayerTable(3, 'right'));
-
-    var row2 = $('<div></div>').addClass('row');
-    var col21 = $('<div></div>').addClass('col-5');
-    col21.append(initPlayerTable(1, 'left'));
-
-    var col22 = $('<div></div>').addClass('col-1');
-
-    var col23 = $('<div></div>').addClass('col-1');
-    var cardRow = $('<div></div>').addClass('row');
-    var carCols = $('<div></div>').addClass('col cardCol');
-    var cardRow0 = $('<div></div>').addClass('row');
-    var carCols0 = $('<div></div>').addClass('col cardCol');
-    
-    var cardRow1 = $('<div></div>').addClass('row');
-    var carCols1 = $('<div></div>').addClass('col');
-    carCols1.append(myPlayedCardDiv());
-    cardRow1.append(carCols1);
-    cardRow.append(carCols);
-    cardRow0.append(carCols0);
-    col23.append(cardRow);
-    col23.append(cardRow0);
-    col23.append(cardRow1);
-
-    var col24 = $('<div></div>').addClass('col-5');
-
-    var row3 = $('<div></div>').addClass('row');
-    var col31 = $('<div></div>').addClass('col-3');
-    col31.append(initPlayerTable(0, 'left'));
-    
-    var col32 = $('<div></div>').addClass('col-9');
-    var myCardsRow = initMyCardsContainer();
-    
-    var myPromiseRow = initMyPromiseRow();
-    
-    col32.append(myPromiseRow);
-    col32.append(myCardsRow);
-
-    row3.append(col31);
-    row3.append(col32);
-
-    row1.append(col1);
-    row1.append(col2);
-    row1.append(col3);
-
-    row2.append(col21);
-    row2.append(col22);
-    row2.append(col23);
-    row2.append(col24);
-
-    nodeCol.append(row1);
-    nodeCol.append(row2);
-    nodeCol.append(row3);
-    nodeRow.append(nodeCol);
-    return nodeRow;
-}
-
-
-function initTableFor5() {
-    console.log('initTableFor5');
-    var nodeRow = $('<div></div>').addClass('row');
-    var nodeCol = $('<div></div>').addClass('col');
-
-    var row1 = $('<div></div>').addClass('row');
-    var col1 = $('<div></div>').addClass('col-5');
-    col1.append(initPlayerTable(2, 'left'));
-    var col2 = $('<div></div>').addClass('col-2');
-    col2.append(initTrumpTable());
-
-    var col3 = $('<div></div>').addClass('col-5');
-    col3.append(initPlayerTable(3, 'right'));
-
-    var row2 = $('<div></div>').addClass('row');
-    var col21 = $('<div></div>').addClass('col-5');
-    col21.append(initPlayerTable(1, 'left'));
-
-    var col22 = $('<div></div>').addClass('col-1');
-
-    var col23 = $('<div></div>').addClass('col-1');
-    var cardRow = $('<div></div>').addClass('row');
-    var carCols = $('<div></div>').addClass('col cardCol');
-    var cardRow0 = $('<div></div>').addClass('row');
-    var carCols0 = $('<div></div>').addClass('col cardCol');
-    
-    var cardRow1 = $('<div></div>').addClass('row');
-    var carCols1 = $('<div></div>').addClass('col');
-    carCols1.append(myPlayedCardDiv());
-    cardRow1.append(carCols1);
-    cardRow.append(carCols);
-    cardRow0.append(carCols0);
-    col23.append(cardRow);
-    col23.append(cardRow0);
-    col23.append(cardRow1);
-
-    var col24 = $('<div></div>').addClass('col-5');
-    col24.append(initPlayerTable(4, 'right'));
-
-    var row3 = $('<div></div>').addClass('row');
-    var col31 = $('<div></div>').addClass('col-3');
-    col31.append(initPlayerTable(0, 'left'));
-    
-    var col32 = $('<div></div>').addClass('col-9');
-    var myCardsRow = initMyCardsContainer();
-    
-    var myPromiseRow = initMyPromiseRow();
-    
-    col32.append(myPromiseRow);
-    col32.append(myCardsRow);
-
-    row3.append(col31);
-    row3.append(col32);
-
-    row1.append(col1);
-    row1.append(col2);
-    row1.append(col3);
-
-    row2.append(col21);
-    row2.append(col22);
-    row2.append(col23);
-    row2.append(col24);
-
-    nodeCol.append(row1);
-    nodeCol.append(row2);
-    nodeCol.append(row3);
-    nodeRow.append(nodeCol);
-    return nodeRow;
-}
-
-
-function initCardTable(myRound) {
-    var node = $('#otherPlayers');
-    node.html('');
-
-    const playerCount = myRound.players.length;
-    if (playerCount == 3) node.append(initTableFor3());
-    if (playerCount == 4) node.append(initTableFor4());
-    if (playerCount == 5) node.append(initTableFor5());
-}
-
-function initOtherPlayers(myRound) {
-    myRound.players.forEach(function(player, idx) {
-        if (!player.thisIsMe || true) {
-            $('#player'+otherPlayerMapper(idx, myRound.players)+'NameCol').html(player.name);
-        }
-    });
 }
 
 function isMyPlayTurn(myRound) {
@@ -801,8 +518,8 @@ function showPlayerPromises(myRound) {
     myRound.players.forEach(function (player, idx) {
         var tableIdx = otherPlayerMapper(idx, myRound.players);
         if (player.promise != null) {
-            $('#player'+tableIdx+'Promised').html('prom: '+player.promise);
-            $('#player'+tableIdx+'Keeps').html('keep: '+player.keeps);
+            $('#player'+tableIdx+'Promised').html('p: '+player.promise);
+            $('#player'+tableIdx+'Keeps').html('k: '+player.keeps);
             if (player.promise == player.keeps) {
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseOver');
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseUnder');

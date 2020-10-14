@@ -6,6 +6,14 @@
 }
 .cardCol {
     min-height: 112px;
+    padding: 0px;
+    /* border: 1px solid black; */
+}
+.trumpCardCol {
+    text-align: center;
+}
+.lastCardCol {
+    min-width: 85px;
     /* border: 1px solid black; */
 }
 .cardWonCol {
@@ -14,6 +22,10 @@
 }
 .nameCol {
     min-height: 40px;
+    /* border: 1px solid black; */
+}
+.trumpNameCol {
+    text-align: center;
     /* border: 1px solid black; */
 }
 .makePromiseButton {
