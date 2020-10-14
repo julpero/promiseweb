@@ -270,7 +270,7 @@ function drawCards(myRound) {
     var deck = Deck();
     var cardsDrawn = [];
     drawMyCards(deck, myRound.myCards, cardsDrawn);
-    drawTrumpCard(deck, myRound.trumpCard, cardsDrawn);
+    drawTrumpCard(deck, myRound.trumpCard, cardsDrawn, myRound.players.length * myRound.cardsInRound);
     drawOtherPlayerCards(deck, myRound.players, myRound.cardsInRound, cardsDrawn, myRound.cardsPlayed);
 }
 
@@ -298,9 +298,11 @@ function drawOtherPlayerCards(deck, players, cardsInRound, cardsDrawn, cardsPlay
                         card.mount($deckDiv);
                         card.setSide('back');
                         card.animateTo({
+                            x: randomNegToPos(2),
+                            y: randomNegToPos(2),
                             delay: 0,
                             duration: 0,
-                            rot: Math.floor(Math.random() * 10) - 5,
+                            rot: randomNegToPos(5),
                         });
                         break;
                     }
@@ -311,17 +313,33 @@ function drawOtherPlayerCards(deck, players, cardsInRound, cardsDrawn, cardsPlay
 }
 
 
-function drawTrumpCard(deck, trumpCard, cardsDrawn) {
+function drawTrumpCard(deck, trumpCard, cardsDrawn, cardsToPlayers) {
     var $deckDiv = document.getElementById('trumpDiv');
+
+    var dummyDeck = Deck();
+    for (var i = 51; i > cardsToPlayers + 1; i--) {
+        var dummyCard = dummyDeck.cards[i];
+        dummyCard.mount($deckDiv);
+        dummyCard.animateTo({
+            x: randomNegToPos(2),
+            y: randomNegToPos(2),
+            delay: 0,
+            duration: 0,
+            rot: randomNegToPos(5),
+        });
+    }
+
     var cardIndex = getCardIndex(deck.cards, trumpCard);
     var card = deck.cards[cardIndex];
     cardsDrawn.push(cardIndex);
     card.mount($deckDiv);
     card.setSide('front');
     card.animateTo({
+        x: randomNegToPos(2),
+        y: randomNegToPos(2),
         delay: 0,
         duration: 0,
-        rot: Math.floor(Math.random() * 10) - 5,
+        rot: randomNegToPos(5),
     });
 }
 
@@ -359,9 +377,11 @@ function drawMyCards(deck, myCards, cardsDrawn) {
         card.mount($container);
         card.setSide('front');
         card.animateTo({
+            x: randomNegToPos(2),
+            y: randomNegToPos(2),
             delay: 0,
             duration: 0,
-            rot: Math.floor(Math.random() * 10) - 5,
+            rot: randomNegToPos(5),
         });
     });
 }
@@ -655,9 +675,11 @@ function showPlayedCards(myRound) {
             card.mount($container);
             card.setSide('front');
             card.animateTo({
+                x: randomNegToPos(2),
+                y: randomNegToPos(2),
                 delay: 0,
                 duration: 0,
-                rot: Math.floor(Math.random() * 10) - 5,
+                rot: randomNegToPos(5),
             });
         }
     }
@@ -707,9 +729,11 @@ function showWonCards(myRound) {
                 var card = deck.cards[cardCount];
                 card.mount($containerTo);
                 card.animateTo({
+                    x: randomNegToPos(2),
+                    y: randomNegToPos(2),
                     delay: 0,
                     duration: 0,
-                    rot: Math.floor(Math.random() * 10) - 5,
+                    rot: randomNegToPos(5),
                 })
                 cardCount++;
             }
@@ -773,16 +797,16 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
             ease: 'quartOut',
             x: parseInt(containerFromPosition.left - containerToPosition.left, 10),
             y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
-            rot: Math.floor(Math.random() * 10) - 5,
+            rot: randomNegToPos(5),
             onComplete: function() {
                 for (var j = 0; j < movingCards.length; j++) {
                     movingCards[j].animateTo({
                         delay: delay,
                         duration: duration,
                         ease: 'quartOut',
-                        x: 0,
-                        y: 0,
-                        rot: Math.floor(Math.random() * 10) - 5,
+                        x: randomNegToPos(2),
+                        y: randomNegToPos(2),
+                        rot: randomNegToPos(5),
                     });
                 }
                 
@@ -834,16 +858,16 @@ async function moveCardFromHandToTable(card, playerName) {
         ease: 'quartOut',
         x: parseInt(containerFromPosition.left - containerToPosition.left, 10),
         y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
-        rot: Math.floor(Math.random() * 10) - 5,
+        rot: randomNegToPos(5),
         onComplete: async function() {
             movingCard.setSide('front');
             movingCard.animateTo({
                 delay: delay,
                 duration: duration,
                 ease: 'quartOut',
-                x: 0,
-                y: 0,
-                rot: Math.floor(Math.random() * 10) - 5,
+                x: randomNegToPos(2),
+                y: randomNegToPos(2),
+                rot: randomNegToPos(5),
             });
         }
     });
@@ -1002,4 +1026,8 @@ function appendToChat(text) {
     $('#chatTextArea').val($('#chatTextArea').val() +'\n'+ text);
     var textArea = document.getElementById('chatTextArea');
     textArea.scrollTop = textArea.scrollHeight;
+}
+
+function randomNegToPos(max) {
+    return Math.floor(Math.random() * (2*max)) - max;
 }
