@@ -1153,14 +1153,17 @@ function initPromiseTable(promiseTable) {
                     $('#promiseTableHeader'+j).removeClass('promiseOver');
                     $('#promiseTableHeader'+j).removeClass('promiseUnder');
                     $('#promiseTableHeader'+j).addClass('promiseKept');
+                    $('#promiseTableHeader'+j).tooltip({title: "Even"});
                 } else if (cardsInRound < totalPromise) {
                     $('#promiseTableHeader'+j).removeClass('promiseKept');
                     $('#promiseTableHeader'+j).removeClass('promiseUnder');
                     $('#promiseTableHeader'+j).addClass('promiseOver');
+                    $('#promiseTableHeader'+j).tooltip({title: "Over promised, total: " + totalPromise});
                 } else {
                     $('#promiseTableHeader'+j).removeClass('promiseKept');
                     $('#promiseTableHeader'+j).removeClass('promiseOver');
                     $('#promiseTableHeader'+j).addClass('promiseUnder');
+                    $('#promiseTableHeader'+j).tooltip({title: "Under promised, total: " + totalPromise});
                 }
             }
             var promise = promiseTable.promisesByPlayers[i][j];
@@ -1187,7 +1190,10 @@ function createScoreboard(promiseTable) {
     var tableHeaderRow = $('<tr></tr>');
     
     for (var i = 0; i < promiseTable.players.length; i++) {
-        var tableHeaderCol = $('<th scope="col"></th>').addClass('scoreboardTableHeader').html(promiseTable.players[i]);
+        var playerName = promiseTable.players[i];
+        var playerShortName = playerName;
+        if (playerShortName.length > 3) playerShortName = playerShortName.substring(0, 3);
+        var tableHeaderCol = $('<th scope="col" data-toggle="tooltip" data-placement="left" title="'+playerName+'"></th>').addClass('scoreboardTableHeader').html(playerShortName);
         tableHeaderRow.append(tableHeaderCol);
     }
     tableHeader.append(tableHeaderRow);
