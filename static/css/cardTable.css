@@ -12,9 +12,14 @@
 .trumpCardCol {
     text-align: center;
 }
+.firstCardCol {
+    padding-left: 20px;
+}
+.playedCardCol {
+    padding-left: 30px;
+}
 .lastCardCol {
     min-width: 85px;
-    /* border: 1px solid black; */
 }
 .cardWonCol {
     padding-left: 1px;
@@ -26,7 +31,6 @@
 }
 .trumpNameCol {
     text-align: center;
-    /* border: 1px solid black; */
 }
 .makePromiseButton {
     margin-left: 3px;
@@ -37,14 +41,14 @@
     padding-right: 12px;
     text-align: center;
     border-bottom: solid black 1px;
-    font-size: smaller;
+    font-size: small;
 }
 .promiseTableCol {
     padding-left: 12px;
     padding-right: 12px;
     text-align: center;
     border-bottom: dotted grey 1px;
-    font-size: smaller;
+    font-size: small;
 }
 .scoreboardTableHeader {
     padding-left: 10px;
