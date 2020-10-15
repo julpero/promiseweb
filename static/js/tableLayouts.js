@@ -374,8 +374,6 @@ function initCardTable(myRound) {
 
 function initOtherPlayers(myRound) {
     myRound.players.forEach(function(player, idx) {
-        if (!player.thisIsMe || true) {
-            $('#player'+otherPlayerMapper(idx, myRound.players)+'NameCol').html(player.name);
-        }
+        $('#player'+otherPlayerMapper(idx, myRound.players)+'NameCol').html(player.name);
     });
 }

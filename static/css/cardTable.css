@@ -29,6 +29,16 @@
     min-height: 40px;
     /* border: 1px solid black; */
 }
+.dealer {
+    font-weight: bold;
+}
+.dealer::before {
+    content:url('/img/dealerchip.svg');
+    width: 30px;
+    height: 30px;
+    padding: 3px;
+    display: inline-flex;
+}
 .trumpNameCol {
     text-align: center;
 }

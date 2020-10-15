@@ -581,6 +581,7 @@ function showPlayerPromises(myRound) {
 
 function getPromise(socket, myRound, evenPromisesAllowed) {
     hideThinkings();
+    showDealer(myRound);
     if (isMyPromiseTurn(myRound)) {
         showMyTurn();
         initPromise(socket, myRound, evenPromisesAllowed);
@@ -757,9 +758,16 @@ function showWonCards(myRound) {
     }
 }
 
+function showDealer(myRound) {
+    $('.dealer').removeClass('dealer');
+    var indInTable = otherPlayerMapper(myRound.dealerPositionIndex, myRound.players);
+    $('#player'+indInTable+'NameCol').addClass('dealer');
+}
+
 function playRound(socket, myRound) {
     hideThinkings();
     hidePromise();
+    showDealer(myRound);
     $('#myInfoRow').show();
     if (isMyPlayTurn(myRound)) {
         showMyTurn();
