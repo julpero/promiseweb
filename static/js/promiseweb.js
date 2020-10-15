@@ -50,6 +50,7 @@ function initcreateNewGameButton(socket) {
             gameStatus: 0,
             humanPlayers: [{ name: $('#newGameMyName').val(), playerId: window.localStorage.getItem('uUID')}],
             createDateTime: new Date(),
+            evenPromisesAllowed: !$('#noEvenPromises').prop('checked'),
         };
         if (validateNewGame(gameOptions)) {
             createNewGame(socket, gameOptions);
@@ -88,7 +89,7 @@ function joinGame(socket, id) {
             console.log(response);
             if (response.joiningResult == 'OK') {
                 $('.joinThisGameButton').prop('disabled', true);
-                $('#leaveGameButton'+joiningResult.gameId).prop('disabled', false);
+                $('#leaveGameButton'+response.joiningResult.gameId).prop('disabled', false);
             }
         });
     }
@@ -102,7 +103,7 @@ function leaveGame(socket, id) {
         console.log(response);
         if (response.leavingResult == 'OK') {
             $('.joinThisGameButton').prop('disabled', true);
-            $('#leaveGameButton'+leavingResult.gameId).prop('disabled', false);
+            $('#leaveGameButton'+response.leavingResult.gameId).prop('disabled', false);
         }
     });
 }
@@ -505,25 +506,40 @@ function roundPromised(myRound) {
     return true;
 }
 
-function initPromise(socket, myRound) {
+function isEvenPromise(myRound, promise) {
+    var totalPromise = 0;
+    for (var i = 0; i < myRound.players.length; i++) {
+        var player = myRound.players[i];
+        if (!player.thisIsMe && player.promise == null) return false;
+        if (player.promise != null) totalPromise+= player.promise;
+    }
+    return totalPromise + promise == myRound.cardsInRound;
+}
+
+function initPromise(socket, myRound, evenPromisesAllowed) {
     $('#myPromiseCol').empty();
     var node = $('#myPromiseCol');
 
     for (var i = 0; i < myRound.cardsInRound + 1; i++) {
-        node.append($('<button id="makePromiseButton'+i+'" value="'+i+'"></button>').addClass('btn btn-primary makePromiseButton').text(i));
-        $('#makePromiseButton'+i).on('click', function() {
-            $('.makePromiseButton').off('click');
-            var promiseDetails = { gameId: myRound.gameId,
-                roundInd: myRound.roundInd,
-                myId: window.localStorage.getItem('uUID'),
-                promise: this.value,
-            };
-            socket.emit('make promise', promiseDetails, function (promiseReturn) {
-                hidePromise();
-                console.log('promiseReturn:');
-                console.log(promiseReturn);
+        var promiseButton = $('<button id="makePromiseButton'+i+'" value="'+i+'"></button>').addClass('btn btn-primary makePromiseButton').text(i);
+        node.append(promiseButton);
+        if (evenPromisesAllowed || !isEvenPromise(myRound, i)) {
+            $('#makePromiseButton'+i).on('click', function() {
+                $('.makePromiseButton').off('click');
+                var promiseDetails = { gameId: myRound.gameId,
+                    roundInd: myRound.roundInd,
+                    myId: window.localStorage.getItem('uUID'),
+                    promise: this.value,
+                };
+                socket.emit('make promise', promiseDetails, function (promiseReturn) {
+                    hidePromise();
+                    console.log('promiseReturn:');
+                    console.log(promiseReturn);
+                });
             });
-        });
+        } else {
+            promiseButton.addClass('disabled');
+        }
     }
 
     $('#myPromiseRow').show();
@@ -563,11 +579,11 @@ function showPlayerPromises(myRound) {
     initPromiseTable(myRound.promiseTable);
 }
 
-function getPromise(socket, myRound) {
+function getPromise(socket, myRound, evenPromisesAllowed) {
     hideThinkings();
     if (isMyPromiseTurn(myRound)) {
         showMyTurn();
-        initPromise(socket, myRound);
+        initPromise(socket, myRound, evenPromisesAllowed);
         dimMyCards(myRound, 1.0);
     } else {
         hidePromise();
