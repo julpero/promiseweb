@@ -546,7 +546,7 @@ try {
                 var games = [];
                 await cursor.forEach(function(val) {
                     games.push({
-                        id: val._id,
+                        id: val._id.toString(),
                         humanPlayersCount: val.humanPlayersCount,
                         computerPlayersCount: val.botPlayersCount,
                         startRound: val.startRound,
@@ -644,7 +644,7 @@ function okToPlayCard(playedCard, playerName, gameInDb) {
 
 function gameToGameInfo(game) {
     var gameInfo = {
-        id: game._id,
+        id: game._id.toString(),
         humanPlayersCount: game.humanPlayersCount,
         computerPlayersCount: game.botPlayersCount,
         startRound: game.startRound,
@@ -655,6 +655,7 @@ function gameToGameInfo(game) {
         currentRound: null,
         reloaded: false,
         eventInfo: null,
+        evenPromisesAllowed: game.evenPromisesAllowed == null || game.evenPromisesAllowed,
     };
     return gameInfo;
 }
@@ -807,7 +808,7 @@ function roundToPlayer(playerId, roundInd, thisGame, doReloadInit, newRound, gam
     var playerName = getPlayerNameById(playerId, thisGame.humanPlayers);
 
     return {
-        gameId: thisGame._id,
+        gameId: thisGame._id.toString(),
         roundInd: roundInd,
         cardsInRound: round.cardsInRound,
         dealerPositionIndex: round.dealerPositionIndex,

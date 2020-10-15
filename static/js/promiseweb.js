@@ -50,6 +50,7 @@ function initcreateNewGameButton(socket) {
             gameStatus: 0,
             humanPlayers: [{ name: $('#newGameMyName').val(), playerId: window.localStorage.getItem('uUID')}],
             createDateTime: new Date(),
+            evenPromisesAllowed: !$('#noEvenPromises').prop('checked'),
         };
         if (validateNewGame(gameOptions)) {
             createNewGame(socket, gameOptions);
@@ -88,7 +89,7 @@ function joinGame(socket, id) {
             console.log(response);
             if (response.joiningResult == 'OK') {
                 $('.joinThisGameButton').prop('disabled', true);
-                $('#leaveGameButton'+joiningResult.gameId).prop('disabled', false);
+                $('#leaveGameButton'+response.joiningResult.gameId).prop('disabled', false);
             }
         });
     }
@@ -102,7 +103,7 @@ function leaveGame(socket, id) {
         console.log(response);
         if (response.leavingResult == 'OK') {
             $('.joinThisGameButton').prop('disabled', true);
-            $('#leaveGameButton'+leavingResult.gameId).prop('disabled', false);
+            $('#leaveGameButton'+response.leavingResult.gameId).prop('disabled', false);
         }
     });
 }
@@ -321,11 +322,11 @@ function drawTrumpCard(deck, trumpCard, cardsDrawn, cardsToPlayers) {
         var dummyCard = dummyDeck.cards[i];
         dummyCard.mount($deckDiv);
         dummyCard.animateTo({
-            x: randomNegToPos(2),
-            y: randomNegToPos(2),
+            x: randomNegToPos(5),
+            y: randomNegToPos(5),
             delay: 0,
             duration: 0,
-            rot: randomNegToPos(5),
+            rot: randomNegToPos(5)-25,
         });
     }
 
@@ -339,32 +340,8 @@ function drawTrumpCard(deck, trumpCard, cardsDrawn, cardsToPlayers) {
         y: randomNegToPos(2),
         delay: 0,
         duration: 0,
-        rot: randomNegToPos(5),
+        rot: randomNegToPos(5)+5,
     });
-}
-
-function initMyPromiseRow() {
-    var node = $('<div id="myPromiseRow"></div>').addClass('row myCardsRowClass');
-    var col1 = $('<div></div>').addClass('col-1');
-    var col2 = $('<div id="myPromiseCol"></div>').addClass('col-10');
-    var col3 = $('<div></div>').addClass('col-1');
-    
-    node.append(col1);
-    node.append(col2);
-    node.append(col3);
-
-    return node;
-
-}
-
-function initMyCardsContainer(maxCards) {
-    var node = $('<div></div>').addClass('row myCardsRowClass');
-    
-    for (var i = 0; i < maxCards; i++) {
-        node.append(drawCardCol(i));
-    }
-
-    return node;
 }
 
 function drawMyCards(deck, myCards, cardsDrawn) {
@@ -382,14 +359,9 @@ function drawMyCards(deck, myCards, cardsDrawn) {
             delay: 0,
             duration: 0,
             rot: randomNegToPos(5),
-        });
-    });
-}
-
-function drawCardCol(idx) {
-    var cardCol = $('<div id="player0CardCol'+idx+'">&nbsp;</div>').addClass('col cardCol');
-    return cardCol;
-}
+        });    
+    });    
+}    
 
 function mapPlayerNameToTable(name) {
     var divs = $('.playerNameCol:contains("'+name+'")');
@@ -505,25 +477,40 @@ function roundPromised(myRound) {
     return true;
 }
 
-function initPromise(socket, myRound) {
+function isEvenPromise(myRound, promise) {
+    var totalPromise = 0;
+    for (var i = 0; i < myRound.players.length; i++) {
+        var player = myRound.players[i];
+        if (!player.thisIsMe && player.promise == null) return false;
+        if (player.promise != null) totalPromise+= player.promise;
+    }
+    return totalPromise + promise == myRound.cardsInRound;
+}
+
+function initPromise(socket, myRound, evenPromisesAllowed) {
     $('#myPromiseCol').empty();
     var node = $('#myPromiseCol');
 
     for (var i = 0; i < myRound.cardsInRound + 1; i++) {
-        node.append($('<button id="makePromiseButton'+i+'" value="'+i+'"></button>').addClass('btn btn-primary makePromiseButton').text(i));
-        $('#makePromiseButton'+i).on('click', function() {
-            $('.makePromiseButton').off('click');
-            var promiseDetails = { gameId: myRound.gameId,
-                roundInd: myRound.roundInd,
-                myId: window.localStorage.getItem('uUID'),
-                promise: this.value,
-            };
-            socket.emit('make promise', promiseDetails, function (promiseReturn) {
-                hidePromise();
-                console.log('promiseReturn:');
-                console.log(promiseReturn);
+        var promiseButton = $('<button id="makePromiseButton'+i+'" value="'+i+'"></button>').addClass('btn btn-primary makePromiseButton').text(i);
+        node.append(promiseButton);
+        if (evenPromisesAllowed || !isEvenPromise(myRound, i)) {
+            $('#makePromiseButton'+i).on('click', function() {
+                $('.makePromiseButton').off('click');
+                var promiseDetails = { gameId: myRound.gameId,
+                    roundInd: myRound.roundInd,
+                    myId: window.localStorage.getItem('uUID'),
+                    promise: this.value,
+                };
+                socket.emit('make promise', promiseDetails, function (promiseReturn) {
+                    hidePromise();
+                    console.log('promiseReturn:');
+                    console.log(promiseReturn);
+                });
             });
-        });
+        } else {
+            promiseButton.addClass('disabled');
+        }
     }
 
     $('#myPromiseRow').show();
@@ -563,11 +550,13 @@ function showPlayerPromises(myRound) {
     initPromiseTable(myRound.promiseTable);
 }
 
-function getPromise(socket, myRound) {
+function getPromise(socket, myRound, evenPromisesAllowed) {
+    checkSmall(myRound.players.length);
     hideThinkings();
+    showDealer(myRound);
     if (isMyPromiseTurn(myRound)) {
         showMyTurn();
-        initPromise(socket, myRound);
+        initPromise(socket, myRound, evenPromisesAllowed);
         dimMyCards(myRound, 1.0);
     } else {
         hidePromise();
@@ -741,9 +730,17 @@ function showWonCards(myRound) {
     }
 }
 
+function showDealer(myRound) {
+    $('.dealer').removeClass('dealer');
+    var indInTable = otherPlayerMapper(myRound.dealerPositionIndex, myRound.players);
+    $('#player'+indInTable+'NameCol').addClass('dealer');
+}
+
 function playRound(socket, myRound) {
+    checkSmall(myRound.players.length);
     hideThinkings();
     hidePromise();
+    showDealer(myRound);
     $('#myInfoRow').show();
     if (isMyPlayTurn(myRound)) {
         showMyTurn();
@@ -1011,6 +1008,16 @@ function initScoreBoard(promiseTable, gameOver) {
     
 }
 
+function checkSmall(playerCount) {
+    if (playerCount > 4) {
+        $('html').addClass('html-sm');
+        $('.cardCol').addClass('cardCol-sm');
+    } else {
+        $('.html-sm').removeClass('html-sm');
+        $('.cardCol-sm').removeClass('cardCol-sm');
+    }
+}
+
 function browserReload(myRound) {
     initCardTable(myRound);
     initOtherPlayers(myRound);
@@ -1019,6 +1026,7 @@ function browserReload(myRound) {
     drawCards(myRound);
     showPlayedCards(myRound);
     showWonCards(myRound);
+    checkSmall(myRound.players.length);
 }
 
 

@@ -133,6 +133,12 @@
                             </label>
                             <input type="text" class="form-control" id="newGameMyName">
                         </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="noEvenPromises">
+                            <label class="form-check-label" for="noEvenPromises">
+                                Do not allow even promises
+                            </label>
+                        </div>
                         <div class="form-group">
                             <label for="newGamePassword">
                                 Password for new game, leave empty if this is a public game
@@ -231,7 +237,7 @@
                     </div>
 
                 </div>
-                <div class="col-2">
+                <div class="col-2" style="z-index: -1;">
                     <!-- container for scoreboard -->
                     <div class="row">
                         <div class="col-12" id="scoreboard">
@@ -312,7 +318,7 @@
                         console.log(myRound);
                         $('#myName').val(myRound.myName);
                         browserReload(myRound);
-                        getPromise(socket, myRound);
+                        getPromise(socket, myRound, gameInfo.evenPromisesAllowed);
                     });
                 });
 
@@ -339,7 +345,7 @@
                         if (roundPromised(myRound)) {
                             playRound(socket, myRound);
                         } else {
-                            getPromise(socket, myRound);
+                            getPromise(socket, myRound, gameInfo.evenPromisesAllowed);
                         }
                     });
                 });
@@ -408,7 +414,7 @@
                         if (roundPromised(myRound)) {
                             playRound(socket, myRound);
                         } else {
-                            getPromise(socket, myRound);
+                            getPromise(socket, myRound, gameInfo.evenPromisesAllowed);
                         }
                     });
                 });

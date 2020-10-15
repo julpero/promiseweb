@@ -1,3 +1,7 @@
+html {
+    font-size: 125%;
+}
+
 .myCardsRowClass {
     padding-left: 60px;
 }
@@ -8,6 +12,16 @@
     min-height: 112px;
     padding: 0px;
     /* border: 1px solid black; */
+}
+@media (max-height: 850px) {
+    .html-sm {
+      font-size: 100%;
+    }
+    .cardCol-sm {
+        min-height: 92px;
+        padding: 0px;
+        /* border: 1px solid black; */
+    }
 }
 .trumpCardCol {
     text-align: center;
@@ -29,8 +43,23 @@
     min-height: 40px;
     /* border: 1px solid black; */
 }
+.dealer {
+    font-weight: bold;
+}
+.dealer::before {
+    content:url('/img/dealerchip.svg');
+    width: 30px;
+    height: 30px;
+    padding: 3px;
+    display: inline-flex;
+}
 .trumpNameCol {
     text-align: center;
+}
+.promiseButtons {
+    white-space: nowrap;
+    overflow: visible;
+    display: inline-block;
 }
 .makePromiseButton {
     margin-left: 3px;
