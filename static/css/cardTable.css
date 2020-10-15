@@ -42,6 +42,11 @@
 .trumpNameCol {
     text-align: center;
 }
+.promiseButtons {
+    white-space: nowrap;
+    overflow: visible;
+    display: inline-block;
+}
 .makePromiseButton {
     margin-left: 3px;
     margin-right: 3px;

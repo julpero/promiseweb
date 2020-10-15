@@ -322,11 +322,11 @@ function drawTrumpCard(deck, trumpCard, cardsDrawn, cardsToPlayers) {
         var dummyCard = dummyDeck.cards[i];
         dummyCard.mount($deckDiv);
         dummyCard.animateTo({
-            x: randomNegToPos(2),
-            y: randomNegToPos(2),
+            x: randomNegToPos(5),
+            y: randomNegToPos(5),
             delay: 0,
             duration: 0,
-            rot: randomNegToPos(5),
+            rot: randomNegToPos(5)-25,
         });
     }
 
@@ -340,19 +340,19 @@ function drawTrumpCard(deck, trumpCard, cardsDrawn, cardsToPlayers) {
         y: randomNegToPos(2),
         delay: 0,
         duration: 0,
-        rot: randomNegToPos(5),
+        rot: randomNegToPos(5)+5,
     });
 }
 
 function initMyPromiseRow() {
     var node = $('<div id="myPromiseRow"></div>').addClass('row myCardsRowClass');
-    var col1 = $('<div></div>').addClass('col-1');
-    var col2 = $('<div id="myPromiseCol"></div>').addClass('col-10');
-    var col3 = $('<div></div>').addClass('col-1');
+    // var col1 = $('<div></div>').addClass('col-1');
+    var col2 = $('<div id="myPromiseCol"></div>').addClass('col promiseButtons');
+    // var col3 = $('<div></div>').addClass('col-1');
     
-    node.append(col1);
+    // node.append(col1);
     node.append(col2);
-    node.append(col3);
+    // node.append(col3);
 
     return node;
 
