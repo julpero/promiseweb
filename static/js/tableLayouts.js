@@ -322,7 +322,8 @@ function initPlayerTable(index, align, maxCards) {
 
     var cardsWonRow = $('<div></div>').addClass('row');
     for (var i = 0; i < maxCards; i++) {
-        cardsWonRow.append($('<div id="player'+index+'CardsWon'+i+'Div"></div>').addClass('col cardCol cardWonCol'));
+        var classStr = (i == 0) ? 'col cardCol firstCardCol' : 'col cardCol cardWonCol';
+        cardsWonRow.append($('<div id="player'+index+'CardsWon'+i+'Div"></div>').addClass(classStr));
     }
     var playedCardRow = $('<div></div>').addClass('row');
     
