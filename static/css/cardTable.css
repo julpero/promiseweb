@@ -1,3 +1,7 @@
+html {
+    font-size: 125%;
+}
+
 .myCardsRowClass {
     padding-left: 60px;
 }
@@ -8,6 +12,16 @@
     min-height: 112px;
     padding: 0px;
     /* border: 1px solid black; */
+}
+@media (max-height: 850px) {
+    .html-sm {
+      font-size: 100%;
+    }
+    .cardCol-sm {
+        min-height: 92px;
+        padding: 0px;
+        /* border: 1px solid black; */
+    }
 }
 .trumpCardCol {
     text-align: center;

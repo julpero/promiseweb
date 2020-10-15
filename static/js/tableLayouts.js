@@ -354,3 +354,33 @@ function initOtherPlayers(myRound) {
         $('#player'+otherPlayerMapper(idx, myRound.players)+'NameCol').html(player.name);
     });
 }
+
+function initMyCardsContainer(maxCards) {
+    var node = $('<div></div>').addClass('row myCardsRowClass');
+    
+    for (var i = 0; i < maxCards; i++) {
+        node.append(drawCardCol(i));
+    }
+
+    return node;
+}
+
+function drawCardCol(idx) {
+    var cardCol = $('<div id="player0CardCol'+idx+'">&nbsp;</div>').addClass('col cardCol');
+    return cardCol;
+}
+
+
+function initMyPromiseRow() {
+    var node = $('<div id="myPromiseRow"></div>').addClass('row myCardsRowClass');
+    // var col1 = $('<div></div>').addClass('col-1');
+    var col2 = $('<div id="myPromiseCol"></div>').addClass('col promiseButtons');
+    // var col3 = $('<div></div>').addClass('col-1');
+    
+    // node.append(col1);
+    node.append(col2);
+    // node.append(col3);
+
+    return node;
+
+}

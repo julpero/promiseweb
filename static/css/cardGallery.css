@@ -22,7 +22,7 @@ body {
   -ms-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
-#container {
+/* #container {
   position: fixed;
   top: calc(50% + 1.5rem);
   left: 50%;
@@ -31,8 +31,8 @@ body {
   -o-transform: translate3d(-50%, -50%, 0);
   -ms-transform: translate3d(-50%, -50%, 0);
   transform: translate3d(-50%, -50%, 0);
-}
-#topbar {
+} */
+/* #topbar {
   position: fixed;
   top: 0;
   left: 0;
@@ -56,8 +56,8 @@ body {
 #topbar button:hover {
   background-color: #fff;
   color: #444;
-}
-.message {
+} */
+/* .message {
   position: fixed;
   top: 2.5rem;
   left: 0;
@@ -65,7 +65,7 @@ body {
   padding: 1rem 0.5rem;
   font-size: 0.5rem;
   text-align: center;
-}
+} */
 .card {
   position: absolute;
   display: inline-block;
@@ -371,7 +371,7 @@ body {
 .card.joker.rank3 .face {
   background-image: url("faces/4_3.svg");
 }
-@media (max-width: 540px) {
+/* @media (max-width: 540px) {
   #topbar {
     text-align: left;
   }
@@ -387,9 +387,9 @@ body {
     -ms-transform-origin: 100% 0;
     transform-origin: 100% 0;
   }
-}
-@media (min-width: 640px) {
+} */
+/* @media (min-height: 850px) {
   html {
     font-size: 125%;
   }
-}
+} */

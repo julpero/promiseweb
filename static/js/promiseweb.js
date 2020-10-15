@@ -344,30 +344,6 @@ function drawTrumpCard(deck, trumpCard, cardsDrawn, cardsToPlayers) {
     });
 }
 
-function initMyPromiseRow() {
-    var node = $('<div id="myPromiseRow"></div>').addClass('row myCardsRowClass');
-    // var col1 = $('<div></div>').addClass('col-1');
-    var col2 = $('<div id="myPromiseCol"></div>').addClass('col promiseButtons');
-    // var col3 = $('<div></div>').addClass('col-1');
-    
-    // node.append(col1);
-    node.append(col2);
-    // node.append(col3);
-
-    return node;
-
-}
-
-function initMyCardsContainer(maxCards) {
-    var node = $('<div></div>').addClass('row myCardsRowClass');
-    
-    for (var i = 0; i < maxCards; i++) {
-        node.append(drawCardCol(i));
-    }
-
-    return node;
-}
-
 function drawMyCards(deck, myCards, cardsDrawn) {
 
     myCards.forEach(function (myCard, idx) {
@@ -383,14 +359,9 @@ function drawMyCards(deck, myCards, cardsDrawn) {
             delay: 0,
             duration: 0,
             rot: randomNegToPos(5),
-        });
-    });
-}
-
-function drawCardCol(idx) {
-    var cardCol = $('<div id="player0CardCol'+idx+'">&nbsp;</div>').addClass('col cardCol');
-    return cardCol;
-}
+        });    
+    });    
+}    
 
 function mapPlayerNameToTable(name) {
     var divs = $('.playerNameCol:contains("'+name+'")');
@@ -580,6 +551,7 @@ function showPlayerPromises(myRound) {
 }
 
 function getPromise(socket, myRound, evenPromisesAllowed) {
+    checkSmall(myRound.players.length);
     hideThinkings();
     showDealer(myRound);
     if (isMyPromiseTurn(myRound)) {
@@ -765,6 +737,7 @@ function showDealer(myRound) {
 }
 
 function playRound(socket, myRound) {
+    checkSmall(myRound.players.length);
     hideThinkings();
     hidePromise();
     showDealer(myRound);
@@ -1035,6 +1008,16 @@ function initScoreBoard(promiseTable, gameOver) {
     
 }
 
+function checkSmall(playerCount) {
+    if (playerCount > 4) {
+        $('html').addClass('html-sm');
+        $('.cardCol').addClass('cardCol-sm');
+    } else {
+        $('.html-sm').removeClass('html-sm');
+        $('.cardCol-sm').removeClass('cardCol-sm');
+    }
+}
+
 function browserReload(myRound) {
     initCardTable(myRound);
     initOtherPlayers(myRound);
@@ -1043,6 +1026,7 @@ function browserReload(myRound) {
     drawCards(myRound);
     showPlayedCards(myRound);
     showWonCards(myRound);
+    checkSmall(myRound.players.length);
 }
 
 
