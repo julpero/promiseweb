@@ -340,7 +340,7 @@ function myPlayedCardDiv(index) {
 
 function initCardTable(myRound) {
     var node = $('#otherPlayers');
-    node.html('');
+    node.empty();
 
     const playerCount = myRound.players.length;
     if (playerCount == 3) node.append(initTableFor3());

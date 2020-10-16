@@ -609,8 +609,8 @@ function initCardEvents(socket, myRound, onlySuit) {
             console.log('activate this card / div: ' + myRound.myCards[i].suit + ' ' + myRound.myCards[i].rank);
             console.log(' mapped to: ' + cardMapperStr);
             $(cardMapperStr+' ').fadeTo('slow', 1);
-            $(cardMapperStr).on('click', function () {
-                $('.card').off('click');
+            $(cardMapperStr).on('click touchstart', function () {
+                $('.card').off('click touchstart');
                 console.log(this.className);
                 var card = classToCardMapper(this.className);
                 console.log(card);
