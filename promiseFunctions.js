@@ -144,7 +144,11 @@ module.exports = {
         // first round is played by this order and the first player is the dealer of the first round
         var players = [];
         knuthShuffle(gameInfo.humanPlayers).forEach(function (player) {
-            players.push(player.name);
+            players.push({
+                name: player.name,
+                type: player.type,
+                playerAi: player.type == 'ai' ? player.playerAi : null,
+            });
         });
         return players;
     },
@@ -264,6 +268,13 @@ function getPlayerInCharge(roundInd, playInd, thisGame) {
     }
 }
 
+function playersToPromiseTable(playerOrderArr) {
+    var retArr = [];
+    for (i = 0; i < playerOrderArr.length; i++) {
+        retArr.push(playerOrderArr[i].name);
+    }
+    return retArr;
+}
 
 function getPromiseTable(thisGame) {
     var promisesByPlayers = [];
@@ -287,7 +298,7 @@ function getPromiseTable(thisGame) {
     }
 
     var promiseTable = {
-        players: thisGame.game.playerOrder,
+        players: playersToPromiseTable(thisGame.game.playerOrder),
         promisesByPlayers: promisesByPlayers,
         rounds: rounds,
     }
@@ -314,12 +325,14 @@ function initRound(roundIndex, cardsInRound, players) {
         }
         var sortedPlayerCards = sortCardsDummy(playerCards);
         roundPlayers.push({
-            name: player,
+            name: player.name,
             cards: sortedPlayerCards,
             promise: null,
             keeps: 0,
             points: null,
             cardsToDebug: sortedPlayerCards,
+            type: player.type,
+            
         });
     });
 

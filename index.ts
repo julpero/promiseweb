@@ -15,6 +15,7 @@ app.use(express.static('node_modules/deck-of-cards/dist'))
 
 var pf = require(__dirname + '/promiseFunctions.js');
 var sm = require(__dirname + '/clientSocketMapper.js');
+var ai = require(__dirname + '/aiPlayer.js');
 
 try {
     var mongoUtil = require(__dirname + '/mongoUtil.js');
@@ -228,7 +229,7 @@ try {
     
                         if (nameFree && socketFree) {
                             var players = game.humanPlayers;
-                            players.push({name: newPlayer.myName, playerId: newPlayer.myId});
+                            players.push({name: newPlayer.myName, playerId: newPlayer.myId, type: 'human'});
                             const options = { upsert: true };
                             const updateDoc = {
                                 $set: {
@@ -270,6 +271,10 @@ try {
                     io.emit('update gameinfo', resultGameInfo);
     
                     if (resultGameInfo.humanPlayersCount == resultGameInfo.humanPlayers.length) {
+                        // add bot players here
+                        if (resultGameInfo.botPlayersCount > 0) {
+                            resultGameInfo.humanPlayers.concat(ai.getRandomAiPlayers(resultGameInfo.botPlayersCount));
+                        }
                         // start game
                         await startGame(resultGameInfo);
                     }
