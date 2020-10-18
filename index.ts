@@ -541,6 +541,7 @@ try {
                         endRound: val.endRound,
                         humanPlayers: pf.parsedHumanPlayers(val.humanPlayers),
                         hasPassword: val.password.length > 0,
+                        evenPromisesAllowed: val.evenPromisesAllowed
                     });
                 });
     

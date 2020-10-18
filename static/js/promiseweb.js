@@ -114,7 +114,9 @@ function showGames(socket, gameList) {
     gameList.forEach(function (game) {
         if (firstId ==  '') firstId = game.id;
         var gameContainerDiv = $('<div id="gameContainerDiv"'+ game.id +'>').addClass('row');
-        gameContainerDiv.append($('<div>').addClass('col-1').text(game.startRound + '-' + game.turnRound + '-' + game.endRound));
+        var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
+        if (!game.evenPromisesAllowed) ruleStr+= ' no even promises';
+        gameContainerDiv.append($('<div>').addClass('col-1').text(ruleStr));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
         gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input type="text" id="myName'+game.id+'">').addClass('newGameMyNameInput'))));
         gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input disabled type="text" id="password'+game.id+'">'))));
@@ -783,7 +785,9 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
     for (var i = 0; i < players.length; i++) {
         // var $containerFrom = document.getElementById('player'+i+'CardPlayedDiv');
         var containerFromPosition = $('#player'+i+'CardPlayedDiv').offset();
-        var cardIndex = getCardIndex(deck.cards, getCardFromDiv('player'+i+'CardPlayedDiv'));
+        var cardToCheck = getCardFromDiv('player'+i+'CardPlayedDiv');
+        if (cardToCheck == null) continue;
+        var cardIndex = getCardIndex(deck.cards, cardToCheck);
         movingCards[i] = deck.cards[cardIndex];
         $('#player'+i+'CardPlayedDiv').empty();
         
