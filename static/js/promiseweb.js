@@ -657,7 +657,6 @@ function showPlayedCards(myRound) {
         if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
         if (myRound.players[chkPos].cardPlayed != null) {
             var divId = otherPlayerMapper(chkPos, myRound.players);
-            // var lastPlayed = chkPos;
             var cardPlayed = myRound.players[chkPos].cardPlayed;
 
             var $container = document.getElementById('player'+divId+'CardPlayedDiv');
@@ -778,15 +777,17 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
     var $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
     var containerToPosition = $('#player'+playerIndex+'CardsWon'+wonIndex+'Div').offset();
 
-    var delay = 200;
-    var duration = 1000;
+    var delay = 400;
+    var duration = 900;
     var movingCards = [];
 
     for (var i = 0; i < players.length; i++) {
-        // var $containerFrom = document.getElementById('player'+i+'CardPlayedDiv');
         var containerFromPosition = $('#player'+i+'CardPlayedDiv').offset();
         var cardToCheck = getCardFromDiv('player'+i+'CardPlayedDiv');
-        if (cardToCheck == null) continue;
+        if (cardToCheck == null) {
+            // debugger;
+            continue;
+        }
         var cardIndex = getCardIndex(deck.cards, cardToCheck);
         movingCards[i] = deck.cards[cardIndex];
         $('#player'+i+'CardPlayedDiv').empty();
@@ -799,7 +800,7 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
             x: parseInt(containerFromPosition.left - containerToPosition.left, 10),
             y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
             rot: randomNegToPos(5),
-            onComplete: function() {
+            onComplete: async function() {
                 for (var j = 0; j < movingCards.length; j++) {
                     movingCards[j].animateTo({
                         delay: delay,
@@ -849,8 +850,8 @@ async function moveCardFromHandToTable(card, playerName) {
     var containerFromPosition = $('#player'+playerIndex+'CardCol'+containerIndex).offset();
     var containerToPosition = $('#player'+playerIndex+'CardPlayedDiv').offset();
 
-    var delay = 400;
-    var duration = 1000;
+    var delay = 300;
+    var duration = 800;
 
     movingCard.mount($containerTo);
     movingCard.animateTo({
@@ -875,7 +876,7 @@ async function moveCardFromHandToTable(card, playerName) {
 
 
     return new Promise(resolve => {
-        setTimeout(resolve, (delay+duration+200));
+        setTimeout(resolve, (delay+duration+500));
     });
 
 }
