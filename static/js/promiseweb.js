@@ -915,6 +915,8 @@ function createPromiseTable(promiseTable) {
 function initPromiseTable(promiseTable) {
     console.log('initPromiseTable');
     if ($('#promiseTable').children().length == 0) createPromiseTable(promiseTable);
+
+    $('.promiseTableHeader').tooltip('dispose');
     
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
         for (var j = 0; j < promiseTable.rounds.length; j++) {
