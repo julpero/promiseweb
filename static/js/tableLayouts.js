@@ -384,3 +384,67 @@ function initMyPromiseRow() {
     return node;
 
 }
+
+
+function createPromiseTable(promiseTable) {
+    var node = $('#promiseTable');
+    var table = $('<table></table>');
+    var tableHeader = $('<thead></thead>');
+    var tableHeaderRow = $('<tr></tr>');
+    
+    tableHeaderRow.append($('<th scope="col"></th>').addClass('promiseTableHeader'));
+    for (var i = 0; i < promiseTable.rounds.length; i++) {
+        var tableHeaderCol = $('<th scope="col" id="promiseTableHeader'+i+'"></th>').addClass('promiseTableHeader').html(promiseTable.rounds[i].cardsInRound);
+        tableHeaderRow.append(tableHeaderCol);
+    }
+    tableHeader.append(tableHeaderRow);
+
+    var tableBody = $('<tbody></tbody>');
+    for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
+        var tableBodyRow = $('<tr></tr>');
+        var playerNameCol = $('<th scope="row"></th>').addClass('promiseTableCol').html(promiseTable.players[i]);
+        tableBodyRow.append(playerNameCol);
+        for (var j = 0; j < promiseTable.rounds.length; j++) {
+            var promiseCol = $('<td id="player'+i+'Prom'+j+'"></td>').addClass('promiseTableCol');
+            tableBodyRow.append(promiseCol);
+        }
+        
+        tableBody.append(tableBodyRow);
+    }
+    table.append(tableHeader);
+    table.append(tableBody);
+
+    node.append(table);
+}
+
+
+function createScoreboard(promiseTable) {
+    var node = $('#scoreboard');
+    var table = $('<table></table>');
+    var tableHeader = $('<thead></thead>');
+    var tableHeaderRow = $('<tr></tr>');
+    
+    for (var i = 0; i < promiseTable.players.length; i++) {
+        var playerName = promiseTable.players[i];
+        var playerShortName = playerName;
+        if (playerShortName.length > 3) playerShortName = playerShortName.substring(0, 3);
+        var tableHeaderCol = $('<th scope="col" data-toggle="tooltip" data-placement="left" title="'+playerName+'"></th>').addClass('scoreboardTableHeader').html(playerShortName);
+        tableHeaderRow.append(tableHeaderCol);
+    }
+    tableHeader.append(tableHeaderRow);
+
+    var tableBody = $('<tbody></tbody>');
+    for (var i = 0; i < promiseTable.rounds.length; i++) {
+        var tableBodyRow = $('<tr></tr>');
+        for (var j = 0; j < promiseTable.players.length; j++) {
+            var pointCol = $('<td id="player'+j+'Points'+i+'"></td>').addClass('scoreboardTableCol').html('&nbsp;');
+            tableBodyRow.append(pointCol);
+        }
+        
+        tableBody.append(tableBodyRow);
+    }
+    table.append(tableHeader);
+    table.append(tableBody);
+
+    node.append(table);
+}
