@@ -130,7 +130,6 @@ body {
   color: #000;
 }
 .card.hearts,
-.card.diamonds,
 .card.joker.rank3 {
   color: #d40000;
 }
@@ -139,6 +138,12 @@ body {
 }
 .card.clubs {
   color: #006400;
+}
+.cardInCharge {
+  outline: 2px solid black;
+}
+.cardToWin {
+  outline: 2px solid yellow;
 }
 .card.joker.rank1:before,
 .card.joker.rank2:before,
