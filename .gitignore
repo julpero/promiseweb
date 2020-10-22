@@ -104,3 +104,6 @@ dist
 .tern-port
 mongo.config.js
 web.config
+
+dependabot.yml
+
