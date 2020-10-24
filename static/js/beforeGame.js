@@ -189,7 +189,7 @@ function initLeavingButtons(socket) {
         console.log('new uUID set: ' + uuid);
         window.localStorage.setItem('uUID', uuid);
         socket.emit('leave ongoing game', $('#joinGameId').val(), function() {
-            alert('You have now leaved game. Please click OK and then refresh this page.');
+            alert('You have now left the game. Please click OK and then refresh this page.');
         });
     });
 }
