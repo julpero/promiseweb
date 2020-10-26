@@ -91,7 +91,7 @@ function drawTrumpCard(trumpCard, cardsToPlayers) {
         y: randomNegToPos(2),
         delay: 0,
         duration: 0,
-        rot: randomNegToPos(5)+5,
+        rot: randomNegToPos(5)+10,
     });
 }
 
@@ -690,12 +690,12 @@ function initPromiseTable(promiseTable) {
                     $('#promiseTableHeader'+j).removeClass('promiseKept');
                     $('#promiseTableHeader'+j).removeClass('promiseUnder');
                     $('#promiseTableHeader'+j).addClass('promiseOver');
-                    $('#promiseTableHeader'+j).tooltip({title: "Over promised, total: " + totalPromise});
+                    $('#promiseTableHeader'+j).tooltip({title: "Over promised, total: " + totalPromise + "/" + cardsInRound});
                 } else {
                     $('#promiseTableHeader'+j).removeClass('promiseKept');
                     $('#promiseTableHeader'+j).removeClass('promiseOver');
                     $('#promiseTableHeader'+j).addClass('promiseUnder');
-                    $('#promiseTableHeader'+j).tooltip({title: "Under promised, total: " + totalPromise});
+                    $('#promiseTableHeader'+j).tooltip({title: "Under promised, total: " + totalPromise + "/" + cardsInRound});
                 }
             }
             var promise = promiseTable.promisesByPlayers[i][j];
@@ -706,10 +706,10 @@ function initPromiseTable(promiseTable) {
                     if (!$('#player'+i+'Prom'+j).hasClass('promiseKept')) $('#player'+i+'Prom'+j).addClass('promiseKept');
                 } else if (promise.keep > promise.promise) {
                     if (!$('#player'+i+'Prom'+j).hasClass('promiseOver')) $('#player'+i+'Prom'+j).addClass('promiseOver');
-                    $('#player'+i+'Prom'+j).tooltip({title: "won: " + promise.keep});
+                    $('#player'+i+'Prom'+j).tooltip({title: "won: " + promise.keep + "/" + promise.promise});
                 } else {
                     if (!$('#player'+i+'Prom'+j).hasClass('promiseUnder')) $('#player'+i+'Prom'+j).addClass('promiseUnder');
-                    $('#player'+i+'Prom'+j).tooltip({title: "won: " + promise.keep});
+                    $('#player'+i+'Prom'+j).tooltip({title: "won: " + promise.keep + "/" + promise.promise});
                 }
             }
         }
