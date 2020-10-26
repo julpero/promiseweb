@@ -445,10 +445,10 @@ try {
     
                                 gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps++;
 
-                                io.to(playDetails.gameId).emit('new chat line', playerName+' won this play');
+                                io.to(playDetails.gameId).emit('new chat line', winnerName+' won this play');
                                 
                                 if (gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps == gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].promise + 1) {
-                                    io.to(playDetails.gameId).emit('new chat line', playerName+' Pitkäksi Oy:stä PÄIVÄÄ!');
+                                    io.to(playDetails.gameId).emit('new chat line', winnerName+' Pitkäksi Oy:stä PÄIVÄÄ!');
                                 }
     
                                 if (gameAfterPlay.rounds[roundInDb].cardsPlayed.length == gameAfterPlay.rounds[roundInDb].cardsInRound) {

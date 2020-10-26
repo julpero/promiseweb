@@ -42,8 +42,8 @@ function playerHasPlayedCards(playerName, cardsPlayed) {
 }
 
 function drawOtherPlayerCards(players, cardsInRound, cardsPlayed) {
-    var deck = Deck();
     for (var i = 0; i < players.length; i++) {
+        var deck = Deck();
         if (!players[i].thisIsMe) {
             var playerName = players[i].name;
             var tableIndex = otherPlayerMapper(i, players);
