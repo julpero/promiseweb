@@ -388,7 +388,8 @@ try {
                         var gameInfo = pf.gameToGameInfo(thisGame);
                         gameInfo.currentRound = promiseDetails.roundInd;
                         io.to(gameInfo.id).emit('promise made', gameInfo);
-            
+                        
+                        io.to(gameInfo.id).emit('new chat line', playerName+' promised '+promiseInt);            
                         // fn(gameInfo); // just DEBUG
                     }
                 }
@@ -443,6 +444,12 @@ try {
                                 var winnerIndex = pf.getPlayerIndexByName(winnerName, round.roundPlayers);
     
                                 gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps++;
+
+                                io.to(playDetails.gameId).emit('new chat line', playerName+' won this play');
+                                
+                                if (gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps == gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].promise + 1) {
+                                    io.to(playDetails.gameId).emit('new chat line', playerName+' Pitkäksi Oy:stä PÄIVÄÄ!');
+                                }
     
                                 if (gameAfterPlay.rounds[roundInDb].cardsPlayed.length == gameAfterPlay.rounds[roundInDb].cardsInRound) {
                                     // this was the last card of the round
@@ -455,7 +462,6 @@ try {
                                             } else {
                                                 gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = 10 + gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps;
                                             }
-    
                                         } else {
                                             gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = 0;
                                         }
