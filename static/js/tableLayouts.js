@@ -405,7 +405,7 @@ function createPromiseTable(promiseTable) {
         var playerNameCol = $('<th scope="row"></th>').addClass('promiseTableCol').html(promiseTable.players[i]);
         tableBodyRow.append(playerNameCol);
         for (var j = 0; j < promiseTable.rounds.length; j++) {
-            var promiseCol = $('<td id="player'+i+'Prom'+j+'"></td>').addClass('promiseTableCol');
+            var promiseCol = $('<td id="player'+i+'Prom'+j+'"></td>').addClass('promiseTableCol playerPromiseCol');
             tableBodyRow.append(promiseCol);
         }
         

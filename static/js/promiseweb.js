@@ -26,11 +26,9 @@ function getCardIndex(cards, myCard) {
 }
 
 function drawCards(myRound) {
-    var deck = Deck();
-    var cardsDrawn = [];
-    drawMyCards(deck, myRound.myCards, cardsDrawn);
-    drawTrumpCard(deck, myRound.trumpCard, cardsDrawn, myRound.players.length * myRound.cardsInRound);
-    drawOtherPlayerCards(deck, myRound.players, myRound.cardsInRound, cardsDrawn, myRound.cardsPlayed);
+    drawMyCards(myRound.myCards);
+    drawTrumpCard(myRound.trumpCard, myRound.players.length * myRound.cardsInRound);
+    drawOtherPlayerCards(myRound.players, myRound.cardsInRound, myRound.cardsPlayed);
 }
 
 function playerHasPlayedCards(playerName, cardsPlayed) {
@@ -43,36 +41,31 @@ function playerHasPlayedCards(playerName, cardsPlayed) {
     return retVal;
 }
 
-function drawOtherPlayerCards(deck, players, cardsInRound, cardsDrawn, cardsPlayed) {
+function drawOtherPlayerCards(players, cardsInRound, cardsPlayed) {
+    var deck = Deck();
     for (var i = 0; i < players.length; i++) {
         if (!players[i].thisIsMe) {
             var playerName = players[i].name;
             var tableIndex = otherPlayerMapper(i, players);
             for (j = 0; j < cardsInRound - playerHasPlayedCards(playerName, cardsPlayed); j++) {
                 var $deckDiv = document.getElementById('player'+tableIndex+'CardCol'+j);
-                for (d = 0; d < 52; d++) {
-                    if ($.inArray(d, cardsDrawn) == -1) {
-                        var card = deck.cards[d];
-                        cardsDrawn.push(d);
-                        card.mount($deckDiv);
-                        card.setSide('back');
-                        card.animateTo({
-                            x: randomNegToPos(2),
-                            y: randomNegToPos(2),
-                            delay: 0,
-                            duration: 0,
-                            rot: randomNegToPos(5),
-                        });
-                        break;
-                    }
-                }
+                var card = deck.cards[j];
+                card.mount($deckDiv);
+                card.setSide('back');
+                card.animateTo({
+                    x: randomNegToPos(2),
+                    y: randomNegToPos(2),
+                    delay: 0,
+                    duration: 0,
+                    rot: randomNegToPos(5),
+                });
             }
         }
     }
 }
 
 
-function drawTrumpCard(deck, trumpCard, cardsDrawn, cardsToPlayers) {
+function drawTrumpCard(trumpCard, cardsToPlayers) {
     var $deckDiv = document.getElementById('trumpDiv');
 
     var dummyDeck = Deck();
@@ -88,9 +81,9 @@ function drawTrumpCard(deck, trumpCard, cardsDrawn, cardsToPlayers) {
         });
     }
 
+    var deck = Deck();
     var cardIndex = getCardIndex(deck.cards, trumpCard);
     var card = deck.cards[cardIndex];
-    cardsDrawn.push(cardIndex);
     card.mount($deckDiv);
     card.setSide('front');
     card.animateTo({
@@ -102,13 +95,12 @@ function drawTrumpCard(deck, trumpCard, cardsDrawn, cardsToPlayers) {
     });
 }
 
-function drawMyCards(deck, myCards, cardsDrawn) {
-
+function drawMyCards(myCards) {
+    var deck = Deck();
     myCards.forEach(function (myCard, idx) {
         var $container = document.getElementById('player0CardCol'+idx);
         var cardIndex = getCardIndex(deck.cards, myCard);
         var card = deck.cards[cardIndex];
-        cardsDrawn.push(cardIndex);
         card.mount($container);
         card.setSide('front');
         card.animateTo({
@@ -682,6 +674,7 @@ function initPromiseTable(promiseTable) {
     if ($('#promiseTable').children().length == 0) createPromiseTable(promiseTable);
 
     $('.promiseTableHeader').tooltip('dispose');
+    $('.playerPromiseCol').tooltip('dispose');
     
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
         for (var j = 0; j < promiseTable.rounds.length; j++) {
@@ -713,8 +706,10 @@ function initPromiseTable(promiseTable) {
                     if (!$('#player'+i+'Prom'+j).hasClass('promiseKept')) $('#player'+i+'Prom'+j).addClass('promiseKept');
                 } else if (promise.keep > promise.promise) {
                     if (!$('#player'+i+'Prom'+j).hasClass('promiseOver')) $('#player'+i+'Prom'+j).addClass('promiseOver');
+                    $('#player'+i+'Prom'+j).tooltip({title: "won: " + promise.keep});
                 } else {
                     if (!$('#player'+i+'Prom'+j).hasClass('promiseUnder')) $('#player'+i+'Prom'+j).addClass('promiseUnder');
+                    $('#player'+i+'Prom'+j).tooltip({title: "won: " + promise.keep});
                 }
             }
         }
