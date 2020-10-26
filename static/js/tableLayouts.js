@@ -428,7 +428,8 @@ function createScoreboard(promiseTable) {
         var playerName = promiseTable.players[i];
         var playerShortName = playerName;
         if (playerShortName.length > 3) playerShortName = playerShortName.substring(0, 3);
-        var tableHeaderCol = $('<th scope="col" data-toggle="tooltip" data-placement="left" title="'+playerName+'"></th>').addClass('scoreboardTableHeader').html(playerShortName);
+        var tableHeaderCol = $('<th id="tableHeaderName'+i+'" scope="col"></th>').addClass('scoreboardTableHeader').html(playerShortName);
+        $(tableHeaderCol).tooltip({title: playerName});
         tableHeaderRow.append(tableHeaderCol);
     }
     tableHeader.append(tableHeaderRow);
