@@ -358,7 +358,7 @@ function initCardEvents(socket, myRound, onlySuit) {
             // activate this card / div
             console.log('activate this card / div: ' + myRound.myCards[i].suit + ' ' + myRound.myCards[i].rank);
             console.log(' mapped to: ' + cardMapperStr);
-            $(cardMapperStr+' ').fadeTo('slow', 1);
+            $(cardMapperStr+' ').animate({backgroundColor: "#ffffff"}, 600);
             $(cardMapperStr).on('click touchstart', function () {
                 $('.card').off('click touchstart');
                 console.log(this.className);
@@ -376,7 +376,7 @@ function initCardEvents(socket, myRound, onlySuit) {
             });
         } else {
             // fade this card
-            $(cardMapperStr+' ').animate({backgroundColor: "#bbbbbb"}, 400);
+            $(cardMapperStr+' ').animate({backgroundColor: "#bbbbbb"}, 600);
         }
     }
 }
