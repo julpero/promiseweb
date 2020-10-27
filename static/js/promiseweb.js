@@ -376,15 +376,24 @@ function initCardEvents(socket, myRound, onlySuit) {
             });
         } else {
             // fade this card
-            $(cardMapperStr+' ').fadeTo('slow', 0.6);
+            $(cardMapperStr+' ').animate({backgroundColor: "#bbbbbb"}, 400);
         }
     }
 }
 
 function dimMyCards(myRound, visibility) {
+    var bgColor = "ffffff";
+    switch (visibility) {
+        case 1.0: bgColor = "ffffff"; break;
+        case 0.8: bgColor = "dddddd"; break;
+        case 0.7: bgColor = "cccccc"; break;
+        case 0.6: bgColor = "bbbbbb"; break;
+        default: break;
+    }
     for (var i = 0; i < myRound.myCards.length; i++) {
         var cardMapperStr = cardToClassMapper(myRound.myCards[i]);
-        $(cardMapperStr+' ').fadeTo(400, visibility);
+        console.log('animate: '+cardMapperStr);
+        $(cardMapperStr+' ').animate({backgroundColor: "#"+bgColor}, 400);
     }
 }
 
