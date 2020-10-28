@@ -56,6 +56,11 @@ html {
 .trumpNameCol {
     text-align: center;
 }
+.playerInfoCol {
+    white-space: nowrap;
+    overflow: visible;
+    display: inline-block;
+}
 .promiseButtons {
     white-space: nowrap;
     overflow: visible;
