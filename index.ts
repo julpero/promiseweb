@@ -472,9 +472,12 @@ try {
                                         // this was the last round of the game
                                         gameOver = true;
                                         gameStatus = 2;
+                                        io.to(playDetails.gameId).emit('new chat line', 'GAME OVER!');
                                     } else {
                                         // start next round
                                         gameAfterPlay.rounds[roundInDb+1].roundStatus = 1;
+                                        io.to(playDetails.gameId).emit('new chat line', 'New round starts...');
+                                        io.to(playDetails.gameId).emit('new chat line', '... with '+ gameAfterPlay.playerOrder[gameAfterPlay.rounds[roundInDb+1].dealerPositionIndex].name +' as a dealer!');
                                     }
                                 } else {
                                     // start next play
@@ -590,6 +593,7 @@ async function startGame (gameInfo) {
     await startRound(gameInfo, 0);
 
     io.to(gameInfo.id).emit('start game', gameInfo);
+    io.to(gameInfo.id).emit('new chat line', 'New game begins!');
 
 }
 
