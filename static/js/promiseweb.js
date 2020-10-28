@@ -271,6 +271,33 @@ function hidePromise() {
     $('#myPromiseCol').empty();
 }
 
+function drawPromiseAsProgress(max, promise, keep) {
+    var progressMain = $('<div></div>').addClass('progress').css({marginTop: "4px", border: "1px solid black"});
+    if (promise == keep) {
+        var width = (promise/max)*100;
+        var progressBar = $('<div></div>').addClass('progress-bar bg-success').css({width: width+"%"});
+        progressMain.append(progressBar);
+    }
+    if (promise < keep) {
+        var widthPromise = (promise/max)*100;
+        var widthOver = ((keep-promise)/max)*100;
+        var progressBarPromise = $('<div></div>').addClass('progress-bar bg-success').css({width: widthPromise+"%"});
+        var progressBarOver = $('<div></div>').addClass('progress-bar bg-danger').css({width: widthOver+"%"});
+        progressMain.append(progressBarPromise);
+        progressMain.append(progressBarOver);
+    }
+    if (promise > keep) {
+        var widthKeep = (keep/max)*100;
+        var widthRemaining = ((promise-keep)/max)*100;
+        var progressBarKeep = $('<div></div>').addClass('progress-bar bg-success').css({width: widthKeep+"%"});
+        var progressBarRemaining = $('<div></div>').addClass('progress-bar bg-secondary').css({width: widthRemaining+"%"});
+        progressMain.append(progressBarKeep);
+        progressMain.append(progressBarRemaining);
+    }
+
+    return progressMain;
+}
+
 function showPlayerPromises(myRound) {
     myRound.players.forEach(function (player, idx) {
         var tableIdx = otherPlayerMapper(idx, myRound.players);
@@ -292,6 +319,9 @@ function showPlayerPromises(myRound) {
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseOver');
                 if (!$('#player'+tableIdx+'Keeps').hasClass('gamePromiseUnder')) $('#player'+tableIdx+'Keeps').addClass('gamePromiseUnder');
             }
+            $('#player'+tableIdx+'ProgressBar').empty();
+            $('#player'+tableIdx+'ProgressBar').append(drawPromiseAsProgress(myRound.cardsInRound, player.promise, player.keeps));
+            
         } else {
             $('#player'+tableIdx+'Promised').empty();
             $('#player'+tableIdx+'Keeps').empty();
