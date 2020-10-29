@@ -70,7 +70,7 @@ function drawTrumpCard(trumpCard, cardsToPlayers) {
 
     var dummyDeck = Deck();
     for (var i = 52; i > cardsToPlayers + 1; i--) {
-        var dummyCard = dummyDeck.cards[i];
+        var dummyCard = dummyDeck.cards[i-1];
         dummyCard.mount($deckDiv);
         dummyCard.animateTo({
             x: randomNegToPos(5),

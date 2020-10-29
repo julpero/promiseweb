@@ -2,6 +2,11 @@ html {
     font-size: 125%;
 }
 
+/* .gridContainer {
+    display: grid;
+    grid-template-columns: ;
+} */
+
 .myCardsRowClass {
     padding-left: 60px;
 }
