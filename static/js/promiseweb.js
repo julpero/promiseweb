@@ -69,7 +69,7 @@ function drawTrumpCard(trumpCard, cardsToPlayers) {
     var $deckDiv = document.getElementById('trumpDiv');
 
     var dummyDeck = Deck();
-    for (var i = 51; i > cardsToPlayers + 1; i--) {
+    for (var i = 52; i > cardsToPlayers + 1; i--) {
         var dummyCard = dummyDeck.cards[i];
         dummyCard.mount($deckDiv);
         dummyCard.animateTo({
