@@ -195,43 +195,6 @@
                             other players
                         </div>
                     </div>
-
-                    <!-- container for promise table -->
-                    <div class="row fixed-bottom" style="height: 150px;">
-                        <div class="col-7" id="promiseTable" style="border: 1px solid black;">
-                        </div>
-
-                        <div class="col-3" id="chat" style="border: 1px solid black;">
-                            <div class="row">
-                                <div class="col">
-                                    <textarea id="chatTextArea" class="form-control chatTextBox" rows="5" readonly></textarea>
-                                </div>
-                                <div class="w-100"></div>
-                                <div class="col-10">
-                                    <input type="text" id="newChatLine" class="form-control chatTextBox">
-                                </div>
-                                <div class="col-2">
-                                    <button type="button" class="btn btn-primary btn-sm" id="sendChatButton">&gt;</button>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="col-2" id="menu" style="border: 1px solid black;">
-                            <a class="btn btn-primary" data-toggle="collapse" href="#leaveGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
-                                Leave game
-                            </a>
-        
-                            <div class="collapse" id="leaveGameCollapse">
-                                really leaving?
-                                <div class="btn-group" role="group" aria-label="Leaving buttons">
-                                    <button type="button" id="dontLeaveButton" class="btn btn-success">No</button>
-                                    <button type="button" id="leaveButton" class="btn btn-danger" data-toggle="modal" data-target="#leavingGameModal">Yes</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
                 <div class="col-2">
                     <!-- container for scoreboard -->
@@ -240,6 +203,43 @@
                         </div>
                     </div>
 
+                </div>
+            </div>
+
+            <div class="row fixed-bottom" style="height: 150px;">
+                <!-- container for promise table -->
+
+                <div class="col-7" id="promiseTable" style="border: 1px solid black;">
+                </div>
+
+                <div class="col-3" id="chat" style="border: 1px solid black;">
+                    <div class="row">
+                        <div class="col">
+                            <textarea id="chatTextArea" class="form-control chatTextBox" rows="5" readonly></textarea>
+                        </div>
+                        <div class="w-100"></div>
+                        <div class="col-10">
+                            <input type="text" id="newChatLine" class="form-control chatTextBox">
+                        </div>
+                        <div class="col-2">
+                            <button type="button" class="btn btn-primary btn-sm" id="sendChatButton">&gt;</button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-2" id="menu" style="border: 1px solid black;">
+                    <a class="btn btn-primary" data-toggle="collapse" href="#leaveGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        Leave game
+                    </a>
+
+                    <div class="collapse" id="leaveGameCollapse">
+                        really leaving?
+                        <div class="btn-group" role="group" aria-label="Leaving buttons">
+                            <button type="button" id="dontLeaveButton" class="btn btn-success">No</button>
+                            <button type="button" id="leaveButton" class="btn btn-danger" data-toggle="modal" data-target="#leavingGameModal">Yes</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
