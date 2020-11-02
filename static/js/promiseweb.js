@@ -69,8 +69,8 @@ function drawTrumpCard(trumpCard, cardsToPlayers) {
     var $deckDiv = document.getElementById('trumpDiv');
 
     var dummyDeck = Deck();
-    for (var i = 51; i > cardsToPlayers + 1; i--) {
-        var dummyCard = dummyDeck.cards[i];
+    for (var i = 52; i > cardsToPlayers + 1; i--) {
+        var dummyCard = dummyDeck.cards[i-1];
         dummyCard.mount($deckDiv);
         dummyCard.animateTo({
             x: randomNegToPos(5),
@@ -714,8 +714,12 @@ function initPromiseTable(promiseTable) {
 
     $('.promiseTableHeader').tooltip('dispose');
     $('.playerPromiseCol').tooltip('dispose');
+    $('.playerPromiseNameCol').tooltip('dispose');
     
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
+        var playerKept = 0;
+        var playerOver = 0;
+        var playerUnder = 0;
         for (var j = 0; j < promiseTable.rounds.length; j++) {
             var cardsInRound = promiseTable.rounds[j].cardsInRound;
             var totalPromise = promiseTable.rounds[j].totalPromise;
@@ -743,15 +747,19 @@ function initPromiseTable(promiseTable) {
             if (promise.points != null) {
                 if (promise.keep == promise.promise) {
                     if (!$('#player'+i+'Prom'+j).hasClass('promiseKept')) $('#player'+i+'Prom'+j).addClass('promiseKept');
+                    playerKept++;
                 } else if (promise.keep > promise.promise) {
                     if (!$('#player'+i+'Prom'+j).hasClass('promiseOver')) $('#player'+i+'Prom'+j).addClass('promiseOver');
                     $('#player'+i+'Prom'+j).tooltip({title: "won: " + promise.keep + "/" + promise.promise});
+                    playerOver++;
                 } else {
                     if (!$('#player'+i+'Prom'+j).hasClass('promiseUnder')) $('#player'+i+'Prom'+j).addClass('promiseUnder');
                     $('#player'+i+'Prom'+j).tooltip({title: "won: " + promise.keep + "/" + promise.promise});
+                    playerUnder;
                 }
             }
         }
+        $('#player'+i+'PromiseName').tooltip({title: "kept: " + playerKept + " / over: " + playerOver + " / under: " + playerUnder});
     }
 }
 
