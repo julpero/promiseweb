@@ -403,7 +403,7 @@ function createPromiseTable(promiseTable) {
     var tableBody = $('<tbody></tbody>');
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
         var tableBodyRow = $('<tr></tr>');
-        var playerNameCol = $('<th scope="row"></th>').addClass('promiseTableCol').html(promiseTable.players[i]);
+        var playerNameCol = $('<th id="player'+i+'PromiseName" scope="row"></th>').addClass('promiseTableCol playerPromiseNameCol').html(promiseTable.players[i]);
         tableBodyRow.append(playerNameCol);
         for (var j = 0; j < promiseTable.rounds.length; j++) {
             var promiseCol = $('<td id="player'+i+'Prom'+j+'"></td>').addClass('promiseTableCol playerPromiseCol');
