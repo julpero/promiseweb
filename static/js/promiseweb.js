@@ -755,7 +755,7 @@ function initPromiseTable(promiseTable) {
                 } else {
                     if (!$('#player'+i+'Prom'+j).hasClass('promiseUnder')) $('#player'+i+'Prom'+j).addClass('promiseUnder');
                     $('#player'+i+'Prom'+j).tooltip({title: "won: " + promise.keep + "/" + promise.promise});
-                    playerUnder;
+                    playerUnder++;
                 }
             }
         }
