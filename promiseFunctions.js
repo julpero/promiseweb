@@ -14,7 +14,7 @@ module.exports = {
             starterPositionIndex: round.starterPositionIndex,
             myName: playerName,
             myCards: getPlayerCards(playerName, round),
-            players: getRoundPlayers(playerName, round),
+            players: getRoundPlayers(playerName, round, showPromisesNow(thisGame, roundInd)),
             trumpCard: round.trumpCard,
             playerInCharge: getPlayerInCharge(roundInd, this.getCurrentPlayIndex(round), thisGame),
             promiseTable: getPromiseTable(thisGame),
@@ -76,6 +76,8 @@ module.exports = {
             reloaded: false,
             eventInfo: null,
             evenPromisesAllowed: game.evenPromisesAllowed == null || game.evenPromisesAllowed,
+            visiblePromiseRound: game.visiblePromiseRound == null || game.visiblePromiseRound,
+            freeTrump: game.freeTrump == null || game.freeTrump,
         };
         return gameInfo;
     },
@@ -137,7 +139,7 @@ module.exports = {
                 break;
             }
         }
-        return cardInHand && currentPlayTurnPlayerName(gameInDb) == playerName && isCardAvailableToPlay(playedCard, currentRound.cardInCharge, playerCards);
+        return cardInHand && currentPlayTurnPlayerName(gameInDb) == playerName && isCardAvailableToPlay(playedCard, currentRound.cardInCharge, playerCards, gameInDb.freeTrump, currentRound.trumpCard.suit);
     },
     
     initPlayers: function (gameInfo) {
@@ -166,16 +168,27 @@ module.exports = {
         }
         return rounds;
     },
-    
-    
+
+    isRoundPromised: function (round) {
+        for (var i = 0; i < round.roundPlayers.length; i++) {
+            if (round.roundPlayers[i].promise == null) return false;
+        }
+        return true;
+    },
+
+    isLastPromiser: function (round) {
+        var promisesMade = 0;
+        for (var i = 0; i < round.roundPlayers.length; i++) {
+            if (round.roundPlayers[i].promise != null) promisesMade++;
+        }
+        return promisesMade == round.roundPlayers.length - 1;
+    },
 }
 
 function getCurrentCardInCharge(cardsPlayed) {
     if (!cardsPlayed[cardsPlayed.length - 1][0]) return null;
     return cardsPlayed[cardsPlayed.length - 1][0].card;
 }
-
-
 
 function getPlayerCards(name, round) {
     var cards = null;
@@ -193,14 +206,14 @@ function getPlayerPlayedCard(playerName, cardsPlayed) {
     return null;
 }
 
-function getRoundPlayers(myName, round) {
+function getRoundPlayers(myName, round, showPromises) {
     var players = [];
     round.roundPlayers.forEach(function (player, idx) {
         players.push({
             thisIsMe: player.name == myName,
             dealer: round.dealerPositionIndex == idx,
             name: player.name,
-            promise: player.promise,
+            promise: showPromises ? player.promise : (player.promise == null) ? null : -1,
             keeps: player.keeps,
             cardPlayed: getPlayerPlayedCard(player.name, round.cardsPlayed),
         });
@@ -208,8 +221,12 @@ function getRoundPlayers(myName, round) {
     return players;
 }
 
-
-
+function showPromisesNow(thisGame, roundInd) {
+    if (!thisGame.visiblePromiseRound) {
+        return module.exports.isRoundPromised(thisGame.game.rounds[roundInd]);
+    }
+    return true;
+}
 
 function currentPlayTurnPlayerName(gameInDb) {
     var currentRoundIndex = module.exports.getCurrentRoundIndex(gameInDb);
@@ -232,13 +249,27 @@ function isCardInHand(playedCard, playerCards) {
     return false;
 }
 
-function isCardAvailableToPlay(playedCard, cardInCharge, playerCards) {
+function isCardAvailableToPlay(playedCard, cardInCharge, playerCards, freeTrump, trumpSuit) {
     if (cardInCharge == null) return true;
+
     var hasSuitInHand = false;
     for (var i = 0; i < playerCards.length; i++) {
         if (playerCards[i].suit == cardInCharge.suit) hasSuitInHand = true;
     }
-    return !hasSuitInHand || playedCard.suit == cardInCharge.suit;
+
+    if (freeTrump) {
+        return !hasSuitInHand || playedCard.suit == cardInCharge.suit;
+    } else {
+        if (!hasSuitInHand) {
+            var hasTrumpInHand = false;
+            for (var i = 0; i < playerCards.length; i++) {
+                if (playerCards[i].suit == trumpSuit) hasTrumpInHand = true;
+            }
+            return !hasTrumpInHand || playedCard.suit == trumpSuit;
+        } else {
+            return true;
+        }
+    }
 }
 
 
@@ -249,7 +280,6 @@ function getRoundDealerName(round) {
 function getRoundStarterName(round) {
     return round.roundPlayers[round.starterPositionIndex].name;
 }
-
 
 function getPlayerIdByName(name, players) {
     var playerId = null;
@@ -283,7 +313,7 @@ function getPromiseTable(thisGame) {
         var playerPromises = [];
         for (var j = 0; j < thisGame.game.rounds.length; j++) {
             playerPromises.push({
-                promise: thisGame.game.rounds[j].roundPlayers[i].promise,
+                promise: showPromisesNow(thisGame, j) ? thisGame.game.rounds[j].roundPlayers[i].promise : null,
                 keep: thisGame.game.rounds[j].roundPlayers[i].keeps,
                 points: thisGame.game.rounds[j].roundPlayers[i].points,
             });

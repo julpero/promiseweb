@@ -51,6 +51,8 @@ function initcreateNewGameButton(socket) {
             humanPlayers: [{ name: $('#newGameMyName').val(), playerId: window.localStorage.getItem('uUID')}],
             createDateTime: new Date(),
             evenPromisesAllowed: !$('#noEvenPromises').prop('checked'),
+            visiblePromiseRound: !$('#hidePromiseRound').prop('checked'),
+            freeTrump: !$('#mustTrump').prop('checked'),
         };
         if (validateNewGame(gameOptions)) {
             createNewGame(socket, gameOptions);
@@ -115,7 +117,9 @@ function showGames(socket, gameList) {
         if (firstId ==  '') firstId = game.id;
         var gameContainerDiv = $('<div id="gameContainerDiv"'+ game.id +'>').addClass('row');
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
-        if (!game.evenPromisesAllowed) ruleStr+= ' no even promises';
+        if (!game.evenPromisesAllowed) ruleStr+= ', no even promises';
+        if (!game.visiblePromiseRound) ruleStr+= ', hidden promise round';
+        if (!game.freeTrump) ruleStr+= ', must trump';
         gameContainerDiv.append($('<div>').addClass('col-1').text(ruleStr));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
         gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input type="text" id="myName'+game.id+'">').addClass('newGameMyNameInput'))));
