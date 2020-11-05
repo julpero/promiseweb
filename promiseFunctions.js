@@ -175,6 +175,14 @@ module.exports = {
         }
         return true;
     },
+
+    isLastPromiser: function (round) {
+        var promisesMade = 0;
+        for (var i = 0; i < round.roundPlayers.length; i++) {
+            if (round.roundPlayers[i].promise != null) promisesMade++;
+        }
+        return promisesMade == round.roundPlayers.length - 1;
+    },
 }
 
 function getCurrentCardInCharge(cardsPlayed) {

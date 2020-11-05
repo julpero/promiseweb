@@ -364,36 +364,43 @@ try {
                             // this should be same as playerName
                             if (gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].name == playerName) {
                                 // update promise
-                                gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise = promiseInt;
-                                if (gameInDb.game.rounds[promiseDetails.roundInd].totalPromise == null) gameInDb.game.rounds[promiseDetails.roundInd].totalPromise = 0;
-                                gameInDb.game.rounds[promiseDetails.roundInd].totalPromise += promiseInt;
-                                const options = { upsert: true };
-                                const updateDoc = {
-                                    $set: {
-                                        game: gameInDb.game,
+                                if (gameInDb.evenPromisesAllowed || !pf.isLastPromiser(gameInDb.game.rounds[promiseDetails.roundInd]) || gameInDb.game.rounds[promiseDetails.roundInd].totalPromise + promiseInt != gameInDb.game.rounds[promiseDetails.roundInd].cardsInRound) {
+                                    gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise = promiseInt;
+                                    if (gameInDb.game.rounds[promiseDetails.roundInd].totalPromise == null) gameInDb.game.rounds[promiseDetails.roundInd].totalPromise = 0;
+                                    gameInDb.game.rounds[promiseDetails.roundInd].totalPromise += promiseInt;
+                                    const options = { upsert: true };
+                                    const updateDoc = {
+                                        $set: {
+                                            game: gameInDb.game,
+                                        }
+                                    };
+                                    const result = await collection.updateOne(query, updateDoc, options);
+                                    if (result.modifiedCount == 1) {
+                                        promiseMadeOk = true;
+                                        break;
                                     }
-                                };
-                                const result = await collection.updateOne(query, updateDoc, options);
-                                if (result.modifiedCount == 1) {
-                                    promiseMadeOk = true;
-                                    break;
+                                } else {
+                                    socket.emit('new chat line', 'You can\'t promise '+promiseInt+' because even promises is not allowed!');
                                 }
                             }
                         }
                     }
 
+                    const thisGame = await collection.findOne(query);
+                    console.log(thisGame);
+        
+                    var gameInfo = pf.gameToGameInfo(thisGame);
+                    gameInfo.currentRound = promiseDetails.roundInd;
+
                     if (promiseMadeOk) {
-                        const thisGame = await collection.findOne(query);
-                        console.log(thisGame);
-            
-                        var gameInfo = pf.gameToGameInfo(thisGame);
-                        gameInfo.currentRound = promiseDetails.roundInd;
                         io.to(gameInfo.id).emit('promise made', gameInfo);
                         
                         var chatLine = playerName+' promised';
                         if (thisGame.visiblePromiseRound) chatLine+= ' '+promiseInt;
                         io.to(gameInfo.id).emit('new chat line', chatLine);
                         // fn(gameInfo); // just DEBUG
+                    } else {
+                        socket.emit('promise made', gameInfo);
                     }
                 }
     
@@ -554,7 +561,8 @@ try {
                         humanPlayers: pf.parsedHumanPlayers(val.humanPlayers),
                         hasPassword: val.password.length > 0,
                         evenPromisesAllowed: val.evenPromisesAllowed,
-                        visiblePromiseRound: val.visiblePromiseRound
+                        visiblePromiseRound: val.visiblePromiseRound,
+                        freeTrump: val.freeTrump
                     });
                 });
     
