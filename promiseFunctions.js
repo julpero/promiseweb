@@ -77,6 +77,7 @@ module.exports = {
             eventInfo: null,
             evenPromisesAllowed: game.evenPromisesAllowed == null || game.evenPromisesAllowed,
             visiblePromiseRound: game.visiblePromiseRound == null || game.visiblePromiseRound,
+            freeTrump: game.freeTrump == null || game.freeTrump,
         };
         return gameInfo;
     },

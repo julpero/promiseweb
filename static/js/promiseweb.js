@@ -433,10 +433,21 @@ function dimMyCards(myRound, visibility) {
     }
 }
 
-function initCardsToPlay(socket, myRound) {
-    if (amIStarterOfPlay(myRound) || !iHaveSuitInMyHand(myRound.cardInCharge.suit, myRound.myCards)) {
+function initCardsToPlay(socket, myRound, freeTrump) {
+    if (amIStarterOfPlay(myRound)) {
         // i can play any card i want
         initCardEvents(socket, myRound);
+    } else if (!iHaveSuitInMyHand(myRound.cardInCharge.suit, myRound.myCards)) {
+        if (freeTrump) {
+            initCardEvents(socket, myRound);
+        } else {
+            if (iHaveSuitInMyHand(myRound.trumpCard.suit, myRound.myCards)) {
+                // i have to play trump card
+                initCardEvents(socket, myRound, myRound.trumpCard.suit);
+            } else {
+                initCardEvents(socket, myRound);
+            }
+        }
     } else {
         // i can play only suit of card in charge
         initCardEvents(socket, myRound, myRound.cardInCharge.suit);
@@ -569,7 +580,7 @@ function showDealer(myRound) {
     $('#player'+indInTable+'NameCol').addClass('dealer');
 }
 
-function playRound(socket, myRound) {
+function playRound(socket, myRound, freeTrump) {
     checkSmall(myRound.players.length);
     hideThinkings();
     hidePromise();
@@ -578,7 +589,7 @@ function playRound(socket, myRound) {
     $('#myInfoRow').show();
     if (isMyPlayTurn(myRound)) {
         showMyTurn();
-        initCardsToPlay(socket, myRound);
+        initCardsToPlay(socket, myRound, freeTrump);
     } else {
         showWhoIsPlaying(myRound);
         dimMyCards(myRound, 0.8);
