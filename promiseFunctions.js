@@ -139,7 +139,7 @@ module.exports = {
                 break;
             }
         }
-        return cardInHand && currentPlayTurnPlayerName(gameInDb) == playerName && isCardAvailableToPlay(playedCard, currentRound.cardInCharge, playerCards);
+        return cardInHand && currentPlayTurnPlayerName(gameInDb) == playerName && isCardAvailableToPlay(playedCard, currentRound.cardInCharge, playerCards, gameInDb.freeTrump, currentRound.trumpCard.suit);
     },
     
     initPlayers: function (gameInfo) {
@@ -241,13 +241,27 @@ function isCardInHand(playedCard, playerCards) {
     return false;
 }
 
-function isCardAvailableToPlay(playedCard, cardInCharge, playerCards) {
+function isCardAvailableToPlay(playedCard, cardInCharge, playerCards, freeTrump, trumpSuit) {
     if (cardInCharge == null) return true;
+
     var hasSuitInHand = false;
     for (var i = 0; i < playerCards.length; i++) {
         if (playerCards[i].suit == cardInCharge.suit) hasSuitInHand = true;
     }
-    return !hasSuitInHand || playedCard.suit == cardInCharge.suit;
+
+    if (freeTrump) {
+        return !hasSuitInHand || playedCard.suit == cardInCharge.suit;
+    } else {
+        if (!hasSuitInHand) {
+            var hasTrumpInHand = false;
+            for (var i = 0; i < playerCards.length; i++) {
+                if (playerCards[i].suit == trumpSuit) hasTrumpInHand = true;
+            }
+            return !hasTrumpInHand || playedCard.suit == trumpSuit;
+        } else {
+            return true;
+        }
+    }
 }
 
 
