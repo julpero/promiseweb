@@ -64,7 +64,6 @@ function drawOtherPlayerCards(players, cardsInRound, cardsPlayed) {
     }
 }
 
-
 function drawTrumpCard(trumpCard, cardsToPlayers) {
     var $deckDiv = document.getElementById('trumpDiv');
 
@@ -354,6 +353,13 @@ function iHaveSuitInMyHand(suitInCharge, myHand) {
         if (myHand[i].suit == suitInCharge) return true;
     }
     return false;
+}
+
+function showPromisesNow(gameInfo, myRound) {
+    if (!gameInfo.visiblePromiseRound) {
+        return roundPromised(myRound);
+    }
+    return true;
 }
 
 function cardToClassMapper(card) {
@@ -762,8 +768,6 @@ function initPromiseTable(promiseTable) {
         $('#player'+i+'PromiseName').tooltip({title: "kept: " + playerKept + " / over: " + playerOver + " / under: " + playerUnder});
     }
 }
-
-
 
 function initScoreBoard(promiseTable, gameOver) {
     if ($('#scoreboard').children().length == 0) createScoreboard(promiseTable);

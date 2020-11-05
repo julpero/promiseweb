@@ -390,7 +390,9 @@ try {
                         gameInfo.currentRound = promiseDetails.roundInd;
                         io.to(gameInfo.id).emit('promise made', gameInfo);
                         
-                        io.to(gameInfo.id).emit('new chat line', playerName+' promised '+promiseInt);            
+                        var chatLine = playerName+' promised';
+                        if (thisGame.visiblePromiseRound) chatLine+= ' '+promiseInt;
+                        io.to(gameInfo.id).emit('new chat line', chatLine);
                         // fn(gameInfo); // just DEBUG
                     }
                 }
@@ -551,7 +553,8 @@ try {
                         endRound: val.endRound,
                         humanPlayers: pf.parsedHumanPlayers(val.humanPlayers),
                         hasPassword: val.password.length > 0,
-                        evenPromisesAllowed: val.evenPromisesAllowed
+                        evenPromisesAllowed: val.evenPromisesAllowed,
+                        visiblePromiseRound: val.visiblePromiseRound
                     });
                 });
     

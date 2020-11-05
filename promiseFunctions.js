@@ -14,7 +14,7 @@ module.exports = {
             starterPositionIndex: round.starterPositionIndex,
             myName: playerName,
             myCards: getPlayerCards(playerName, round),
-            players: getRoundPlayers(playerName, round),
+            players: getRoundPlayers(playerName, round, showPromisesNow(thisGame, roundInd)),
             trumpCard: round.trumpCard,
             playerInCharge: getPlayerInCharge(roundInd, this.getCurrentPlayIndex(round), thisGame),
             promiseTable: getPromiseTable(thisGame),
@@ -76,6 +76,7 @@ module.exports = {
             reloaded: false,
             eventInfo: null,
             evenPromisesAllowed: game.evenPromisesAllowed == null || game.evenPromisesAllowed,
+            visiblePromiseRound: game.visiblePromiseRound == null || game.visiblePromiseRound,
         };
         return gameInfo;
     },
@@ -166,16 +167,19 @@ module.exports = {
         }
         return rounds;
     },
-    
-    
+
+    isRoundPromised: function (round) {
+        for (var i = 0; i < round.roundPlayers.length; i++) {
+            if (round.roundPlayers[i].promise == null) return false;
+        }
+        return true;
+    },
 }
 
 function getCurrentCardInCharge(cardsPlayed) {
     if (!cardsPlayed[cardsPlayed.length - 1][0]) return null;
     return cardsPlayed[cardsPlayed.length - 1][0].card;
 }
-
-
 
 function getPlayerCards(name, round) {
     var cards = null;
@@ -193,14 +197,14 @@ function getPlayerPlayedCard(playerName, cardsPlayed) {
     return null;
 }
 
-function getRoundPlayers(myName, round) {
+function getRoundPlayers(myName, round, showPromises) {
     var players = [];
     round.roundPlayers.forEach(function (player, idx) {
         players.push({
             thisIsMe: player.name == myName,
             dealer: round.dealerPositionIndex == idx,
             name: player.name,
-            promise: player.promise,
+            promise: showPromises ? player.promise : (player.promise == null) ? null : -1,
             keeps: player.keeps,
             cardPlayed: getPlayerPlayedCard(player.name, round.cardsPlayed),
         });
@@ -208,8 +212,12 @@ function getRoundPlayers(myName, round) {
     return players;
 }
 
-
-
+function showPromisesNow(thisGame, roundInd) {
+    if (!thisGame.visiblePromiseRound) {
+        return module.exports.isRoundPromised(thisGame.game.rounds[roundInd]);
+    }
+    return true;
+}
 
 function currentPlayTurnPlayerName(gameInDb) {
     var currentRoundIndex = module.exports.getCurrentRoundIndex(gameInDb);
@@ -250,7 +258,6 @@ function getRoundStarterName(round) {
     return round.roundPlayers[round.starterPositionIndex].name;
 }
 
-
 function getPlayerIdByName(name, players) {
     var playerId = null;
     players.forEach(function(player) {
@@ -283,7 +290,7 @@ function getPromiseTable(thisGame) {
         var playerPromises = [];
         for (var j = 0; j < thisGame.game.rounds.length; j++) {
             playerPromises.push({
-                promise: thisGame.game.rounds[j].roundPlayers[i].promise,
+                promise: showPromisesNow(thisGame, j) ? thisGame.game.rounds[j].roundPlayers[i].promise : null,
                 keep: thisGame.game.rounds[j].roundPlayers[i].keeps,
                 points: thisGame.game.rounds[j].roundPlayers[i].points,
             });

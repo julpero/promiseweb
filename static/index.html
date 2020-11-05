@@ -139,6 +139,12 @@
                                 Do not allow even promises
                             </label>
                         </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="hidePromiseRound">
+                            <label class="form-check-label" for="hidePromiseRound">
+                                Hidden promise round
+                            </label>
+                        </div>
                         <div class="form-group">
                             <label for="newGamePassword">
                                 Password for new game, leave empty if this is a public game
@@ -339,7 +345,7 @@
                             console.log('reloading...');
                             browserReload(myRound);
                         }
-                        showPlayerPromises(myRound);
+                        if (showPromisesNow(gameInfo, myRound)) showPlayerPromises(myRound);
                         if (roundPromised(myRound)) {
                             playRound(socket, myRound);
                         } else {
@@ -403,7 +409,7 @@
                             $('#gameContainer').show();
                             browserReload(myRound);
                         }
-                        showPlayerPromises(myRound);
+                        if (showPromisesNow(gameInfo, myRound)) showPlayerPromises(myRound);
                         if (myRound.newRound) {
                             console.log('newRound');
                             clearWonCards();
