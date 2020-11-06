@@ -108,12 +108,14 @@ function drawMyCards(myCards) {
             delay: 0,
             duration: 0,
             rot: randomNegToPos(5),
-        });    
+        });
     });    
 }    
 
 function mapPlayerNameToTable(name) {
-    var divs = $('.playerNameCol:contains("'+name+'")');
+    var divs = $('.playerNameCol').filter(function() {
+        return $(this).text() === name;
+    });
     if (divs.length == 1) {
         var divId = divs[0].id;
         if (divId.length > 6) {
