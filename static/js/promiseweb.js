@@ -297,12 +297,14 @@ function drawPromiseAsProgress(max, promise, keep) {
     return progressMain;
 }
 
-function showPlayerPromises(myRound) {
+function showPlayerPromises(myRound, showPromise) {
     myRound.players.forEach(function (player, idx) {
         var tableIdx = otherPlayerMapper(idx, myRound.players);
         if (player.promise != null) {
-            $('#player'+tableIdx+'Promised').html('p: '+player.promise);
             $('#player'+tableIdx+'Keeps').html('k: '+player.keeps);
+            if (!showPromise && tableIdx != 0) return;
+
+            $('#player'+tableIdx+'Promised').html('p: '+player.promise);
             if (player.promise == player.keeps) {
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseOver');
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseUnder');
@@ -356,6 +358,7 @@ function iHaveSuitInMyHand(suitInCharge, myHand) {
 }
 
 function showPromisesNow(gameInfo, myRound) {
+    if (gameInfo.onlyTotalPromise) return false;
     if (!gameInfo.visiblePromiseRound) {
         return roundPromised(myRound);
     }
@@ -518,6 +521,19 @@ function showPlayedCards(myRound) {
     }
 }
 
+function showOnlyTotalPromiseInfo(round, show, players) {
+    if (show) {
+        $("#totalPromiseInfo").empty();
+        var keptSoFar = 0;
+        players.forEach(function (player) {
+            keptSoFar+= player.keeps;
+        });
+        $("#totalPromiseInfo").text('Promised total: ' + round.totalPromise + '/' + round.cardsInRound + ' (' + keptSoFar + ')');
+    } else {
+        $("#totalPromiseInfo").empty();
+    }
+}
+
 function winnerOfSinglePlay(cardsPlayed, trumpSuit) {
     var winner = cardsPlayed[0].name;
     var winningCard = cardsPlayed[0].card;
@@ -605,7 +621,6 @@ function getCardFromDiv(divStr) {
     return null;
 }
 
-
 function getNextFreeCardWonDiv(playerIndex) {
     for (var i = 0; i < 10; i++) {
         if ($('#player'+playerIndex+'CardsWon'+i+'Div').children().length == 0) return i;
@@ -659,6 +674,7 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
             }
         });
     }
+
     return new Promise(resolve => {
         setTimeout(resolve, (delay+duration+500));
     });
@@ -718,11 +734,9 @@ async function moveCardFromHandToTable(card, playerName) {
         }
     });
 
-
     return new Promise(resolve => {
         setTimeout(resolve, (delay+duration+500));
     });
-
 }
 
 function initPromiseTable(promiseTable) {

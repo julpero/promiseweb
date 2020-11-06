@@ -53,9 +53,23 @@ function initcreateNewGameButton(socket) {
             evenPromisesAllowed: !$('#noEvenPromises').prop('checked'),
             visiblePromiseRound: !$('#hidePromiseRound').prop('checked'),
             freeTrump: !$('#mustTrump').prop('checked'),
+            onlyTotalPromise: $('#onlyTotalPromise').prop('checked'),
         };
         if (validateNewGame(gameOptions)) {
             createNewGame(socket, gameOptions);
+        }
+    });
+}
+
+function initRulesCheck() {
+    $('#hidePromiseRound').on('click', function() {
+        if (!$('#hidePromiseRound').prop('checked')) {
+            $('#onlyTotalPromise').prop('checked', false);
+        }
+    });
+    $('#onlyTotalPromise').on('click', function() {
+        if ($('#onlyTotalPromise').prop('checked')) {
+            $('#hidePromiseRound').prop('checked', true);
         }
     });
 }
@@ -119,8 +133,9 @@ function showGames(socket, gameList) {
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
         if (!game.evenPromisesAllowed) ruleStr+= ', no even promises';
         if (!game.visiblePromiseRound) ruleStr+= ', hidden promise round';
+        if (game.onlyTotalPromise) ruleStr+= ', only total promise visible';
         if (!game.freeTrump) ruleStr+= ', must trump';
-        gameContainerDiv.append($('<div>').addClass('col-1').text(ruleStr));
+        gameContainerDiv.append($('<div>').addClass('col-2').text(ruleStr));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
         gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input type="text" id="myName'+game.id+'">').addClass('newGameMyNameInput'))));
         gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input disabled type="text" id="password'+game.id+'">'))));
@@ -128,7 +143,7 @@ function showGames(socket, gameList) {
         var leaveBtnId = 'leaveGameButton' + game.id;
         var joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton').text('Join'));
         var leaveGameButton = ($('<button id="'+leaveBtnId+'">').addClass('btn btn-primary leaveThisGameButton disabled').text('Leave'));
-        gameContainerDiv.append(($('<div>').addClass('col-2')).append(joinGameButton));
+        gameContainerDiv.append(($('<div>').addClass('col-1')).append(joinGameButton));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(leaveGameButton));
 
         gameListContainer.append(gameContainerDiv);
@@ -233,6 +248,7 @@ function initChatButton(socket) {
 
 function initButtons(socket) {
     initcreateNewGameButton(socket);
+    initRulesCheck();
     initLeavingButtons(socket);
     initJoinByIdButton(socket);
     initChatButton(socket);

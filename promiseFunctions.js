@@ -14,7 +14,7 @@ module.exports = {
             starterPositionIndex: round.starterPositionIndex,
             myName: playerName,
             myCards: getPlayerCards(playerName, round),
-            players: getRoundPlayers(playerName, round, showPromisesNow(thisGame, roundInd)),
+            players: getRoundPlayers(playerName, round, showPromisesNow('player', thisGame, roundInd)),
             trumpCard: round.trumpCard,
             playerInCharge: getPlayerInCharge(roundInd, this.getCurrentPlayIndex(round), thisGame),
             promiseTable: getPromiseTable(thisGame),
@@ -57,6 +57,7 @@ module.exports = {
         humanPlayers.forEach(function(humanPlayer) {
             retVal.push({
                 name: humanPlayer.name,
+                type: 'human',
             });
         })
         return retVal;
@@ -77,6 +78,7 @@ module.exports = {
             eventInfo: null,
             evenPromisesAllowed: game.evenPromisesAllowed == null || game.evenPromisesAllowed,
             visiblePromiseRound: game.visiblePromiseRound == null || game.visiblePromiseRound,
+            onlyTotalPromise: game.onlyTotalPromise != null && game.onlyTotalPromise,
             freeTrump: game.freeTrump == null || game.freeTrump,
         };
         return gameInfo;
@@ -169,13 +171,6 @@ module.exports = {
         return rounds;
     },
 
-    isRoundPromised: function (round) {
-        for (var i = 0; i < round.roundPlayers.length; i++) {
-            if (round.roundPlayers[i].promise == null) return false;
-        }
-        return true;
-    },
-
     isLastPromiser: function (round) {
         var promisesMade = 0;
         for (var i = 0; i < round.roundPlayers.length; i++) {
@@ -183,6 +178,7 @@ module.exports = {
         }
         return promisesMade == round.roundPlayers.length - 1;
     },
+
 }
 
 function getCurrentCardInCharge(cardsPlayed) {
@@ -213,7 +209,7 @@ function getRoundPlayers(myName, round, showPromises) {
             thisIsMe: player.name == myName,
             dealer: round.dealerPositionIndex == idx,
             name: player.name,
-            promise: showPromises ? player.promise : (player.promise == null) ? null : -1,
+            promise: showPromises || player.name == myName ? player.promise : (player.promise == null) ? null : -1,
             keeps: player.keeps,
             cardPlayed: getPlayerPlayedCard(player.name, round.cardsPlayed),
         });
@@ -221,10 +217,30 @@ function getRoundPlayers(myName, round, showPromises) {
     return players;
 }
 
-function showPromisesNow(thisGame, roundInd) {
-    if (!thisGame.visiblePromiseRound) {
-        return module.exports.isRoundPromised(thisGame.game.rounds[roundInd]);
+function isRoundPlayed (round) {
+    return round.roundStatus == 2;
+}
+
+function isRoundPromised (round) {
+    for (var i = 0; i < round.roundPlayers.length; i++) {
+        if (round.roundPlayers[i].promise == null) return false;
     }
+    return true;
+}
+
+function showPromisesNow(type, thisGame, roundInd) {
+    if (thisGame.onlyTotalPromise) {
+        if (type == 'total') {
+            return isRoundPromised(thisGame.game.rounds[roundInd]);
+        } else {
+            return isRoundPlayed(thisGame.game.rounds[roundInd]);
+        }
+    }
+
+    if (!thisGame.visiblePromiseRound) {
+        return isRoundPromised(thisGame.game.rounds[roundInd]);
+    }
+
     return true;
 }
 
@@ -313,14 +329,14 @@ function getPromiseTable(thisGame) {
         var playerPromises = [];
         for (var j = 0; j < thisGame.game.rounds.length; j++) {
             playerPromises.push({
-                promise: showPromisesNow(thisGame, j) ? thisGame.game.rounds[j].roundPlayers[i].promise : null,
+                promise: showPromisesNow('player', thisGame, j) ? thisGame.game.rounds[j].roundPlayers[i].promise : null,
                 keep: thisGame.game.rounds[j].roundPlayers[i].keeps,
                 points: thisGame.game.rounds[j].roundPlayers[i].points,
             });
             if (i == 0) {
                 rounds.push({
                     cardsInRound: thisGame.game.rounds[j].cardsInRound,
-                    totalPromise: thisGame.game.rounds[j].totalPromise,
+                    totalPromise: showPromisesNow('total', thisGame, j) ? thisGame.game.rounds[j].totalPromise : null,
                 });
             }
         }
@@ -362,7 +378,6 @@ function initRound(roundIndex, cardsInRound, players) {
             points: null,
             cardsToDebug: sortedPlayerCards,
             type: player.type,
-            
         });
     });
 
