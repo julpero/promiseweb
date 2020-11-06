@@ -321,7 +321,7 @@ function getPromiseTable(thisGame) {
             if (i == 0) {
                 rounds.push({
                     cardsInRound: thisGame.game.rounds[j].cardsInRound,
-                    totalPromise: thisGame.game.rounds[j].totalPromise,
+                    totalPromise: showPromisesNow(thisGame, j) ? thisGame.game.rounds[j].totalPromise : null,
                 });
             }
         }
