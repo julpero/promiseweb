@@ -53,9 +53,23 @@ function initcreateNewGameButton(socket) {
             evenPromisesAllowed: !$('#noEvenPromises').prop('checked'),
             visiblePromiseRound: !$('#hidePromiseRound').prop('checked'),
             freeTrump: !$('#mustTrump').prop('checked'),
+            onlyTotalPromise: $('#onlyTotalPromise').prop('checked'),
         };
         if (validateNewGame(gameOptions)) {
             createNewGame(socket, gameOptions);
+        }
+    });
+}
+
+function initRulesCheck() {
+    $('#hidePromiseRound').on('click', function() {
+        if (!$('#hidePromiseRound').prop('checked')) {
+            $('#onlyTotalPromise').prop('checked', false);
+        }
+    });
+    $('#onlyTotalPromise').on('click', function() {
+        if ($('#onlyTotalPromise').prop('checked')) {
+            $('#hidePromiseRound').prop('checked', true);
         }
     });
 }
@@ -119,6 +133,7 @@ function showGames(socket, gameList) {
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
         if (!game.evenPromisesAllowed) ruleStr+= ', no even promises';
         if (!game.visiblePromiseRound) ruleStr+= ', hidden promise round';
+        if (game.onlyTotalPromise) ruleStr+= ', only total promise visible';
         if (!game.freeTrump) ruleStr+= ', must trump';
         gameContainerDiv.append($('<div>').addClass('col-2').text(ruleStr));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
@@ -233,6 +248,7 @@ function initChatButton(socket) {
 
 function initButtons(socket) {
     initcreateNewGameButton(socket);
+    initRulesCheck();
     initLeavingButtons(socket);
     initJoinByIdButton(socket);
     initChatButton(socket);

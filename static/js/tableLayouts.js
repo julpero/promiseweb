@@ -262,11 +262,15 @@ function initTrumpTable() {
     var col11 = $('<div>Valtti</div>').addClass('col nameCol trumpNameCol');
     var row2= $('<div></div>').addClass('row');
     var col21 = $('<div id="trumpDiv"></div>').addClass('col cardCol trumpCardCol');
+    var row3= $('<div></div>').addClass('row');
+    var col31 = $('<div id="totalPromiseInfo"></div>').addClass('col nameCol promisedTotalCol');
     row1.append(col11);
     row2.append(col21);
+    row3.append(col31);
     
     nodeCol.append(row1);
     nodeCol.append(row2);
+    nodeCol.append(row3);
     
     nodeRow.append(nodeCol);
 

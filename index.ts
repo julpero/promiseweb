@@ -458,7 +458,7 @@ try {
                                 io.to(playDetails.gameId).emit('new chat line', winnerName+' won this play');
                                 
                                 if (gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps == gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].promise + 1) {
-                                    io.to(playDetails.gameId).emit('new chat line', winnerName+' Pitkäksi Oy:stä PÄIVÄÄ!');
+                                    if (!gameInDb.onlyTotalPromise) io.to(playDetails.gameId).emit('new chat line', winnerName+' Pitkäksi Oy:stä PÄIVÄÄ!');
                                 }
     
                                 if (gameAfterPlay.rounds[roundInDb].cardsPlayed.length == gameAfterPlay.rounds[roundInDb].cardsInRound) {
@@ -562,6 +562,7 @@ try {
                         hasPassword: val.password.length > 0,
                         evenPromisesAllowed: val.evenPromisesAllowed,
                         visiblePromiseRound: val.visiblePromiseRound,
+                        onlyTotalPromise: val.onlyTotalPromise,
                         freeTrump: val.freeTrump
                     });
                 });
