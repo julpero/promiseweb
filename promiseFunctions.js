@@ -57,6 +57,7 @@ module.exports = {
         humanPlayers.forEach(function(humanPlayer) {
             retVal.push({
                 name: humanPlayer.name,
+                type: 'human',
             });
         })
         return retVal;
@@ -362,7 +363,6 @@ function initRound(roundIndex, cardsInRound, players) {
             points: null,
             cardsToDebug: sortedPlayerCards,
             type: player.type,
-            
         });
     });
 
