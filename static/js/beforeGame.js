@@ -52,8 +52,9 @@ function initcreateNewGameButton(socket) {
             createDateTime: new Date(),
             evenPromisesAllowed: !$('#noEvenPromises').prop('checked'),
             visiblePromiseRound: !$('#hidePromiseRound').prop('checked'),
-            freeTrump: !$('#mustTrump').prop('checked'),
             onlyTotalPromise: $('#onlyTotalPromise').prop('checked'),
+            freeTrump: !$('#mustTrump').prop('checked'),
+            hiddenTrump: $('#hiddenTrump').prop('checked'),
         };
         if (validateNewGame(gameOptions)) {
             createNewGame(socket, gameOptions);
@@ -135,6 +136,7 @@ function showGames(socket, gameList) {
         if (!game.visiblePromiseRound) ruleStr+= ', hidden promise round';
         if (game.onlyTotalPromise) ruleStr+= ', only total promise visible';
         if (!game.freeTrump) ruleStr+= ', must trump';
+        if (game.hiddenTrump) ruleStr+= ', hidden trump';
         gameContainerDiv.append($('<div>').addClass('col-2').text(ruleStr));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
         gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input type="text" id="myName'+game.id+'">').addClass('newGameMyNameInput'))));

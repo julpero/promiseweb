@@ -27,7 +27,7 @@ function getCardIndex(cards, myCard) {
 
 function drawCards(myRound) {
     drawMyCards(myRound.myCards);
-    drawTrumpCard(myRound.trumpCard, myRound.players.length * myRound.cardsInRound);
+    drawTrumpCard(myRound);
     drawOtherPlayerCards(myRound.players, myRound.cardsInRound, myRound.cardsPlayed);
 }
 
@@ -64,11 +64,15 @@ function drawOtherPlayerCards(players, cardsInRound, cardsPlayed) {
     }
 }
 
-function drawTrumpCard(trumpCard, cardsToPlayers) {
+function drawTrumpCard(myRound) {
+
+    var trumpCard = myRound.trumpCard;
+    var cardsToPlayers = myRound.players.length * myRound.cardsInRound;
+    if (trumpCard != null) cardsToPlayers++;
     var $deckDiv = document.getElementById('trumpDiv');
 
     var dummyDeck = Deck();
-    for (var i = 52; i > cardsToPlayers + 1; i--) {
+    for (var i = 52; i > cardsToPlayers; i--) {
         var dummyCard = dummyDeck.cards[i-1];
         dummyCard.mount($deckDiv);
         dummyCard.animateTo({
@@ -80,18 +84,20 @@ function drawTrumpCard(trumpCard, cardsToPlayers) {
         });
     }
 
-    var deck = Deck();
-    var cardIndex = getCardIndex(deck.cards, trumpCard);
-    var card = deck.cards[cardIndex];
-    card.mount($deckDiv);
-    card.setSide('front');
-    card.animateTo({
-        x: randomNegToPos(2),
-        y: randomNegToPos(2),
-        delay: 0,
-        duration: 0,
-        rot: randomNegToPos(5)+10,
-    });
+    if (trumpCard != null) {
+        var deck = Deck();
+        var cardIndex = getCardIndex(deck.cards, trumpCard);
+        var card = deck.cards[cardIndex];
+        card.mount($deckDiv);
+        card.setSide('front');
+        card.animateTo({
+            x: randomNegToPos(2),
+            y: randomNegToPos(2),
+            delay: 0,
+            duration: 0,
+            rot: randomNegToPos(5)+10,
+        });
+    }
 }
 
 function drawMyCards(myCards) {

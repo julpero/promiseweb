@@ -15,7 +15,7 @@ module.exports = {
             myName: playerName,
             myCards: getPlayerCards(playerName, round),
             players: getRoundPlayers(playerName, round, showPromisesNow('player', thisGame, roundInd)),
-            trumpCard: round.trumpCard,
+            trumpCard: showTrumpCard(thisGame, roundInd) ? round.trumpCard : null,
             playerInCharge: getPlayerInCharge(roundInd, this.getCurrentPlayIndex(round), thisGame),
             promiseTable: getPromiseTable(thisGame),
             cardInCharge: getCurrentCardInCharge(round.cardsPlayed),
@@ -80,6 +80,7 @@ module.exports = {
             visiblePromiseRound: game.visiblePromiseRound == null || game.visiblePromiseRound,
             onlyTotalPromise: game.onlyTotalPromise != null && game.onlyTotalPromise,
             freeTrump: game.freeTrump == null || game.freeTrump,
+            hiddenTrump: game.hiddenTrump != null && game.hiddenTrump,
         };
         return gameInfo;
     },
@@ -179,6 +180,10 @@ module.exports = {
         return promisesMade == round.roundPlayers.length - 1;
     },
 
+}
+
+function showTrumpCard(thisGame, roundInd) {
+    return (!thisGame.hiddenTrump || isRoundPromised(thisGame.game.rounds[roundInd]));
 }
 
 function getCurrentCardInCharge(cardsPlayed) {

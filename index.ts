@@ -563,7 +563,8 @@ try {
                         evenPromisesAllowed: val.evenPromisesAllowed,
                         visiblePromiseRound: val.visiblePromiseRound,
                         onlyTotalPromise: val.onlyTotalPromise,
-                        freeTrump: val.freeTrump
+                        freeTrump: val.freeTrump,
+                        hiddenTrump: val.hiddenTrump,
                     });
                 });
     
