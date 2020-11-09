@@ -226,6 +226,12 @@
                         <div class="col-12" id="scoreboard">
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-12 ruleBoard" id="ruleBoard">
+                            Selected rules
+                            <ul id="ruleList"></ul>
+                        </div>
+                    </div>
 
                 </div>
             </div>
@@ -331,6 +337,7 @@
                     $('#myName').val(gameInfo.myName);
                     $('#gameChooser').hide();
                     $('#gameContainer').show();
+                    initRuleList(gameInfo);
                     var getRound = {
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
@@ -362,6 +369,7 @@
                         if (myRound.doReloadInit) {
                             console.log('reloading...');
                             browserReload(myRound);
+                            initRuleList(gameInfo);
                         }
                         showPlayerPromises(myRound, showPromisesNow(gameInfo, myRound));
                         if (roundPromised(myRound)) {
@@ -428,6 +436,7 @@
                             $('#gameChooser').hide();
                             $('#gameContainer').show();
                             browserReload(myRound);
+                            initRuleList(gameInfo);
                         }
                         showPlayerPromises(myRound, showPromisesNow(gameInfo, myRound));
                         if (myRound.newRound) {
