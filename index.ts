@@ -1,10 +1,9 @@
-var express = require('express');
-var app = express()
-  , http = require('http')
-  , server = http.createServer(app)
-  , io = require('socket.io').listen(server);
+const express = require('express');
+const app = express();
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
 
-var port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 server.listen(port, () => {
     console.log('listening on *:' + port);
 });
@@ -14,9 +13,9 @@ app.use(express.static('node_modules/deck-of-cards/dist'))
 app.use(express.static('node_modules/jquery-color-animation'))
 
 
-var pf = require(__dirname + '/promiseFunctions.js');
-var sm = require(__dirname + '/clientSocketMapper.js');
-var ai = require(__dirname + '/aiPlayer.js');
+const pf = require(__dirname + '/promiseFunctions.js');
+const sm = require(__dirname + '/clientSocketMapper.js');
+const ai = require(__dirname + '/aiPlayer.js');
 
 try {
     var mongoUtil = require(__dirname + '/mongoUtil.js');
