@@ -390,7 +390,6 @@ function initMyPromiseRow() {
 
 }
 
-
 function createPromiseTable(promiseTable) {
     var node = $('#promiseTable');
     var table = $('<table></table>');
@@ -422,7 +421,6 @@ function createPromiseTable(promiseTable) {
     node.append(table);
 }
 
-
 function createScoreboard(promiseTable) {
     var node = $('#scoreboard');
     var table = $('<table></table>');
@@ -453,4 +451,15 @@ function createScoreboard(promiseTable) {
     table.append(tableBody);
 
     node.append(table);
+}
+
+function initRuleList(gameInfo) {
+    var node = $('#ruleList');
+    node.empty();
+    if (!gameInfo.evenPromisesAllowed) node.append($('<li></li>').text('no even promises'));
+    if (!gameInfo.visiblePromiseRound) node.append($('<li></li>').text('hidden promise round'));
+    if (gameInfo.onlyTotalPromise) node.append($('<li></li>').text('only total promise visible'));
+    if (!gameInfo.freeTrump) node.append($('<li></li>').text('must play trump'));
+    if (gameInfo.hiddenTrump) node.append($('<li></li>').text('hidden trump'));
+
 }

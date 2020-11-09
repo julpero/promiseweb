@@ -825,7 +825,6 @@ function initScoreBoard(promiseTable, gameOver) {
     if (gameOver) {
         console.log(totalPoints);
     }
-    
 }
 
 function checkSmall(playerCount) {
@@ -848,7 +847,6 @@ function browserReload(myRound) {
     showWonCards(myRound);
     checkSmall(myRound.players.length);
 }
-
 
 function appendToChat(text) {
     $('#chatTextArea').val($('#chatTextArea').val() +'\n'+ text);
