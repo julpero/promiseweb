@@ -374,7 +374,7 @@
                         showPlayerPromises(myRound, showPromisesNow(gameInfo, myRound));
                         if (roundPromised(myRound)) {
                             showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[gameInfo.currentRound], gameInfo.onlyTotalPromise, myRound.players);
-                            drawTrumpCard(myRound);
+                            revealTrumpCard(myRound.trumpCard);
                             playRound(socket, myRound, gameInfo.freeTrump);
                         } else {
                             getPromise(socket, myRound, gameInfo.evenPromisesAllowed);

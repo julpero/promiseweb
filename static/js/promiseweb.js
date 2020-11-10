@@ -64,11 +64,28 @@ function drawOtherPlayerCards(players, cardsInRound, cardsPlayed) {
     }
 }
 
-function drawTrumpCard(myRound) {
+function revealTrumpCard(trumpCard) {
+    $('#trumpDiv')[0].children[$('#trumpDiv')[0].children.length-1].remove();
+    
+    var $deckDiv = document.getElementById('trumpDiv');
+    var deck = Deck();
+    var cardIndex = getCardIndex(deck.cards, trumpCard);
+    var card = deck.cards[cardIndex];
+    card.mount($deckDiv);
+    card.setSide('front');
+    card.animateTo({
+        x: randomNegToPos(2),
+        y: randomNegToPos(2),
+        delay: 0,
+        duration: 0,
+        rot: randomNegToPos(5)+15,
+    });
 
+}
+
+function drawTrumpCard(myRound) {
     var trumpCard = myRound.trumpCard;
-    var cardsToPlayers = myRound.players.length * myRound.cardsInRound;
-    if (trumpCard != null) cardsToPlayers++;
+    var cardsToPlayers = myRound.players.length * myRound.cardsInRound + 1;
     var $deckDiv = document.getElementById('trumpDiv');
 
     var dummyDeck = Deck();
@@ -85,18 +102,7 @@ function drawTrumpCard(myRound) {
     }
 
     if (trumpCard != null) {
-        var deck = Deck();
-        var cardIndex = getCardIndex(deck.cards, trumpCard);
-        var card = deck.cards[cardIndex];
-        card.mount($deckDiv);
-        card.setSide('front');
-        card.animateTo({
-            x: randomNegToPos(2),
-            y: randomNegToPos(2),
-            delay: 0,
-            duration: 0,
-            rot: randomNegToPos(5)+10,
-        });
+        revealTrumpCard(trumpCard);
     }
 }
 
@@ -405,7 +411,7 @@ function initCardEvents(socket, myRound, onlySuit) {
             // activate this card / div
             console.log('activate this card / div: ' + myRound.myCards[i].suit + ' ' + myRound.myCards[i].rank);
             console.log(' mapped to: ' + cardMapperStr);
-            $(cardMapperStr+' ').animate({backgroundColor: "#ffffff"}, 600);
+            $(cardMapperStr+' ').animate({backgroundColor: "#ffffff"}, 300);
             $(cardMapperStr).on('click touchstart', function () {
                 $('.card').off('click touchstart');
                 console.log(this.className);
@@ -423,7 +429,7 @@ function initCardEvents(socket, myRound, onlySuit) {
             });
         } else {
             // fade this card
-            $(cardMapperStr+' ').animate({backgroundColor: "#bbbbbb"}, 600);
+            $(cardMapperStr+' ').animate({backgroundColor: "#bbbbbb"}, 300);
         }
     }
 }
