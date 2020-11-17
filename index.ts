@@ -564,6 +564,7 @@ try {
                         onlyTotalPromise: val.onlyTotalPromise,
                         freeTrump: val.freeTrump,
                         hiddenTrump: val.hiddenTrump,
+                        privateSpeedGame: val.privateSpeedGame,
                     });
                 });
     

@@ -81,6 +81,7 @@ module.exports = {
             onlyTotalPromise: game.onlyTotalPromise != null && game.onlyTotalPromise,
             freeTrump: game.freeTrump == null || game.freeTrump,
             hiddenTrump: game.hiddenTrump != null && game.hiddenTrump,
+            privateSpeedGame: game.privateSpeedGame != null && game.privateSpeedGame,
         };
         return gameInfo;
     },

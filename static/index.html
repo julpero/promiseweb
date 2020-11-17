@@ -163,6 +163,24 @@
                                 Trump is hidden when promising
                             </label>
                         </div>
+                        <!-- <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="speedPromise">
+                            <label class="form-check-label" for="speedPromise">
+                                Speed promise
+                            </label>
+                        </div> -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="privateSpeedGame">
+                            <label class="form-check-label" for="privateSpeedGame">
+                                Private speed game
+                            </label>
+                        </div>
+                        <!-- <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="privateSpeedGame">
+                            <label class="form-check-label" for="publicSpeedGame">
+                                Public speed game
+                            </label>
+                        </div> -->
                         <div class="form-group">
                             <label for="newGamePassword">
                                 Password for new game, leave empty if this is a public game
@@ -306,13 +324,17 @@
         <script src="/deck.min.js"></script>
         <script src="/jquery.animate-colors-min.js"></script>
 
-        <script>
+        <script type="text/javascript">
+            const intervalTime = 100;
+            var intervaller = null;
+            var cardTime = null;
+            var usedTime = null;
+            var possibleCards = [];
             $(function () {
                 var joinedGame = null;
                 if (window.localStorage.getItem('uUID')) {
                     console.log(window.localStorage.getItem('uUID'));
                     joinedGame = window.localStorage.getItem('uUID');
-
                 } else {
                     var uuid = uuidv4();
                     console.log('uUID set: ' + uuid);
@@ -338,6 +360,7 @@
                     $('#gameChooser').hide();
                     $('#gameContainer').show();
                     initRuleList(gameInfo);
+                    initSpeedBar(gameInfo);
                     var getRound = {
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
@@ -370,12 +393,14 @@
                             console.log('reloading...');
                             browserReload(myRound);
                             initRuleList(gameInfo);
+                            initSpeedBar(gameInfo);
                         }
                         showPlayerPromises(myRound, showPromisesNow(gameInfo, myRound));
                         if (roundPromised(myRound)) {
                             showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[gameInfo.currentRound], gameInfo.onlyTotalPromise, myRound.players);
-                            drawTrumpCard(myRound);
-                            playRound(socket, myRound, gameInfo.freeTrump);
+                            revealTrumpCard(myRound.trumpCard);
+                            initSpeedBar(gameInfo);
+                            playRound(socket, myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
                         } else {
                             getPromise(socket, myRound, gameInfo.evenPromisesAllowed);
                         }
@@ -437,6 +462,7 @@
                             $('#gameContainer').show();
                             browserReload(myRound);
                             initRuleList(gameInfo);
+                            initSpeedBar(gameInfo);
                         }
                         showPlayerPromises(myRound, showPromisesNow(gameInfo, myRound));
                         if (myRound.newRound) {
@@ -446,7 +472,7 @@
                         }
                         if (roundPromised(myRound)) {
                             showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[myRound.roundInd], gameInfo.onlyTotalPromise, myRound.players);
-                            playRound(socket, myRound, gameInfo.freeTrump);
+                            playRound(socket, myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
                         } else {
                             getPromise(socket, myRound, gameInfo.evenPromisesAllowed);
                         }
