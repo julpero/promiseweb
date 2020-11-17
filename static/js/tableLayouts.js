@@ -263,14 +263,18 @@ function initTrumpTable() {
     var row2= $('<div></div>').addClass('row');
     var col21 = $('<div id="trumpDiv"></div>').addClass('col cardCol trumpCardCol');
     var row3= $('<div></div>').addClass('row');
-    var col31 = $('<div id="totalPromiseInfo"></div>').addClass('col nameCol promisedTotalCol');
+    var col31 = $('<div id="speedPromiseDiv"></div>').addClass('col speedPromiseCol');
+    var row4= $('<div></div>').addClass('row');
+    var col41 = $('<div id="totalPromiseInfo"></div>').addClass('col nameCol promisedTotalCol');
     row1.append(col11);
     row2.append(col21);
     row3.append(col31);
+    row4.append(col41);
     
     nodeCol.append(row1);
     nodeCol.append(row2);
     nodeCol.append(row3);
+    nodeCol.append(row4);
     
     nodeRow.append(nodeCol);
 
@@ -461,5 +465,17 @@ function initRuleList(gameInfo) {
     if (gameInfo.onlyTotalPromise) node.append($('<li></li>').text('only total promise visible'));
     if (!gameInfo.freeTrump) node.append($('<li></li>').text('must play trump'));
     if (gameInfo.hiddenTrump) node.append($('<li></li>').text('hidden trump'));
+    if (gameInfo.privateSpeedGame) node.append($('<li></li>').text('speed game'));
+}
 
+function initSpeedBar(gameInfo) {
+    var node = $('#speedPromiseDiv');
+    if (gameInfo.privateSpeedGame) {
+        if ($('#speedPromiseDiv').children().length == 0) {
+            var progressMain = $('<div id="speedProgressBar"></div>').addClass('progress').css({marginTop: "4px", border: "1px solid black"});
+            node.append(progressMain);
+        }
+    } else {
+        node.empty();
+    }
 }
