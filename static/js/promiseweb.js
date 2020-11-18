@@ -429,6 +429,12 @@ function classToCardMapper(classStr) {
     return null;
 }
 
+function deleteIntervaller() {
+    if (intervaller != null) clearInterval(intervaller);
+    window.localStorage.removeItem('usedTime');
+    usedTime = null;
+}
+
 function initCardEvents(myRound, onlySuit) {
     var cardsAbleToPlay = 0;
     possibleCards = [];
@@ -443,9 +449,7 @@ function initCardEvents(myRound, onlySuit) {
             $(cardMapperStr+' ').animate({backgroundColor: "#ffffff"}, 300);
             $(cardMapperStr).on('click touchstart', function () {
                 $('.card').off('click touchstart');
-                if (intervaller != null) clearInterval(intervaller);
-                window.localStorage.removeItem('usedTime');
-                usedTime = null;
+                deleteIntervaller();
 
                 var card = classToCardMapper(this.className);
                 var playDetails = { gameId: myRound.gameId,
@@ -673,9 +677,7 @@ function privateSpeedGamer(myRound) {
     window.localStorage.setItem('usedTime', usedTime);
     if (usedTime > cardTime) {
         $('.card').off('click touchstart');
-        clearInterval(intervaller);
-        usedTime = null;
-        window.localStorage.removeItem('usedTime');
+        deleteIntervaller();
         console.log('PLAY!');
         playSpeedGamerCard(myRound);
     } else {

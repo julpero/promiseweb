@@ -181,6 +181,37 @@ module.exports = {
         return promisesMade == round.roundPlayers.length - 1;
     },
 
+    activatePlayer: function (humanPlayers, activateId) {
+        var retPlayers = [];
+        humanPlayers.forEach(function (player) {
+            if (player.playerId == activateId && !player.active) player.active = true;
+            retPlayers.push(player);
+        });
+
+        return retPlayers;
+    },
+
+    deActivatePlayer: function (humanPlayers, activateId) {
+        var retPlayers = [];
+        humanPlayers.forEach(function (player) {
+            if (player.playerId == activateId && player.active) player.active = false;
+            retPlayers.push(player);
+        });
+
+        return retPlayers;
+    },
+
+    imInThisGame: function (humanPlayers, myId) {
+        var retVal = false;
+        humanPlayers.forEach(function (player) {
+            if (player.playerId == myId) {
+                retVal = true;
+                return;
+            }
+        });
+        return retVal;
+    }
+
 }
 
 function showTrumpCard(thisGame, roundInd) {

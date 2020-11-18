@@ -343,13 +343,12 @@
                     window.localStorage.setItem('uUID', uuid);
                 }
                 
-                // const socket = io();
+                socket.on('delete gameinfo', function(gameId) {
+                    $('#gameContainerDiv'+gameId).remove();
+                });
 
                 socket.on('update gameinfo', function(gameInfo) {
                     $('#gamePlayers'+gameInfo.id).text(gamePlayersToStr(gameInfo.humanPlayers, gameInfo.humanPlayersCount, gameInfo.computerPlayersCount));
-                    if (gameInfo.humanPlayers.length == gameInfo.humanPlayersCount-1) {
-                        $('#gameContainerDiv'+gameInfo.id).hide();
-                    }
                 });
 
                 socket.on('new chat line', function(chatLine) {

@@ -30,8 +30,8 @@ function createNewGame(gameOptions) {
         } else {
             console.log('created game with id: '+createdGameId);
             gameId = createdGameId;
-            $('#joinGameCollapse').collapse('show');
             $('#createGameCollapse').collapse('hide');
+            $('#joinGameCollapse').collapse('show');
         }
     });
     
@@ -48,7 +48,7 @@ function initcreateNewGameButton() {
             adminName: $('#newGameMyName').val(),
             password: $('#newGamePassword').val(),
             gameStatus: 0,
-            humanPlayers: [{ name: $('#newGameMyName').val(), playerId: window.localStorage.getItem('uUID')}],
+            humanPlayers: [{ name: $('#newGameMyName').val(), playerId: window.localStorage.getItem('uUID'), active: true}],
             createDateTime: new Date(),
             evenPromisesAllowed: !$('#noEvenPromises').prop('checked'),
             visiblePromiseRound: !$('#hidePromiseRound').prop('checked'),
@@ -131,7 +131,7 @@ function showGames(gameList) {
     var firstId = '';
     gameList.forEach(function (game) {
         if (firstId ==  '') firstId = game.id;
-        var gameContainerDiv = $('<div id="gameContainerDiv"'+ game.id +'>').addClass('row');
+        var gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
         if (!game.evenPromisesAllowed) ruleStr+= ', no even promises';
         if (!game.visiblePromiseRound) ruleStr+= ', hidden promise round';
@@ -141,12 +141,14 @@ function showGames(gameList) {
         if (game.privateSpeedGame) ruleStr+= ', speed game';
         gameContainerDiv.append($('<div>').addClass('col-2').text(ruleStr));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
-        gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input type="text" id="myName'+game.id+'">').addClass('newGameMyNameInput'))));
+        var joinBtnStatus = game.imInThisGame ? ' disabled' : '';
+        gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input type="text" id="myName'+game.id+'"'+joinBtnStatus+'>').addClass('newGameMyNameInput'))));
         gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input disabled type="text" id="password'+game.id+'">'))));
         var btnId = 'joinGameButton' + game.id;
         var leaveBtnId = 'leaveGameButton' + game.id;
-        var joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton').text('Join'));
-        var leaveGameButton = ($('<button id="'+leaveBtnId+'">').addClass('btn btn-primary leaveThisGameButton disabled').text('Leave'));
+        var joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton'+joinBtnStatus).text('Join'));
+        var leaveBtnStatus = !game.imInThisGame ? ' disabled' : '';
+        var leaveGameButton = ($('<button id="'+leaveBtnId+'">').addClass('btn btn-primary leaveThisGameButton'+leaveBtnStatus).text('Leave'));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(joinGameButton));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(leaveGameButton));
 
@@ -167,7 +169,7 @@ function showGames(gameList) {
 
 function initGameListEvent() {
     $('#joinGameCollapse').on('shown.bs.collapse', function () {
-        socket.emit('get games', {}, function (response) {
+        socket.emit('get games', {myId: window.localStorage.getItem('uUID')}, function (response) {
             console.log(response);
             showGames(response);
         });
@@ -211,8 +213,14 @@ function initLeavingButtons() {
         var uuid = uuidv4();
         console.log('new uUID set: ' + uuid);
         window.localStorage.setItem('uUID', uuid);
-        socket.emit('leave ongoing game', $('#joinGameId').val(), function() {
-            alert('You have now left the game. Please click OK and then refresh this page.');
+        deleteIntervaller();
+        var leaveGameObj = { gameId: $('#currentGameId').val(), playerId: $('#leavingUId').val()};
+        socket.emit('leave ongoing game', leaveGameObj, function(retVal) {
+            if (retVal.leavingResult == 'LEAVED') {
+                alert('You have now left the game. Please click OK and then refresh this page.');
+            } else {
+                alert('Something wen\'t wrong! Try to refresh page and see what happens...');
+            }
         });
     });
 }

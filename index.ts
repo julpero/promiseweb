@@ -12,7 +12,6 @@ app.use(express.static('static'))
 app.use(express.static('node_modules/deck-of-cards/dist'))
 app.use(express.static('node_modules/jquery-color-animation'))
 
-
 const pf = require(__dirname + '/promiseFunctions.js');
 const sm = require(__dirname + '/clientSocketMapper.js');
 const ai = require(__dirname + '/aiPlayer.js');
@@ -104,16 +103,70 @@ try {
                         });
                     });
                 }
-    
             });
 
-            socket.on('leave ongoing game', async (gameId, fn) => {
-                socket.leave(gameId);
-                fn();
+            socket.on('leave ongoing game', async (leaveGameObj, fn) => {
+                var retVal = {
+                    leavingResult: 'NOTSET',
+                    gameId: leaveGameObj.gameId,
+                }
+                var ObjectId = require('mongodb').ObjectId;
+                var searchId = new ObjectId(leaveGameObj.gameId);
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const query = { gameStatus: 1,
+                                _id: searchId,
+                                 };
+                const game = await collection.findOne(query);
+                console.log(game);
+                if (game !== null) {
+                    game.humanPlayers.forEach(async function(player) {
+                        if (player.playerId == leaveGameObj.playerId && player.active) {
+                            const options = { upsert: true };
+                            const updateDoc = {
+                                $set: {
+                                    humanPlayers: pf.deActivatePlayer(game.humanPlayers, leaveGameObj.playerId),
+                                }
+                            };
+                            const result = await collection.updateOne(query, updateDoc, options);
+                            if (result.modifiedCount == 1) {
+                                socket.leave(leaveGameObj.gameId);
+                                sm.removeClientFromMap(player.name, socket.id, leaveGameObj.gameId);
+                                var chatLine = 'player ' + player.name + ' has left the game';
+                                io.to(game._id.toString()).emit('new chat line', chatLine);
+                                retVal.leavingResult = 'LEAVED';
+                                return;
+                            }
+                        }
+                    });
+                    var activePlayersInGame = 0;
+                    game.humanPlayers.forEach(function (player) {
+                        if (player.active) {
+                            activePlayersInGame++;
+                        }
+                    });
+                    if (activePlayersInGame == 0) {
+                        // all players have left the game, update gamestatus to 99
+                        const options = { upsert: true };
+                        const updateDoc = {
+                            $set: {
+                                gameStatus: 99,
+                            }
+                        }
+                        const result = await collection.updateOne(query, updateDoc, options);
+                    }
+                }
+    
+                fn(retVal);
             });
     
             socket.on('leave game', async (leaveGame, fn) => {
-                var leavingResult = 'NOTSET';
+                var retVal = {
+                    leavingResult: 'NOTSET',
+                    gameId: leaveGame.gameId,
+                    gameDeleted: false,
+                }
+
                 var ObjectId = require('mongodb').ObjectId;
                 var searchId = new ObjectId(leaveGame.gameId);
                 const database = mongoUtil.getDb();
@@ -123,44 +176,49 @@ try {
                                  };
                 const game = await collection.findOne(query);
                 console.log(game);
-                var retVal = {
-                    leavingResult: null,
-                    gameId: leaveGame.gameId,
-                }
                 if (game !== null) {
                     var newHumanPlayers = [];
+                    var leaverName = "";
                     for (var i = 0; i < game.humanPlayers.length; i++) {
                         if (game.humanPlayers[i].playerId != leaveGame.myId) {
                             newHumanPlayers.push(game.humanPlayers[i]);
+                        } else {
+                            leaverName = game.humanPlayers[i].name;
                         }
                     }
                     if (newHumanPlayers.length == game.humanPlayers.length - 1) {
+                        if (newHumanPlayers.length == 0) {
+                            retVal.gameDeleted = true;
+                        }
                         const options = { upsert: true };
                         const updateDoc = {
                             $set: {
                                 humanPlayers: newHumanPlayers,
-                                gameStatus: newHumanPlayers.length == 0 ? 99 : 0,
+                                gameStatus: retVal.gameDeleted ? 99 : 0, // if no more players in the game, set gamestatus to 99
                             }
                         };
                         const result = await collection.updateOne(query, updateDoc, options);
                         if (result.modifiedCount == 1) {
                             console.log(result);
                             socket.leave(leaveGame.gameId);
-                            leavingResult = 'LEAVED';
+                            sm.removeClientFromMap(leaverName, socket.id, leaveGame.gameId);
+                            retVal.leavingResult = 'LEAVED';
                         }
                     }
                 }
     
-                retVal.leavingResult = leavingResult;
-    
                 fn(retVal);
     
-                if (leavingResult == 'LEAVED') {
-                    // let's update info to clients
-                    const val = await collection.findOne(query);
-                    var resultGameInfo = pf.gameToGameInfo(val);
-    
-                    io.emit('update gameinfo', resultGameInfo);
+                if (retVal.leavingResult == 'LEAVED') {
+                    if (retVal.gameDeleted) {
+                        io.emit('delete gameinfo', leaveGame.gameId);
+                    } else {
+                        // let's update info to clients
+                        const val = await collection.findOne(query);
+                        var resultGameInfo = pf.gameToGameInfo(val);
+        
+                        io.emit('update gameinfo', resultGameInfo);
+                    }
                 }
             });
 
@@ -179,15 +237,24 @@ try {
                 console.log(game);
                 var playAsName = null;
                 if (game !== null) {
-                    game.humanPlayers.forEach(function(player) {
-                        if (player.playerId == joiningDetails.myId) {
-                            playAsName = player.name;
-                            socket.join(joiningDetails.gameId);
-                            sm.addClientToMap(playAsName, socket.id, joiningDetails.gameId);
-                            var chatLine = 'player ' + player.name + ' connected';
-                            io.to(game._id.toString()).emit('new chat line', chatLine);
-                            joiningResult = 'OK';
-                            return;
+                    game.humanPlayers.forEach(async function(player) {
+                        if (player.playerId == joiningDetails.myId && !player.active) {
+                            const options = { upsert: true };
+                            const updateDoc = {
+                                $set: {
+                                    humanPlayers: pf.activatePlayer(game.humanPlayers, joiningDetails.myId),
+                                }
+                            };
+                            const result = await collection.updateOne(query, updateDoc, options);
+                            if (result.modifiedCount == 1) {
+                                playAsName = player.name;
+                                socket.join(joiningDetails.gameId);
+                                sm.addClientToMap(playAsName, socket.id, joiningDetails.gameId);
+                                var chatLine = 'player ' + player.name + ' connected';
+                                io.to(game._id.toString()).emit('new chat line', chatLine);
+                                joiningResult = 'OK';
+                                return;
+                            }
                         }
                     });
                 }
@@ -198,7 +265,6 @@ try {
                         newName: playAsName,
                     }
                     fn(result);
-
                 }
             });
     
@@ -230,7 +296,7 @@ try {
     
                         if (nameFree && socketFree) {
                             var players = game.humanPlayers;
-                            players.push({name: newPlayer.myName, playerId: newPlayer.myId, type: 'human'});
+                            players.push({name: newPlayer.myName, playerId: newPlayer.myId, type: 'human', active: true});
                             const options = { upsert: true };
                             const updateDoc = {
                                 $set: {
@@ -279,9 +345,7 @@ try {
                         // start game
                         await startGame(resultGameInfo);
                     }
-                    
                 }
-                
             });
     
             socket.on('create game', async (gameOptions, fn) => {
@@ -403,7 +467,6 @@ try {
                         socket.emit('promise made', gameInfo);
                     }
                 }
-    
             });
     
             socket.on('play card', async (playDetails, fn) => {
@@ -538,9 +601,7 @@ try {
                         // fn(gameInfo); // just DEBUG
                     }
                 }
-    
             });
-    
     
             socket.on('get games', async (data, fn) => {
                 console.log('start to get games');
@@ -566,6 +627,7 @@ try {
                         freeTrump: val.freeTrump,
                         hiddenTrump: val.hiddenTrump,
                         privateSpeedGame: val.privateSpeedGame,
+                        imInThisGame: pf.imInThisGame(val.humanPlayers, data.myId)
                     });
                 });
     
@@ -573,7 +635,6 @@ try {
                 console.log(games);
             });
         });
-        
     });
 } catch (error) {
     const err = JSON.stringify(error);
@@ -610,7 +671,6 @@ async function startGame (gameInfo) {
     io.to(gameInfo.id).emit('new chat line', 'New game begins!');
 
 }
-
 
 async function startRound(gameInfo, roundInd) {
     const database = mongoUtil.getDb();
