@@ -433,6 +433,7 @@ function deleteIntervaller() {
     if (intervaller != null) clearInterval(intervaller);
     window.localStorage.removeItem('usedTime');
     usedTime = null;
+    $('#speedProgressBar').empty();
 }
 
 function initCardEvents(myRound, onlySuit) {
@@ -696,7 +697,7 @@ function playRound(myRound, freeTrump, privateSpeedGame) {
         showMyTurn();
         var cardsAbleToPlay = initCardsToPlay(myRound, freeTrump);
         if (privateSpeedGame) {
-            cardTime = cardsAbleToPlay == 1 ? 1500 : Math.min(Math.max(cardsAbleToPlay*1500, 4000), Math.max(myRound.cardsInRound*1000, 2000));
+            cardTime = Math.min(Math.max(cardsAbleToPlay * 1500, 4000), Math.max(myRound.cardsInRound * 800, 4000));
             usedTime = window.localStorage.getItem('usedTime');
             if (usedTime == null) {
                 usedTime = 0;
