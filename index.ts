@@ -139,6 +139,7 @@ try {
                         const updateDoc = {
                             $set: {
                                 humanPlayers: newHumanPlayers,
+                                gameStatus: newHumanPlayers.length == 0 ? 99 : 0,
                             }
                         };
                         const result = await collection.updateOne(query, updateDoc, options);
