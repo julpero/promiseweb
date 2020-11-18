@@ -120,8 +120,8 @@ try {
                 const game = await collection.findOne(query);
                 console.log(game);
                 if (game !== null) {
-                    game.humanPlayers.forEach(async function(player) {
-                        if (player.playerId == leaveGameObj.playerId && player.active) {
+                    for (var i = 0; i < game.humanPlayers.length; i++) {
+                        if (game.humanPlayers[i].playerId == leaveGameObj.playerId && game.humanPlayers[i].active) {
                             const options = { upsert: true };
                             const updateDoc = {
                                 $set: {
@@ -131,14 +131,14 @@ try {
                             const result = await collection.updateOne(query, updateDoc, options);
                             if (result.modifiedCount == 1) {
                                 socket.leave(leaveGameObj.gameId);
-                                sm.removeClientFromMap(player.name, socket.id, leaveGameObj.gameId);
-                                var chatLine = 'player ' + player.name + ' has left the game';
+                                sm.removeClientFromMap(game.humanPlayers[i].name, socket.id, leaveGameObj.gameId);
+                                var chatLine = 'player ' + game.humanPlayers[i].name + ' has left the game';
                                 io.to(game._id.toString()).emit('new chat line', chatLine);
                                 retVal.leavingResult = 'LEAVED';
-                                return;
+                                break;
                             }
                         }
-                    });
+                    }
                     var activePlayersInGame = 0;
                     game.humanPlayers.forEach(function (player) {
                         if (player.active) {
@@ -223,7 +223,10 @@ try {
             });
 
             socket.on('join game by id', async (joiningDetails, fn) => {
-                var joiningResult = 'NOTSET';
+                var resultObj = {
+                    joiningResult: 'NOTSET',
+                    newName: null,
+                }
                 console.log('join game by id');
                 console.log(joiningDetails);
                 var ObjectId = require('mongodb').ObjectId;
@@ -237,8 +240,8 @@ try {
                 console.log(game);
                 var playAsName = null;
                 if (game !== null) {
-                    game.humanPlayers.forEach(async function(player) {
-                        if (player.playerId == joiningDetails.myId && !player.active) {
+                    for (var i = 0; i < game.humanPlayers.length; i++) {
+                        if (game.humanPlayers[i].playerId == joiningDetails.myId && !game.humanPlayers[i].active) {
                             const options = { upsert: true };
                             const updateDoc = {
                                 $set: {
@@ -247,24 +250,21 @@ try {
                             };
                             const result = await collection.updateOne(query, updateDoc, options);
                             if (result.modifiedCount == 1) {
-                                playAsName = player.name;
-                                socket.join(joiningDetails.gameId);
+                                playAsName = game.humanPlayers[i].name;
+                                socket.join(joiningDetails.gameId.toString());
                                 sm.addClientToMap(playAsName, socket.id, joiningDetails.gameId);
-                                var chatLine = 'player ' + player.name + ' connected';
+                                var chatLine = 'player ' + playAsName + ' connected as new player';
                                 io.to(game._id.toString()).emit('new chat line', chatLine);
-                                joiningResult = 'OK';
-                                return;
+                                resultObj.joiningResult = 'OK';
+                                resultObj.newName = playAsName;
+                                break;
                             }
                         }
-                    });
+                    }
                 }
 
-                if (joiningResult == 'OK') {
-                    var result = {
-                        joiningResult: joiningResult,
-                        newName: playAsName,
-                    }
-                    fn(result);
+                if (resultObj.joiningResult == 'OK') {
+                    fn(resultObj);
                 }
             });
     
@@ -305,7 +305,7 @@ try {
                             };
                             const result = await collection.updateOne(query, updateDoc, options);
                             if (result.modifiedCount == 1) {
-                                socket.join(newPlayer.gameId);
+                                socket.join(newPlayer.gameId.toString());
                                 sm.addClientToMap(newPlayer.myName, socket.id, newPlayer.gameId);
                                 var chatLine = 'player ' + newPlayer.myName + ' connected';
                                 io.to(newPlayer.gameId).emit('new chat line', chatLine);
@@ -369,7 +369,7 @@ try {
                 if (okToCreate) {
                     const result = await collection.insertOne(gameOptions);
                     console.log('gameOptions inserted ' + result.insertedCount + ' with _id: ' + result.insertedId);
-                    socket.join(result.insertedId);
+                    socket.join(result.insertedId.toString());
                     sm.addClientToMap(gameOptions.adminName, socket.id, result.insertedId);
                     fn(result.insertedId);
                 } else {

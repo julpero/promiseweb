@@ -122,7 +122,7 @@ function drawMyCards(myCards) {
             rot: randomNegToPos(5),
         });
     });    
-}    
+}
 
 function mapPlayerNameToTable(name) {
     var divs = $('.playerNameCol').filter(function() {
