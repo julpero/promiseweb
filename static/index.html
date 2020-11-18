@@ -325,6 +325,8 @@
         <script src="/jquery.animate-colors-min.js"></script>
 
         <script type="text/javascript">
+            const socket = io();
+
             const intervalTime = 100;
             var intervaller = null;
             var cardTime = null;
@@ -341,7 +343,7 @@
                     window.localStorage.setItem('uUID', uuid);
                 }
                 
-                const socket = io();
+                // const socket = io();
 
                 socket.on('update gameinfo', function(gameInfo) {
                     $('#gamePlayers'+gameInfo.id).text(gamePlayersToStr(gameInfo.humanPlayers, gameInfo.humanPlayersCount, gameInfo.computerPlayersCount));
@@ -370,7 +372,7 @@
                         console.log(myRound);
                         $('#myName').val(myRound.myName);
                         browserReload(myRound);
-                        getPromise(socket, myRound, gameInfo.evenPromisesAllowed);
+                        getPromise(myRound, gameInfo.evenPromisesAllowed);
                     });
                 });
 
@@ -400,9 +402,9 @@
                             showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[gameInfo.currentRound], gameInfo.onlyTotalPromise, myRound.players);
                             revealTrumpCard(myRound.trumpCard);
                             initSpeedBar(gameInfo);
-                            playRound(socket, myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
+                            playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
                         } else {
-                            getPromise(socket, myRound, gameInfo.evenPromisesAllowed);
+                            getPromise(myRound, gameInfo.evenPromisesAllowed);
                         }
                     });
                 });
@@ -472,9 +474,9 @@
                         }
                         if (roundPromised(myRound)) {
                             showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[myRound.roundInd], gameInfo.onlyTotalPromise, myRound.players);
-                            playRound(socket, myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
+                            playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
                         } else {
-                            getPromise(socket, myRound, gameInfo.evenPromisesAllowed);
+                            getPromise(myRound, gameInfo.evenPromisesAllowed);
                         }
                     });
                 });
@@ -483,7 +485,7 @@
                     console.log(roundInfo);
                 });
 
-                mainInit(socket);
+                mainInit();
 
                 if (joinedGame != null) {
                     console.log('joinedGame - check');

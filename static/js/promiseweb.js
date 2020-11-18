@@ -250,7 +250,7 @@ function isEvenPromise(myRound, promise) {
     return totalPromise + promise == myRound.cardsInRound;
 }
 
-function initPromise(socket, myRound, evenPromisesAllowed) {
+function initPromise(myRound, evenPromisesAllowed) {
     $('#myPromiseCol').empty();
     var node = $('#myPromiseCol');
 
@@ -362,13 +362,13 @@ function showPlayerPromises(myRound, showPromise) {
     initPromiseTable(myRound.promiseTable);
 }
 
-function getPromise(socket, myRound, evenPromisesAllowed) {
+function getPromise(myRound, evenPromisesAllowed) {
     checkSmall(myRound.players.length);
     hideThinkings();
     showDealer(myRound);
     if (isMyPromiseTurn(myRound)) {
         showMyTurn();
-        initPromise(socket, myRound, evenPromisesAllowed);
+        initPromise(myRound, evenPromisesAllowed);
         dimMyCards(myRound, 1.0);
     } else {
         hidePromise();
@@ -429,7 +429,7 @@ function classToCardMapper(classStr) {
     return null;
 }
 
-function initCardEvents(socket, myRound, onlySuit) {
+function initCardEvents(myRound, onlySuit) {
     var cardsAbleToPlay = 0;
     possibleCards = [];
     for (var i = 0; i < myRound.myCards.length; i++) {
@@ -482,24 +482,24 @@ function dimMyCards(myRound, visibility) {
     }
 }
 
-function initCardsToPlay(socket, myRound, freeTrump) {
+function initCardsToPlay(myRound, freeTrump) {
     if (amIStarterOfPlay(myRound)) {
         // i can play any card i want
-        return initCardEvents(socket, myRound);
+        return initCardEvents(myRound);
     } else if (!iHaveSuitInMyHand(myRound.cardInCharge.suit, myRound.myCards)) {
         if (freeTrump) {
-            return initCardEvents(socket, myRound);
+            return initCardEvents(myRound);
         } else {
             if (iHaveSuitInMyHand(myRound.trumpCard.suit, myRound.myCards)) {
                 // i have to play trump card
-                return initCardEvents(socket, myRound, myRound.trumpCard.suit);
+                return initCardEvents(myRound, myRound.trumpCard.suit);
             } else {
-                return initCardEvents(socket, myRound);
+                return initCardEvents(myRound);
             }
         }
     } else {
         // i can play only suit of card in charge
-        return initCardEvents(socket, myRound, myRound.cardInCharge.suit);
+        return initCardEvents(myRound, myRound.cardInCharge.suit);
     }    
 }
 
@@ -642,7 +642,7 @@ function showDealer(myRound) {
     $('#player'+indInTable+'NameCol').addClass('dealer');
 }
 
-function playSpeedGamerCard(socket, myRound) {
+function playSpeedGamerCard(myRound) {
     if (possibleCards.length > 0) {
         var randomIndex = Math.floor(Math.random() * possibleCards.length);
         var className = possibleCards[randomIndex];
@@ -666,7 +666,7 @@ function playSpeedGamerCard(socket, myRound) {
     }
 }
 
-function privateSpeedGamer(socket, myRound) {
+function privateSpeedGamer(myRound) {
     // console.log(usedTime);
     usedTime = parseInt(window.localStorage.getItem('usedTime'), 10);
     usedTime+= intervalTime;
@@ -677,13 +677,13 @@ function privateSpeedGamer(socket, myRound) {
         usedTime = null;
         window.localStorage.removeItem('usedTime');
         console.log('PLAY!');
-        playSpeedGamerCard(socket, myRound);
+        playSpeedGamerCard(myRound);
     } else {
         drawSpeedBar(cardTime, cardTime-usedTime);
     }
 }
 
-function playRound(socket, myRound, freeTrump, privateSpeedGame) {
+function playRound(myRound, freeTrump, privateSpeedGame) {
     checkSmall(myRound.players.length);
     hideThinkings();
     hidePromise();
@@ -692,7 +692,7 @@ function playRound(socket, myRound, freeTrump, privateSpeedGame) {
     $('#myInfoRow').show();
     if (isMyPlayTurn(myRound)) {
         showMyTurn();
-        var cardsAbleToPlay = initCardsToPlay(socket, myRound, freeTrump);
+        var cardsAbleToPlay = initCardsToPlay(myRound, freeTrump);
         if (privateSpeedGame) {
             cardTime = cardsAbleToPlay == 1 ? 1500 : Math.min(Math.max(cardsAbleToPlay*1500, 4000), Math.max(myRound.cardsInRound*1000, 2000));
             usedTime = window.localStorage.getItem('usedTime');
@@ -703,7 +703,7 @@ function playRound(socket, myRound, freeTrump, privateSpeedGame) {
                 usedTime = parseInt(usedTime, 10);
             }
             drawSpeedBar(cardTime, cardTime-usedTime);
-            intervaller = setInterval(privateSpeedGamer, intervalTime, socket, myRound);
+            intervaller = setInterval(privateSpeedGamer, intervalTime, myRound);
         }
     } else {
         showWhoIsPlaying(myRound);

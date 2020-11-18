@@ -22,7 +22,7 @@ function validateNewGame(gameOptions) {
     return true;
 }
 
-function createNewGame(socket, gameOptions) {
+function createNewGame(gameOptions) {
     console.log(gameOptions);
     socket.emit('create game', gameOptions, function (createdGameId) {
         if (createdGameId == 'NOT OK') {
@@ -37,7 +37,7 @@ function createNewGame(socket, gameOptions) {
     
 }
 
-function initcreateNewGameButton(socket) {
+function initcreateNewGameButton() {
     $('#createNewGameButton').on('click', function() {
         var gameOptions = {
             humanPlayersCount: parseInt($('#newGameHumanPlayersCount option:selected')[0].value, 10),
@@ -58,7 +58,7 @@ function initcreateNewGameButton(socket) {
             privateSpeedGame: $('#privateSpeedGame').prop('checked'),
         };
         if (validateNewGame(gameOptions)) {
-            createNewGame(socket, gameOptions);
+            createNewGame(gameOptions);
         }
     });
 }
@@ -96,7 +96,7 @@ function validateJoinGame(gameDetails) {
     return true;
 }
 
-function joinGame(socket, id) {
+function joinGame(id) {
     var gameDetails = { gameId: id,
         myName: $('#myName'+id).val(),
         myId: window.localStorage.getItem('uUID'),
@@ -113,7 +113,7 @@ function joinGame(socket, id) {
     }
 }
 
-function leaveGame(socket, id) {
+function leaveGame(id) {
     var gameDetails = { gameId: id,
         myId: window.localStorage.getItem('uUID'),
     };
@@ -126,7 +126,7 @@ function leaveGame(socket, id) {
     });
 }
 
-function showGames(socket, gameList) {
+function showGames(gameList) {
     var gameListContainer = $('#joinGameCollapse');
     var firstId = '';
     gameList.forEach(function (game) {
@@ -153,10 +153,10 @@ function showGames(socket, gameList) {
         gameListContainer.append(gameContainerDiv);
 
         $('#'+btnId).on('click', function() {
-            joinGame(socket, game.id);
+            joinGame(game.id);
         });
         $('#'+leaveBtnId).on('click', function() {
-            leaveGame(socket, game.id);
+            leaveGame(game.id);
         });
 
         console.log(game);
@@ -165,11 +165,11 @@ function showGames(socket, gameList) {
     });
 }
 
-function initGameListEvent(socket) {
+function initGameListEvent() {
     $('#joinGameCollapse').on('shown.bs.collapse', function () {
         socket.emit('get games', {}, function (response) {
             console.log(response);
-            showGames(socket, response);
+            showGames(response);
         });
     });
 
@@ -179,7 +179,7 @@ function initGameListEvent(socket) {
     });
 }
 
-function initJoinByIdButton(socket) {
+function initJoinByIdButton() {
     $('#joinByIdButton').on('click', function() {
         var uuid = $('#joinById').val();
         var gameId = $('#joinGameId').val();
@@ -200,7 +200,7 @@ function initJoinByIdButton(socket) {
     });
 }
 
-function initLeavingButtons(socket) {
+function initLeavingButtons() {
     $('#dontLeaveButton').on('click', function() {
         $('#leaveGameCollapse').collapse('hide');
     });
@@ -217,7 +217,7 @@ function initLeavingButtons(socket) {
     });
 }
 
-function initChatButton(socket) {
+function initChatButton() {
     $('#sendChatButton').on('click', function() {
         var newLine = $('#newChatLine').val().trim();
         var myName = $('#myName').val().trim();
@@ -250,19 +250,19 @@ function initChatButton(socket) {
     });
 }
 
-function initButtons(socket) {
-    initcreateNewGameButton(socket);
+function initButtons() {
+    initcreateNewGameButton();
     initRulesCheck();
-    initLeavingButtons(socket);
-    initJoinByIdButton(socket);
-    initChatButton(socket);
+    initLeavingButtons();
+    initJoinByIdButton();
+    initChatButton();
 }
 
-function initEvents(socket) {
-    initGameListEvent(socket);
+function initEvents() {
+    initGameListEvent();
 }
 
-function mainInit(socket) {
-    initEvents(socket);
-    initButtons(socket);
+function mainInit() {
+    initEvents();
+    initButtons();
 }
