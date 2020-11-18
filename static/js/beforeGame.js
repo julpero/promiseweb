@@ -186,15 +186,14 @@ function initJoinByIdButton() {
         var uuid = $('#joinById').val();
         var gameId = $('#joinGameId').val();
         if (uuid.length == 36 && gameId.length > 5) {
-            window.localStorage.setItem('uUID', uuid);
-            console.log('new uUID set: ' + uuid);
-
             var joiningDetails = { gameId: gameId,
-                myId: window.localStorage.getItem('uUID'),
+                myId: uuid,
             };
             socket.emit('join game by id', joiningDetails, function (response) {
-                console.log('joining game by id: ' + response);
+                console.log('joining game: ', response);
                 if (response.joiningResult == 'OK') {
+                    window.localStorage.setItem('uUID', response.newId);
+                    console.log('new uUID set: ' + response.newId);
                     alert('You can now play as ' + response.newName + '. Please click OK and then refresh this page.');
                 }
             });

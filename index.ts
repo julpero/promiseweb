@@ -226,6 +226,7 @@ try {
                 var resultObj = {
                     joiningResult: 'NOTSET',
                     newName: null,
+                    newId: joiningDetails.myId,
                 }
                 console.log('join game by id');
                 console.log(joiningDetails);
