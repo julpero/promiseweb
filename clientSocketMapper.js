@@ -27,10 +27,10 @@ module.exports = {
     getClientNameFromMap: function (socketId) {
         var name = null;
         userSocketIdMap.forEach(function(value, key) {
-            console.log(value);
+            // console.log(value);
             var sockets = Array.from(value.sockets);
             for (var i = 0; i < sockets.length; i++) {
-                console.log(sockets[i]);
+                // console.log(sockets[i]);
                 if (sockets[i] == socketId) {
                     name = key;
                 }

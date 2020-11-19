@@ -253,7 +253,6 @@ function initTableFor6() {
     return nodeRow;
 }
 
-
 function initTrumpTable() {
     var nodeRow = $('<div></div>').addClass('row');
     var nodeCol = $('<div></div>').addClass('col');
@@ -286,11 +285,11 @@ function initPlayerTable(index, align, maxCards) {
     var nodeCol = $('<div></div>').addClass('col playerTableCol');
 
     var row1 = $('<div id="player'+index+'row"></div>').addClass('row');
-    var col1 = $('<div id="player'+index+'NameCol"></div>').addClass('col nameCol playerNameCol');
+    var col1 = $('<div id="player'+index+'NameCol"></div>').addClass('col-3 nameCol playerNameCol');
     row1.append(col1);
-    row1.append($('<div id="player'+index+'Promised"></div>').addClass('col-2 playerInfoCol'));
+    row1.append($('<div id="player'+index+'Promised"></div>').addClass('col-3 playerInfoCol'));
     row1.append($('<div id="player'+index+'Keeps"></div>').addClass('col-2 playerInfoCol'));
-    row1.append($('<div id="player'+index+'ProgressBar"></div>').addClass('col'));
+    row1.append($('<div id="player'+index+'ProgressBar"></div>').addClass('col-4'));
     
     if (index > 0) {
         var row2 = $('<div></div>').addClass('row');
@@ -379,19 +378,13 @@ function drawCardCol(idx) {
     return cardCol;
 }
 
-
 function initMyPromiseRow() {
     var node = $('<div id="myPromiseRow"></div>').addClass('row myCardsRowClass');
-    // var col1 = $('<div></div>').addClass('col-1');
     var col2 = $('<div id="myPromiseCol"></div>').addClass('col promiseButtons');
-    // var col3 = $('<div></div>').addClass('col-1');
     
-    // node.append(col1);
     node.append(col2);
-    // node.append(col3);
 
     return node;
-
 }
 
 function createPromiseTable(promiseTable) {
@@ -465,12 +458,13 @@ function initRuleList(gameInfo) {
     if (gameInfo.onlyTotalPromise) node.append($('<li></li>').text('only total promise visible'));
     if (!gameInfo.freeTrump) node.append($('<li></li>').text('must play trump'));
     if (gameInfo.hiddenTrump) node.append($('<li></li>').text('hidden trump'));
+    if (gameInfo.speedPromise) node.append($('<li></li>').text('speed promise'));
     if (gameInfo.privateSpeedGame) node.append($('<li></li>').text('speed game'));
 }
 
 function initSpeedBar(gameInfo) {
     var node = $('#speedPromiseDiv');
-    if (gameInfo.privateSpeedGame) {
+    if (gameInfo.privateSpeedGame || gameInfo.speedPromise) {
         if ($('#speedPromiseDiv').children().length == 0) {
             var progressMain = $('<div id="speedProgressBar"></div>').addClass('progress').css({marginTop: "4px", border: "1px solid black"});
             node.append(progressMain);

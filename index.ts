@@ -12,7 +12,6 @@ app.use(express.static('static'))
 app.use(express.static('node_modules/deck-of-cards/dist'))
 app.use(express.static('node_modules/jquery-color-animation'))
 
-
 const pf = require(__dirname + '/promiseFunctions.js');
 const sm = require(__dirname + '/clientSocketMapper.js');
 const ai = require(__dirname + '/aiPlayer.js');
@@ -104,16 +103,70 @@ try {
                         });
                     });
                 }
-    
             });
 
-            socket.on('leave ongoing game', async (gameId, fn) => {
-                socket.leave(gameId);
-                fn();
+            socket.on('leave ongoing game', async (leaveGameObj, fn) => {
+                var retVal = {
+                    leavingResult: 'NOTSET',
+                    gameId: leaveGameObj.gameId,
+                }
+                var ObjectId = require('mongodb').ObjectId;
+                var searchId = new ObjectId(leaveGameObj.gameId);
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const query = { gameStatus: 1,
+                                _id: searchId,
+                                 };
+                const game = await collection.findOne(query);
+                console.log(game);
+                if (game !== null) {
+                    for (var i = 0; i < game.humanPlayers.length; i++) {
+                        if (game.humanPlayers[i].playerId == leaveGameObj.playerId && game.humanPlayers[i].active) {
+                            const options = { upsert: true };
+                            const updateDoc = {
+                                $set: {
+                                    humanPlayers: pf.deActivatePlayer(game.humanPlayers, leaveGameObj.playerId),
+                                }
+                            };
+                            const result = await collection.updateOne(query, updateDoc, options);
+                            if (result.modifiedCount == 1) {
+                                socket.leave(leaveGameObj.gameId);
+                                sm.removeClientFromMap(game.humanPlayers[i].name, socket.id, leaveGameObj.gameId);
+                                var chatLine = 'player ' + game.humanPlayers[i].name + ' has left the game';
+                                io.to(game._id.toString()).emit('new chat line', chatLine);
+                                retVal.leavingResult = 'LEAVED';
+                                break;
+                            }
+                        }
+                    }
+                    var activePlayersInGame = 0;
+                    game.humanPlayers.forEach(function (player) {
+                        if (player.active) {
+                            activePlayersInGame++;
+                        }
+                    });
+                    if (activePlayersInGame == 0) {
+                        // all players have left the game, update gamestatus to 99
+                        const options = { upsert: true };
+                        const updateDoc = {
+                            $set: {
+                                gameStatus: 99,
+                            }
+                        }
+                        const result = await collection.updateOne(query, updateDoc, options);
+                    }
+                }
+    
+                fn(retVal);
             });
     
             socket.on('leave game', async (leaveGame, fn) => {
-                var leavingResult = 'NOTSET';
+                var retVal = {
+                    leavingResult: 'NOTSET',
+                    gameId: leaveGame.gameId,
+                    gameDeleted: false,
+                }
+
                 var ObjectId = require('mongodb').ObjectId;
                 var searchId = new ObjectId(leaveGame.gameId);
                 const database = mongoUtil.getDb();
@@ -123,48 +176,58 @@ try {
                                  };
                 const game = await collection.findOne(query);
                 console.log(game);
-                var retVal = {
-                    leavingResult: null,
-                    gameId: leaveGame.gameId,
-                }
                 if (game !== null) {
                     var newHumanPlayers = [];
+                    var leaverName = "";
                     for (var i = 0; i < game.humanPlayers.length; i++) {
                         if (game.humanPlayers[i].playerId != leaveGame.myId) {
                             newHumanPlayers.push(game.humanPlayers[i]);
+                        } else {
+                            leaverName = game.humanPlayers[i].name;
                         }
                     }
                     if (newHumanPlayers.length == game.humanPlayers.length - 1) {
+                        if (newHumanPlayers.length == 0) {
+                            retVal.gameDeleted = true;
+                        }
                         const options = { upsert: true };
                         const updateDoc = {
                             $set: {
                                 humanPlayers: newHumanPlayers,
+                                gameStatus: retVal.gameDeleted ? 99 : 0, // if no more players in the game, set gamestatus to 99
                             }
                         };
                         const result = await collection.updateOne(query, updateDoc, options);
                         if (result.modifiedCount == 1) {
                             console.log(result);
                             socket.leave(leaveGame.gameId);
-                            leavingResult = 'LEAVED';
+                            sm.removeClientFromMap(leaverName, socket.id, leaveGame.gameId);
+                            retVal.leavingResult = 'LEAVED';
                         }
                     }
                 }
     
-                retVal.leavingResult = leavingResult;
-    
                 fn(retVal);
     
-                if (leavingResult == 'LEAVED') {
-                    // let's update info to clients
-                    const val = await collection.findOne(query);
-                    var resultGameInfo = pf.gameToGameInfo(val);
-    
-                    io.emit('update gameinfo', resultGameInfo);
+                if (retVal.leavingResult == 'LEAVED') {
+                    if (retVal.gameDeleted) {
+                        io.emit('delete gameinfo', leaveGame.gameId);
+                    } else {
+                        // let's update info to clients
+                        const val = await collection.findOne(query);
+                        var resultGameInfo = pf.gameToGameInfo(val);
+        
+                        io.emit('update gameinfo', resultGameInfo);
+                    }
                 }
             });
 
             socket.on('join game by id', async (joiningDetails, fn) => {
-                var joiningResult = 'NOTSET';
+                var resultObj = {
+                    joiningResult: 'NOTSET',
+                    newName: null,
+                    newId: joiningDetails.myId,
+                }
                 console.log('join game by id');
                 console.log(joiningDetails);
                 var ObjectId = require('mongodb').ObjectId;
@@ -178,26 +241,31 @@ try {
                 console.log(game);
                 var playAsName = null;
                 if (game !== null) {
-                    game.humanPlayers.forEach(function(player) {
-                        if (player.playerId == joiningDetails.myId) {
-                            playAsName = player.name;
-                            socket.join(joiningDetails.gameId);
-                            sm.addClientToMap(playAsName, socket.id, joiningDetails.gameId);
-                            var chatLine = 'player ' + player.name + ' connected';
-                            io.to(game._id.toString()).emit('new chat line', chatLine);
-                            joiningResult = 'OK';
-                            return;
+                    for (var i = 0; i < game.humanPlayers.length; i++) {
+                        if (game.humanPlayers[i].playerId == joiningDetails.myId && !game.humanPlayers[i].active) {
+                            const options = { upsert: true };
+                            const updateDoc = {
+                                $set: {
+                                    humanPlayers: pf.activatePlayer(game.humanPlayers, joiningDetails.myId),
+                                }
+                            };
+                            const result = await collection.updateOne(query, updateDoc, options);
+                            if (result.modifiedCount == 1) {
+                                playAsName = game.humanPlayers[i].name;
+                                socket.join(joiningDetails.gameId.toString());
+                                sm.addClientToMap(playAsName, socket.id, joiningDetails.gameId);
+                                var chatLine = 'player ' + playAsName + ' connected as new player';
+                                io.to(game._id.toString()).emit('new chat line', chatLine);
+                                resultObj.joiningResult = 'OK';
+                                resultObj.newName = playAsName;
+                                break;
+                            }
                         }
-                    });
+                    }
                 }
 
-                if (joiningResult == 'OK') {
-                    var result = {
-                        joiningResult: joiningResult,
-                        newName: playAsName,
-                    }
-                    fn(result);
-
+                if (resultObj.joiningResult == 'OK') {
+                    fn(resultObj);
                 }
             });
     
@@ -229,7 +297,7 @@ try {
     
                         if (nameFree && socketFree) {
                             var players = game.humanPlayers;
-                            players.push({name: newPlayer.myName, playerId: newPlayer.myId, type: 'human'});
+                            players.push({name: newPlayer.myName, playerId: newPlayer.myId, type: 'human', active: true});
                             const options = { upsert: true };
                             const updateDoc = {
                                 $set: {
@@ -238,7 +306,7 @@ try {
                             };
                             const result = await collection.updateOne(query, updateDoc, options);
                             if (result.modifiedCount == 1) {
-                                socket.join(newPlayer.gameId);
+                                socket.join(newPlayer.gameId.toString());
                                 sm.addClientToMap(newPlayer.myName, socket.id, newPlayer.gameId);
                                 var chatLine = 'player ' + newPlayer.myName + ' connected';
                                 io.to(newPlayer.gameId).emit('new chat line', chatLine);
@@ -278,9 +346,7 @@ try {
                         // start game
                         await startGame(resultGameInfo);
                     }
-                    
                 }
-                
             });
     
             socket.on('create game', async (gameOptions, fn) => {
@@ -304,7 +370,7 @@ try {
                 if (okToCreate) {
                     const result = await collection.insertOne(gameOptions);
                     console.log('gameOptions inserted ' + result.insertedCount + ' with _id: ' + result.insertedId);
-                    socket.join(result.insertedId);
+                    socket.join(result.insertedId.toString());
                     sm.addClientToMap(gameOptions.adminName, socket.id, result.insertedId);
                     fn(result.insertedId);
                 } else {
@@ -337,6 +403,64 @@ try {
                     fn(playerRound);
                 }
             });
+
+            socket.on('speedpromise', async (speedPromiseObj, fn) => {
+                console.log(speedPromiseObj);
+                var resultObj = {
+                    speedOk: false,
+                    fullSpeedPromises: false,
+                    round: null
+                }
+
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                var ObjectId = require('mongodb').ObjectId;
+                var searchId = new ObjectId(speedPromiseObj.gameId);
+                const query = { gameStatus: 1,
+                    _id: searchId,
+                    // password: newPlayer.gamePassword,
+                     };
+                var gameInDb = await collection.findOne(query);
+                if (gameInDb !== null && gameInDb.speedPromise) {
+                    //var promiseInt = parseInt(promiseDetails.promise, 10);
+                    var playerName = pf.getPlayerNameById(speedPromiseObj.myId, gameInDb.humanPlayers);
+                    for (var i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
+                        var chkInd = 1 + i; // start from next to dealer
+                        if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-= (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
+                        if (gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].promise == null) {
+                            // this should be same as playerName
+                            if (gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].name == playerName) {
+                                // make speedpromise substraction
+                                if (gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints >= -9) {
+                                    gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints--;
+                                    const options = { upsert: true };
+                                    const updateDoc = {
+                                        $set: {
+                                            game: gameInDb.game,
+                                        }
+                                    };
+                                    const result = await collection.updateOne(query, updateDoc, options);
+                                    if (result.modifiedCount == 1) {
+                                        resultObj.speedOk = true;
+                                        resultObj.fullSpeedPromises = gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints == -10;
+
+                                        var chatLine = playerName+' still thinking, speed promise: ' + gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints;
+                                        io.to(speedPromiseObj.gameId).emit('new chat line', chatLine);
+
+                                        const playerRound = pf.roundToPlayer(speedPromiseObj.myId, speedPromiseObj.roundInd, gameInDb, false, false, false);
+                                        resultObj.round = playerRound;
+
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+                fn(resultObj);
+            });
     
             socket.on('make promise', async (promiseDetails, fn) => {
                 console.log(promiseDetails);
@@ -356,15 +480,17 @@ try {
                 if (gameInDb !== null) {
                     var promiseInt = parseInt(promiseDetails.promise, 10);
                     var playerName = pf.getPlayerNameById(promiseDetails.myId, gameInDb.humanPlayers);
+                    var speedPromisePoints = null;
                     for (var i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
                         var chkInd = 1 + i; // start from next to dealer
-                        if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-=  (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
+                        if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-= (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
                         if (gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise == null) {
                             // this should be same as playerName
                             if (gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].name == playerName) {
                                 // update promise
                                 if (gameInDb.evenPromisesAllowed || !pf.isLastPromiser(gameInDb.game.rounds[promiseDetails.roundInd]) || gameInDb.game.rounds[promiseDetails.roundInd].totalPromise + promiseInt != gameInDb.game.rounds[promiseDetails.roundInd].cardsInRound) {
                                     gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise = promiseInt;
+                                    speedPromisePoints = gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].speedPromisePoints;
                                     if (gameInDb.game.rounds[promiseDetails.roundInd].totalPromise == null) gameInDb.game.rounds[promiseDetails.roundInd].totalPromise = 0;
                                     gameInDb.game.rounds[promiseDetails.roundInd].totalPromise += promiseInt;
                                     const options = { upsert: true };
@@ -396,13 +522,13 @@ try {
                         
                         var chatLine = playerName+' promised';
                         if (thisGame.visiblePromiseRound) chatLine+= ' '+promiseInt;
+                        if (thisGame.speedPromise) chatLine+= ' with modifier '+speedPromisePoints;
                         io.to(gameInfo.id).emit('new chat line', chatLine);
                         // fn(gameInfo); // just DEBUG
                     } else {
                         socket.emit('promise made', gameInfo);
                     }
                 }
-    
             });
     
             socket.on('play card', async (playDetails, fn) => {
@@ -464,6 +590,7 @@ try {
                                     // this was the last card of the round
                                     newRound = true;
                                     gameAfterPlay.rounds[roundInDb].roundStatus = 2;
+                                    // let's count points
                                     for (var i = 0; i < gameAfterPlay.rounds[roundInDb].roundPlayers.length; i++) {
                                         if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].promise == gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps) {
                                             if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps == 0) {
@@ -473,6 +600,13 @@ try {
                                             }
                                         } else {
                                             gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = 0;
+                                        }
+                                        if (gameInDb.speedPromise && gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromisePoints != 0) {
+                                            if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromisePoints == 1) {
+                                                gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = Math.ceil(gameAfterPlay.rounds[roundInDb].roundPlayers[i].points * 1.5);
+                                            } else {
+                                                gameAfterPlay.rounds[roundInDb].roundPlayers[i].points+= gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromisePoints;
+                                            }
                                         }
                                     }
     
@@ -537,9 +671,7 @@ try {
                         // fn(gameInfo); // just DEBUG
                     }
                 }
-    
             });
-    
     
             socket.on('get games', async (data, fn) => {
                 console.log('start to get games');
@@ -564,7 +696,9 @@ try {
                         onlyTotalPromise: val.onlyTotalPromise,
                         freeTrump: val.freeTrump,
                         hiddenTrump: val.hiddenTrump,
+                        speedPromise: val.speedPromise,
                         privateSpeedGame: val.privateSpeedGame,
+                        imInThisGame: pf.imInThisGame(val.humanPlayers, data.myId)
                     });
                 });
     
@@ -572,7 +706,6 @@ try {
                 console.log(games);
             });
         });
-        
     });
 } catch (error) {
     const err = JSON.stringify(error);
@@ -609,7 +742,6 @@ async function startGame (gameInfo) {
     io.to(gameInfo.id).emit('new chat line', 'New game begins!');
 
 }
-
 
 async function startRound(gameInfo, roundInd) {
     const database = mongoUtil.getDb();

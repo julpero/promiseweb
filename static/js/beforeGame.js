@@ -22,7 +22,7 @@ function validateNewGame(gameOptions) {
     return true;
 }
 
-function createNewGame(socket, gameOptions) {
+function createNewGame(gameOptions) {
     console.log(gameOptions);
     socket.emit('create game', gameOptions, function (createdGameId) {
         if (createdGameId == 'NOT OK') {
@@ -30,14 +30,14 @@ function createNewGame(socket, gameOptions) {
         } else {
             console.log('created game with id: '+createdGameId);
             gameId = createdGameId;
-            $('#joinGameCollapse').collapse('show');
             $('#createGameCollapse').collapse('hide');
+            $('#joinGameCollapse').collapse('show');
         }
     });
     
 }
 
-function initcreateNewGameButton(socket) {
+function initcreateNewGameButton() {
     $('#createNewGameButton').on('click', function() {
         var gameOptions = {
             humanPlayersCount: parseInt($('#newGameHumanPlayersCount option:selected')[0].value, 10),
@@ -48,17 +48,18 @@ function initcreateNewGameButton(socket) {
             adminName: $('#newGameMyName').val(),
             password: $('#newGamePassword').val(),
             gameStatus: 0,
-            humanPlayers: [{ name: $('#newGameMyName').val(), playerId: window.localStorage.getItem('uUID')}],
+            humanPlayers: [{ name: $('#newGameMyName').val(), playerId: window.localStorage.getItem('uUID'), active: true}],
             createDateTime: new Date(),
             evenPromisesAllowed: !$('#noEvenPromises').prop('checked'),
             visiblePromiseRound: !$('#hidePromiseRound').prop('checked'),
             onlyTotalPromise: $('#onlyTotalPromise').prop('checked'),
             freeTrump: !$('#mustTrump').prop('checked'),
             hiddenTrump: $('#hiddenTrump').prop('checked'),
+            speedPromise: $('#speedPromise').prop('checked'),
             privateSpeedGame: $('#privateSpeedGame').prop('checked'),
         };
         if (validateNewGame(gameOptions)) {
-            createNewGame(socket, gameOptions);
+            createNewGame(gameOptions);
         }
     });
 }
@@ -96,7 +97,7 @@ function validateJoinGame(gameDetails) {
     return true;
 }
 
-function joinGame(socket, id) {
+function joinGame(id) {
     var gameDetails = { gameId: id,
         myName: $('#myName'+id).val(),
         myId: window.localStorage.getItem('uUID'),
@@ -113,7 +114,7 @@ function joinGame(socket, id) {
     }
 }
 
-function leaveGame(socket, id) {
+function leaveGame(id) {
     var gameDetails = { gameId: id,
         myId: window.localStorage.getItem('uUID'),
     };
@@ -126,37 +127,40 @@ function leaveGame(socket, id) {
     });
 }
 
-function showGames(socket, gameList) {
+function showGames(gameList) {
     var gameListContainer = $('#joinGameCollapse');
     var firstId = '';
     gameList.forEach(function (game) {
         if (firstId ==  '') firstId = game.id;
-        var gameContainerDiv = $('<div id="gameContainerDiv"'+ game.id +'>').addClass('row');
+        var gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
         if (!game.evenPromisesAllowed) ruleStr+= ', no even promises';
         if (!game.visiblePromiseRound) ruleStr+= ', hidden promise round';
         if (game.onlyTotalPromise) ruleStr+= ', only total promise visible';
         if (!game.freeTrump) ruleStr+= ', must trump';
         if (game.hiddenTrump) ruleStr+= ', hidden trump';
+        if (game.speedPromise) ruleStr+= ', speed promise';
         if (game.privateSpeedGame) ruleStr+= ', speed game';
         gameContainerDiv.append($('<div>').addClass('col-2').text(ruleStr));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
-        gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input type="text" id="myName'+game.id+'">').addClass('newGameMyNameInput'))));
+        var joinBtnStatus = game.imInThisGame ? ' disabled' : '';
+        gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input type="text" id="myName'+game.id+'"'+joinBtnStatus+'>').addClass('newGameMyNameInput'))));
         gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input disabled type="text" id="password'+game.id+'">'))));
         var btnId = 'joinGameButton' + game.id;
         var leaveBtnId = 'leaveGameButton' + game.id;
-        var joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton').text('Join'));
-        var leaveGameButton = ($('<button id="'+leaveBtnId+'">').addClass('btn btn-primary leaveThisGameButton disabled').text('Leave'));
+        var joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton'+joinBtnStatus).text('Join'));
+        var leaveBtnStatus = !game.imInThisGame ? ' disabled' : '';
+        var leaveGameButton = ($('<button id="'+leaveBtnId+'">').addClass('btn btn-primary leaveThisGameButton'+leaveBtnStatus).text('Leave'));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(joinGameButton));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(leaveGameButton));
 
         gameListContainer.append(gameContainerDiv);
 
         $('#'+btnId).on('click', function() {
-            joinGame(socket, game.id);
+            joinGame(game.id);
         });
         $('#'+leaveBtnId).on('click', function() {
-            leaveGame(socket, game.id);
+            leaveGame(game.id);
         });
 
         console.log(game);
@@ -165,11 +169,11 @@ function showGames(socket, gameList) {
     });
 }
 
-function initGameListEvent(socket) {
+function initGameListEvent() {
     $('#joinGameCollapse').on('shown.bs.collapse', function () {
-        socket.emit('get games', {}, function (response) {
+        socket.emit('get games', {myId: window.localStorage.getItem('uUID')}, function (response) {
             console.log(response);
-            showGames(socket, response);
+            showGames(response);
         });
     });
 
@@ -179,20 +183,19 @@ function initGameListEvent(socket) {
     });
 }
 
-function initJoinByIdButton(socket) {
+function initJoinByIdButton() {
     $('#joinByIdButton').on('click', function() {
         var uuid = $('#joinById').val();
         var gameId = $('#joinGameId').val();
         if (uuid.length == 36 && gameId.length > 5) {
-            window.localStorage.setItem('uUID', uuid);
-            console.log('new uUID set: ' + uuid);
-
             var joiningDetails = { gameId: gameId,
-                myId: window.localStorage.getItem('uUID'),
+                myId: uuid,
             };
             socket.emit('join game by id', joiningDetails, function (response) {
-                console.log('joining game by id: ' + response);
+                console.log('joining game: ', response);
                 if (response.joiningResult == 'OK') {
+                    window.localStorage.setItem('uUID', response.newId);
+                    console.log('new uUID set: ' + response.newId);
                     alert('You can now play as ' + response.newName + '. Please click OK and then refresh this page.');
                 }
             });
@@ -200,7 +203,7 @@ function initJoinByIdButton(socket) {
     });
 }
 
-function initLeavingButtons(socket) {
+function initLeavingButtons() {
     $('#dontLeaveButton').on('click', function() {
         $('#leaveGameCollapse').collapse('hide');
     });
@@ -211,13 +214,19 @@ function initLeavingButtons(socket) {
         var uuid = uuidv4();
         console.log('new uUID set: ' + uuid);
         window.localStorage.setItem('uUID', uuid);
-        socket.emit('leave ongoing game', $('#joinGameId').val(), function() {
-            alert('You have now left the game. Please click OK and then refresh this page.');
+        deleteIntervaller();
+        var leaveGameObj = { gameId: $('#currentGameId').val(), playerId: $('#leavingUId').val()};
+        socket.emit('leave ongoing game', leaveGameObj, function(retVal) {
+            if (retVal.leavingResult == 'LEAVED') {
+                alert('You have now left the game. Please click OK and then refresh this page.');
+            } else {
+                alert('Something wen\'t wrong! Try to refresh page and see what happens...');
+            }
         });
     });
 }
 
-function initChatButton(socket) {
+function initChatButton() {
     $('#sendChatButton').on('click', function() {
         var newLine = $('#newChatLine').val().trim();
         var myName = $('#myName').val().trim();
@@ -250,19 +259,19 @@ function initChatButton(socket) {
     });
 }
 
-function initButtons(socket) {
-    initcreateNewGameButton(socket);
+function initButtons() {
+    initcreateNewGameButton();
     initRulesCheck();
-    initLeavingButtons(socket);
-    initJoinByIdButton(socket);
-    initChatButton(socket);
+    initLeavingButtons();
+    initJoinByIdButton();
+    initChatButton();
 }
 
-function initEvents(socket) {
-    initGameListEvent(socket);
+function initEvents() {
+    initGameListEvent();
 }
 
-function mainInit(socket) {
-    initEvents(socket);
-    initButtons(socket);
+function mainInit() {
+    initEvents();
+    initButtons();
 }

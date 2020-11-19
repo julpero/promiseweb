@@ -13,7 +13,7 @@ module.exports = {
             dealerPositionIndex: round.dealerPositionIndex,
             starterPositionIndex: round.starterPositionIndex,
             myName: playerName,
-            myCards: getPlayerCards(playerName, round),
+            myCards: getPlayerCards(playerName, round, thisGame.speedPromise),
             players: getRoundPlayers(playerName, round, showPromisesNow('player', thisGame, roundInd)),
             trumpCard: showTrumpCard(thisGame, roundInd) ? round.trumpCard : null,
             playerInCharge: getPlayerInCharge(roundInd, this.getCurrentPlayIndex(round), thisGame),
@@ -81,6 +81,7 @@ module.exports = {
             onlyTotalPromise: game.onlyTotalPromise != null && game.onlyTotalPromise,
             freeTrump: game.freeTrump == null || game.freeTrump,
             hiddenTrump: game.hiddenTrump != null && game.hiddenTrump,
+            speedPromise: game.speedPromise != null && game.speedPromise,
             privateSpeedGame: game.privateSpeedGame != null && game.privateSpeedGame,
         };
         return gameInfo;
@@ -163,11 +164,11 @@ module.exports = {
         var rounds = [];
         var roundIndex = 0;
         for (var i = gameInfo.startRound; i >= gameInfo.turnRound; i--) {
-            rounds.push(initRound(roundIndex, i, players));
+            rounds.push(initRound(roundIndex, i, players, gameInfo.speedPromise));
             roundIndex++;
         }
         for (var i = gameInfo.turnRound+1; i <= gameInfo.endRound; i++) {
-            rounds.push(initRound(roundIndex, i, players));
+            rounds.push(initRound(roundIndex, i, players, gameInfo.speedPromise));
             roundIndex++;
         }
         return rounds;
@@ -181,6 +182,37 @@ module.exports = {
         return promisesMade == round.roundPlayers.length - 1;
     },
 
+    activatePlayer: function (humanPlayers, activateId) {
+        var retPlayers = [];
+        humanPlayers.forEach(function (player) {
+            if (player.playerId == activateId && !player.active) player.active = true;
+            retPlayers.push(player);
+        });
+
+        return retPlayers;
+    },
+
+    deActivatePlayer: function (humanPlayers, activateId) {
+        var retPlayers = [];
+        humanPlayers.forEach(function (player) {
+            if (player.playerId == activateId && player.active) player.active = false;
+            retPlayers.push(player);
+        });
+
+        return retPlayers;
+    },
+
+    imInThisGame: function (humanPlayers, myId) {
+        var retVal = false;
+        humanPlayers.forEach(function (player) {
+            if (player.playerId == myId) {
+                retVal = true;
+                return;
+            }
+        });
+        return retVal;
+    }
+
 }
 
 function showTrumpCard(thisGame, roundInd) {
@@ -192,11 +224,13 @@ function getCurrentCardInCharge(cardsPlayed) {
     return cardsPlayed[cardsPlayed.length - 1][0].card;
 }
 
-function getPlayerCards(name, round) {
-    var cards = null;
-    round.roundPlayers.forEach(function (roundPlayer) {
-        if (roundPlayer.name == name) cards = roundPlayer.cards;
-    });
+function getPlayerCards(name, round, speedPromise) {
+    var cards = [];
+    if (!speedPromise || isRoundPromised(round) || isMyPromiseTurn(round, name) || iHavePromised(round, name)) {
+        round.roundPlayers.forEach(function (roundPlayer) {
+            if (roundPlayer.name == name) cards = roundPlayer.cards;
+        });
+    }
     return cards;
 }
 
@@ -218,6 +252,7 @@ function getRoundPlayers(myName, round, showPromises) {
             promise: showPromises || player.name == myName ? player.promise : (player.promise == null) ? null : -1,
             keeps: player.keeps,
             cardPlayed: getPlayerPlayedCard(player.name, round.cardsPlayed),
+            speedPromisePoints: player.speedPromisePoints,
         });
     });
     return players;
@@ -249,6 +284,30 @@ function showPromisesNow(type, thisGame, roundInd) {
 
     return true;
 }
+
+function iHavePromised(round, myName) {
+    for (var i = 0; i < round.roundPlayers.length; i++) {
+        var chkPos = i + round.starterPositionIndex;
+        if (chkPos >= round.roundPlayers.length) chkPos-= round.roundPlayers.length;
+        if (round.roundPlayers[chkPos].promise != null && round.roundPlayers[chkPos].name == myName) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function isMyPromiseTurn(round, myName) {
+    for (var i = 0; i < round.roundPlayers.length; i++) {
+        var chkPos = i + round.starterPositionIndex;
+        if (chkPos >= round.roundPlayers.length) chkPos-= round.roundPlayers.length;
+        if (round.roundPlayers[chkPos].promise == null) {
+            // this is next player to promise
+            return round.roundPlayers[chkPos].name == myName;
+        }
+    }
+    return false;
+}
+
 
 function currentPlayTurnPlayerName(gameInDb) {
     var currentRoundIndex = module.exports.getCurrentRoundIndex(gameInDb);
@@ -294,7 +353,6 @@ function isCardAvailableToPlay(playedCard, cardInCharge, playerCards, freeTrump,
     }
 }
 
-
 function getRoundDealerName(round) {
     return round.roundPlayers[round.dealerPositionIndex].name;
 }
@@ -338,6 +396,7 @@ function getPromiseTable(thisGame) {
                 promise: showPromisesNow('player', thisGame, j) ? thisGame.game.rounds[j].roundPlayers[i].promise : null,
                 keep: thisGame.game.rounds[j].roundPlayers[i].keeps,
                 points: thisGame.game.rounds[j].roundPlayers[i].points,
+                speedPromisePoints: thisGame.game.rounds[j].roundPlayers[i].speedPromisePoints,
             });
             if (i == 0) {
                 rounds.push({
@@ -363,7 +422,7 @@ function getdealerPositionIndex(roundIndex, totalPlayers) {
     return getdealerPositionIndex(roundIndex - totalPlayers, totalPlayers);
 }
 
-function initRound(roundIndex, cardsInRound, players) {
+function initRound(roundIndex, cardsInRound, players, speedPromise) {
     var deck = initDeck();
 
     var roundPlayers = [];
@@ -384,6 +443,7 @@ function initRound(roundIndex, cardsInRound, players) {
             points: null,
             cardsToDebug: sortedPlayerCards,
             type: player.type,
+            speedPromisePoints: speedPromise ? 1 : null,
         });
     });
 
@@ -445,5 +505,4 @@ function initDeck() {
     deck.shuffle();
     return deck;
 }
-
 
