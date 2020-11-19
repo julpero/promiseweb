@@ -26,7 +26,7 @@ function getCardIndex(cards, myCard) {
 }
 
 function drawCards(myRound) {
-    drawMyCards(myRound.myCards);
+    drawMyCards(myRound, speedPromise);
     drawTrumpCard(myRound);
     drawOtherPlayerCards(myRound.players, myRound.cardsInRound, myRound.cardsPlayed);
 }
@@ -80,7 +80,6 @@ function revealTrumpCard(trumpCard) {
         duration: 0,
         rot: randomNegToPos(5)+15,
     });
-
 }
 
 function drawTrumpCard(myRound) {
@@ -106,22 +105,39 @@ function drawTrumpCard(myRound) {
     }
 }
 
-function drawMyCards(myCards) {
+function drawMyCards(myRound, speedPromise) {
     var deck = Deck();
-    myCards.forEach(function (myCard, idx) {
-        var $container = document.getElementById('player0CardCol'+idx);
-        var cardIndex = getCardIndex(deck.cards, myCard);
-        var card = deck.cards[cardIndex];
-        card.mount($container);
-        card.setSide('front');
-        card.animateTo({
-            x: randomNegToPos(2),
-            y: randomNegToPos(2),
-            delay: 0,
-            duration: 0,
-            rot: randomNegToPos(5),
-        });
-    });    
+    if (speedPromise && myRound.myCards.length == 0) {
+        for (var i = 0; i < myRound.cardsInRound; i++) {
+            var $container = document.getElementById('player0CardCol'+i);
+            var card = deck.cards[i];
+            card.mount($container);
+            card.setSide('back');
+            card.animateTo({
+                x: randomNegToPos(2),
+                y: randomNegToPos(2),
+                delay: 0,
+                duration: 0,
+                rot: randomNegToPos(5),
+            });
+        }
+    } else {
+        myRound.myCards.forEach(function (myCard, idx) {
+            if (speedPromise) $('#player0CardCol'+idx).empty();
+            var $container = document.getElementById('player0CardCol'+idx);
+            var cardIndex = getCardIndex(deck.cards, myCard);
+            var card = deck.cards[cardIndex];
+            card.mount($container);
+            card.setSide('front');
+            card.animateTo({
+                x: randomNegToPos(2),
+                y: randomNegToPos(2),
+                delay: 0,
+                duration: 0,
+                rot: randomNegToPos(5),
+            });
+        });    
+    }
 }
 
 function mapPlayerNameToTable(name) {
@@ -181,7 +197,6 @@ function isMyPromiseTurn(myRound) {
         if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
         if (myRound.players[chkPos].promise == null) {
             // this is next player to promise
-            console.log('isMyPromiseTurn: '+ myRound.players[chkPos].thisIsMe);
             return myRound.players[chkPos].thisIsMe;
         }
     }
@@ -250,7 +265,69 @@ function isEvenPromise(myRound, promise) {
     return totalPromise + promise == myRound.cardsInRound;
 }
 
-function initPromise(myRound, evenPromisesAllowed) {
+function speedPromiseTimerTick(speedPromiseValue) {
+    if (speedPromiseValue == 1) return promiseBonusTickTime;
+    if (speedPromiseValue == 0) return promiseNormalTickTime;
+    return promisePenaltyTickTime;
+}
+
+function mySpeedPromisePoints(myRound) {
+    for (var i = 0; i < myRound.players.length; i++) {
+        var player = myRound.players[i];
+        if (player.thisIsMe) return player.speedPromisePoints;
+    }
+    return null;
+}
+
+function makeSpeedPromise(speedPromiseObj) {
+    socket.emit('speedpromise', speedPromiseObj, function (resultObj) {
+        if (resultObj.speedOk) {
+            if (resultObj.fullSpeedPromises) {
+                // now player already get maximum thinking penalty
+            } else {
+                // start next thinking timer
+                initSpeedPromiseTimer(resultObj.round);
+            }
+        } else {
+            alert('Oops, something wen\'t wrong... Please refesh this page.');
+        }
+    });
+}
+
+function speedPromiser(myRound) {
+    usedTime = parseInt(window.localStorage.getItem('usedTime'), 10);
+    usedTime+= intervalTime;
+    window.localStorage.setItem('usedTime', usedTime);
+    if (usedTime > timerTime) {
+        // $('.card').off('click touchstart');
+        deleteIntervaller();
+        console.log('SPEEDPROMISE!');
+        var speedPromiseObj = {
+            gameId: myRound.gameId,
+            roundInd: myRound.roundInd,
+            myId: window.localStorage.getItem('uUID'),
+        }
+        makeSpeedPromise(speedPromiseObj);
+    } else {
+        drawSpeedBar(timerTime, timerTime-usedTime);
+    }
+}
+
+function initSpeedPromiseTimer(myRound) {
+    timerTime = speedPromiseTimerTick(mySpeedPromisePoints(myRound));
+    console.log('timerTime (s): ', timerTime/1000);
+    usedTime = window.localStorage.getItem('usedTime');
+    if (usedTime == null) {
+        usedTime = 0;
+        window.localStorage.setItem('usedTime', usedTime);
+    } else {
+        usedTime = parseInt(usedTime, 10);
+    }
+    drawSpeedBar(timerTime, timerTime-usedTime);
+    intervaller = setInterval(speedPromiser, intervalTime, myRound);
+}
+
+function initPromise(myRound, evenPromisesAllowed, speedPromise) {
     $('#myPromiseCol').empty();
     var node = $('#myPromiseCol');
 
@@ -260,6 +337,7 @@ function initPromise(myRound, evenPromisesAllowed) {
         if (evenPromisesAllowed || !isEvenPromise(myRound, i)) {
             $('#makePromiseButton'+i).on('click', function() {
                 $('.makePromiseButton').off('click');
+                deleteIntervaller();
                 var promiseDetails = { gameId: myRound.gameId,
                     roundInd: myRound.roundInd,
                     myId: window.localStorage.getItem('uUID'),
@@ -277,6 +355,11 @@ function initPromise(myRound, evenPromisesAllowed) {
     }
 
     $('#myPromiseRow').show();
+
+    if (speedPromise && mySpeedPromisePoints(myRound) > -10) {
+        drawMyCards(myRound, speedPromise);
+        initSpeedPromiseTimer(myRound);
+    }
 }
 
 function hidePromise() {
@@ -328,14 +411,18 @@ function drawPromiseAsProgress(max, promise, keep) {
     return progressMain;
 }
 
-function showPlayerPromises(myRound, showPromise) {
+function showPlayerPromises(myRound, showPromise, showSpeedPromise) {
     myRound.players.forEach(function (player, idx) {
         var tableIdx = otherPlayerMapper(idx, myRound.players);
         if (player.promise != null) {
             $('#player'+tableIdx+'Keeps').html('k: '+player.keeps);
-            if (!showPromise && tableIdx != 0) return;
+            var speedPromiseStr = showSpeedPromise ? ' ('+(player.speedPromisePoints == 1 ? '*1.5' : player.speedPromisePoints)+')' : '';
+            if (!showPromise && tableIdx != 0) {
+                if (showSpeedPromise) $('#player'+tableIdx+'Promised').html('p: '+speedPromiseStr);
+                return;
+            }
 
-            $('#player'+tableIdx+'Promised').html('p: '+player.promise);
+            $('#player'+tableIdx+'Promised').html('p: '+player.promise+speedPromiseStr);
             if (player.promise == player.keeps) {
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseOver');
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseUnder');
@@ -362,13 +449,13 @@ function showPlayerPromises(myRound, showPromise) {
     initPromiseTable(myRound.promiseTable);
 }
 
-function getPromise(myRound, evenPromisesAllowed) {
+function getPromise(myRound, evenPromisesAllowed, speedPromise) {
     checkSmall(myRound.players.length);
     hideThinkings();
     showDealer(myRound);
     if (isMyPromiseTurn(myRound)) {
         showMyTurn();
-        initPromise(myRound, evenPromisesAllowed);
+        initPromise(myRound, evenPromisesAllowed, speedPromise);
         dimMyCards(myRound, 1.0);
     } else {
         hidePromise();
@@ -432,6 +519,7 @@ function classToCardMapper(classStr) {
 function deleteIntervaller() {
     if (intervaller != null) clearInterval(intervaller);
     window.localStorage.removeItem('usedTime');
+    timerTime = null;
     usedTime = null;
     $('#speedProgressBar').empty();
 }
@@ -651,7 +739,6 @@ function playSpeedGamerCard(myRound) {
     if (possibleCards.length > 0) {
         var randomIndex = Math.floor(Math.random() * possibleCards.length);
         var className = possibleCards[randomIndex];
-        // var className = $('#player0CardCol'+playCardIndex).children()[0].className;
         console.log(className);
 
         var card = classToCardMapper(className);
@@ -672,18 +759,31 @@ function playSpeedGamerCard(myRound) {
 }
 
 function privateSpeedGamer(myRound) {
-    // console.log(usedTime);
     usedTime = parseInt(window.localStorage.getItem('usedTime'), 10);
     usedTime+= intervalTime;
     window.localStorage.setItem('usedTime', usedTime);
-    if (usedTime > cardTime) {
+    if (usedTime > timerTime) {
         $('.card').off('click touchstart');
         deleteIntervaller();
         console.log('PLAY!');
         playSpeedGamerCard(myRound);
     } else {
-        drawSpeedBar(cardTime, cardTime-usedTime);
+        drawSpeedBar(timerTime, timerTime-usedTime);
     }
+}
+
+function initPrivateSpeedTimer(cardsAbleToPlay) {
+    timerTime = Math.min(Math.max(cardsAbleToPlay * 1500, 4000), Math.max(myRound.cardsInRound * 800, 4000));
+    console.log('timerTime (s): ', timerTime/1000);
+    usedTime = window.localStorage.getItem('usedTime');
+    if (usedTime == null) {
+        usedTime = 0;
+        window.localStorage.setItem('usedTime', usedTime);
+    } else {
+        usedTime = parseInt(usedTime, 10);
+    }
+    drawSpeedBar(timerTime, timerTime-usedTime);
+    intervaller = setInterval(privateSpeedGamer, intervalTime, myRound);
 }
 
 function playRound(myRound, freeTrump, privateSpeedGame) {
@@ -696,18 +796,7 @@ function playRound(myRound, freeTrump, privateSpeedGame) {
     if (isMyPlayTurn(myRound)) {
         showMyTurn();
         var cardsAbleToPlay = initCardsToPlay(myRound, freeTrump);
-        if (privateSpeedGame) {
-            cardTime = Math.min(Math.max(cardsAbleToPlay * 1500, 4000), Math.max(myRound.cardsInRound * 800, 4000));
-            usedTime = window.localStorage.getItem('usedTime');
-            if (usedTime == null) {
-                usedTime = 0;
-                window.localStorage.setItem('usedTime', usedTime);
-            } else {
-                usedTime = parseInt(usedTime, 10);
-            }
-            drawSpeedBar(cardTime, cardTime-usedTime);
-            intervaller = setInterval(privateSpeedGamer, intervalTime, myRound);
-        }
+        if (privateSpeedGame) initPrivateSpeedTimer(cardsAbleToPlay);
     } else {
         showWhoIsPlaying(myRound);
         dimMyCards(myRound, 0.8);
@@ -746,7 +835,6 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
         var containerFromPosition = $('#player'+i+'CardPlayedDiv').offset();
         var cardToCheck = getCardFromDiv('player'+i+'CardPlayedDiv');
         if (cardToCheck == null) {
-            // debugger;
             continue;
         }
         var cardIndex = getCardIndex(deck.cards, cardToCheck);
@@ -904,13 +992,25 @@ function initScoreBoard(promiseTable, gameOver) {
         var playerPoints = 0;
         for (var j = 0; j < promiseTable.promisesByPlayers[i].length; j++) {
             var currentPoints = promiseTable.promisesByPlayers[i][j].points;
-            if (currentPoints > 0) {
-                playerPoints+= currentPoints;
-                $('#player'+i+'Points'+j).html(playerPoints);
-                if (!$('#player'+i+'Points'+j).hasClass('hasPoints')) $('#player'+i+'Points'+j).addClass('hasPoints')
-            } else if (currentPoints == 0) {
-                $('#player'+i+'Points'+j).html('-');
-                if (!$('#player'+i+'Points'+j).hasClass('zeroPoints')) $('#player'+i+'Points'+j).addClass('zeroPoints')
+            if (currentPoints != null) {
+                var speedPromisePoints = promiseTable.promisesByPlayers[i][j].speedPromisePoints;
+                var tooltipStr = 'Total '+currentPoints;
+                if (currentPoints != 0) {
+                    playerPoints+= currentPoints;
+                    $('#player'+i+'Points'+j).html(playerPoints);
+                    $('#player'+i+'Points'+j).addClass('hasPoints')
+                } else {
+                    $('#player'+i+'Points'+j).html('-');
+                    $('#player'+i+'Points'+j).addClass('zeroPoints')
+                }
+                if (speedPromisePoints == 1) {
+                    $('#player'+i+'Points'+j).addClass('speedPromiseBonus');
+                    tooltipStr+= (currentPoints > 0) ? ', including '+Math.ceil(0.5 * currentPoints)+' promise bonus' : ', missed promise bonus';
+                } else if (speedPromisePoints < 0) {
+                    $('#player'+i+'Points'+j).addClass('speedPromisePenalty');
+                    tooltipStr+= ', including '+speedPromisePoints+' promise penalty'
+                }
+                $('#player'+i+'Points'+j).tooltip({title: tooltipStr});
             }
         }
         totalPoints.push(playerPoints);
@@ -931,12 +1031,12 @@ function checkSmall(playerCount) {
     }
 }
 
-function browserReload(myRound) {
+function browserReload(myRound, speedPromise) {
     initCardTable(myRound);
     initOtherPlayers(myRound);
     initPromiseTable(myRound.promiseTable);
     initScoreBoard(myRound.promiseTable, myRound.gameOver);
-    drawCards(myRound);
+    drawCards(myRound, speedPromise);
     showPlayedCards(myRound);
     showWonCards(myRound);
     checkSmall(myRound.players.length);

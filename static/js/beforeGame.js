@@ -55,6 +55,7 @@ function initcreateNewGameButton() {
             onlyTotalPromise: $('#onlyTotalPromise').prop('checked'),
             freeTrump: !$('#mustTrump').prop('checked'),
             hiddenTrump: $('#hiddenTrump').prop('checked'),
+            speedPromise: $('#speedPromise').prop('checked'),
             privateSpeedGame: $('#privateSpeedGame').prop('checked'),
         };
         if (validateNewGame(gameOptions)) {
@@ -138,6 +139,7 @@ function showGames(gameList) {
         if (game.onlyTotalPromise) ruleStr+= ', only total promise visible';
         if (!game.freeTrump) ruleStr+= ', must trump';
         if (game.hiddenTrump) ruleStr+= ', hidden trump';
+        if (game.speedPromise) ruleStr+= ', speed promise';
         if (game.privateSpeedGame) ruleStr+= ', speed game';
         gameContainerDiv.append($('<div>').addClass('col-2').text(ruleStr));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));

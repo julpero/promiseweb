@@ -163,12 +163,12 @@
                                 Trump is hidden when promising
                             </label>
                         </div>
-                        <!-- <div class="form-check">
+                        <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="" id="speedPromise">
                             <label class="form-check-label" for="speedPromise">
                                 Speed promise
                             </label>
-                        </div> -->
+                        </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="" id="privateSpeedGame">
                             <label class="form-check-label" for="privateSpeedGame">
@@ -327,9 +327,13 @@
         <script type="text/javascript">
             const socket = io();
 
+            const promiseBonusTickTime = 3000;
+            const promiseNormalTickTime = 5000;
+            const promisePenaltyTickTime = 3000;
+            
             const intervalTime = 100;
             var intervaller = null;
-            var cardTime = null;
+            var timerTime = null;
             var usedTime = null;
             var possibleCards = [];
             $(function () {
@@ -361,7 +365,6 @@
                     $('#gameChooser').hide();
                     $('#gameContainer').show();
                     initRuleList(gameInfo);
-                    initSpeedBar(gameInfo);
                     var getRound = {
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
@@ -370,8 +373,9 @@
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
                         $('#myName').val(myRound.myName);
-                        browserReload(myRound);
-                        getPromise(myRound, gameInfo.evenPromisesAllowed);
+                        browserReload(myRound, gameInfo.speedPromise);
+                        initSpeedBar(gameInfo);
+                        getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise);
                     });
                 });
 
@@ -392,18 +396,18 @@
                         $('#myName').val(myRound.myName);
                         if (myRound.doReloadInit) {
                             console.log('reloading...');
-                            browserReload(myRound);
+                            browserReload(myRound, gameInfo.speedPromise);
                             initRuleList(gameInfo);
                             initSpeedBar(gameInfo);
                         }
-                        showPlayerPromises(myRound, showPromisesNow(gameInfo, myRound));
+                        showPlayerPromises(myRound, showPromisesNow(gameInfo, myRound), gameInfo.speedPromise);
                         if (roundPromised(myRound)) {
                             showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[gameInfo.currentRound], gameInfo.onlyTotalPromise, myRound.players);
                             revealTrumpCard(myRound.trumpCard);
                             initSpeedBar(gameInfo);
                             playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
                         } else {
-                            getPromise(myRound, gameInfo.evenPromisesAllowed);
+                            getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise);
                         }
                     });
                 });
@@ -452,7 +456,7 @@
                         console.log(myRound);
                         $('#myName').val(myRound.myName);
                         if (myRound.gameOver) {
-                            showPlayerPromises(myRound, true);
+                            showPlayerPromises(myRound, true, gameInfo.speedPromise);
                             initPromiseTable(myRound.promiseTable);
                             initScoreBoard(myRound.promiseTable, myRound.gameOver);
                             return;
@@ -461,21 +465,22 @@
                             console.log('reloading...');
                             $('#gameChooser').hide();
                             $('#gameContainer').show();
-                            browserReload(myRound);
+                            browserReload(myRound, gameInfo.speedPromise);
                             initRuleList(gameInfo);
                             initSpeedBar(gameInfo);
                         }
-                        showPlayerPromises(myRound, showPromisesNow(gameInfo, myRound));
+                        showPlayerPromises(myRound, showPromisesNow(gameInfo, myRound), gameInfo.speedPromise);
                         if (myRound.newRound) {
                             console.log('newRound');
                             clearWonCards();
-                            browserReload(myRound);
+                            browserReload(myRound, gameInfo.speedPromise);
                         }
                         if (roundPromised(myRound)) {
                             showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[myRound.roundInd], gameInfo.onlyTotalPromise, myRound.players);
                             playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
                         } else {
-                            getPromise(myRound, gameInfo.evenPromisesAllowed);
+                            initSpeedBar(gameInfo);
+                            getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise);
                         }
                     });
                 });

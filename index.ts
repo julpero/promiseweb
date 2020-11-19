@@ -403,6 +403,64 @@ try {
                     fn(playerRound);
                 }
             });
+
+            socket.on('speedpromise', async (speedPromiseObj, fn) => {
+                console.log(speedPromiseObj);
+                var resultObj = {
+                    speedOk: false,
+                    fullSpeedPromises: false,
+                    round: null
+                }
+
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                var ObjectId = require('mongodb').ObjectId;
+                var searchId = new ObjectId(speedPromiseObj.gameId);
+                const query = { gameStatus: 1,
+                    _id: searchId,
+                    // password: newPlayer.gamePassword,
+                     };
+                var gameInDb = await collection.findOne(query);
+                if (gameInDb !== null && gameInDb.speedPromise) {
+                    //var promiseInt = parseInt(promiseDetails.promise, 10);
+                    var playerName = pf.getPlayerNameById(speedPromiseObj.myId, gameInDb.humanPlayers);
+                    for (var i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
+                        var chkInd = 1 + i; // start from next to dealer
+                        if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-= (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
+                        if (gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].promise == null) {
+                            // this should be same as playerName
+                            if (gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].name == playerName) {
+                                // make speedpromise substraction
+                                if (gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints >= -9) {
+                                    gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints--;
+                                    const options = { upsert: true };
+                                    const updateDoc = {
+                                        $set: {
+                                            game: gameInDb.game,
+                                        }
+                                    };
+                                    const result = await collection.updateOne(query, updateDoc, options);
+                                    if (result.modifiedCount == 1) {
+                                        resultObj.speedOk = true;
+                                        resultObj.fullSpeedPromises = gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints == -10;
+
+                                        var chatLine = playerName+' still thinking, speed promise: ' + gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints;
+                                        io.to(speedPromiseObj.gameId).emit('new chat line', chatLine);
+
+                                        const playerRound = pf.roundToPlayer(speedPromiseObj.myId, speedPromiseObj.roundInd, gameInDb, false, false, false);
+                                        resultObj.round = playerRound;
+
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+                fn(resultObj);
+            });
     
             socket.on('make promise', async (promiseDetails, fn) => {
                 console.log(promiseDetails);
@@ -422,15 +480,17 @@ try {
                 if (gameInDb !== null) {
                     var promiseInt = parseInt(promiseDetails.promise, 10);
                     var playerName = pf.getPlayerNameById(promiseDetails.myId, gameInDb.humanPlayers);
+                    var speedPromisePoints = null;
                     for (var i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
                         var chkInd = 1 + i; // start from next to dealer
-                        if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-=  (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
+                        if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-= (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
                         if (gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise == null) {
                             // this should be same as playerName
                             if (gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].name == playerName) {
                                 // update promise
                                 if (gameInDb.evenPromisesAllowed || !pf.isLastPromiser(gameInDb.game.rounds[promiseDetails.roundInd]) || gameInDb.game.rounds[promiseDetails.roundInd].totalPromise + promiseInt != gameInDb.game.rounds[promiseDetails.roundInd].cardsInRound) {
                                     gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise = promiseInt;
+                                    speedPromisePoints = gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].speedPromisePoints;
                                     if (gameInDb.game.rounds[promiseDetails.roundInd].totalPromise == null) gameInDb.game.rounds[promiseDetails.roundInd].totalPromise = 0;
                                     gameInDb.game.rounds[promiseDetails.roundInd].totalPromise += promiseInt;
                                     const options = { upsert: true };
@@ -462,6 +522,7 @@ try {
                         
                         var chatLine = playerName+' promised';
                         if (thisGame.visiblePromiseRound) chatLine+= ' '+promiseInt;
+                        if (thisGame.speedPromise) chatLine+= ' with modifier '+speedPromisePoints;
                         io.to(gameInfo.id).emit('new chat line', chatLine);
                         // fn(gameInfo); // just DEBUG
                     } else {
@@ -529,6 +590,7 @@ try {
                                     // this was the last card of the round
                                     newRound = true;
                                     gameAfterPlay.rounds[roundInDb].roundStatus = 2;
+                                    // let's count points
                                     for (var i = 0; i < gameAfterPlay.rounds[roundInDb].roundPlayers.length; i++) {
                                         if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].promise == gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps) {
                                             if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps == 0) {
@@ -538,6 +600,13 @@ try {
                                             }
                                         } else {
                                             gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = 0;
+                                        }
+                                        if (gameInDb.speedPromise && gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromisePoints != 0) {
+                                            if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromisePoints == 1) {
+                                                gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = Math.ceil(gameAfterPlay.rounds[roundInDb].roundPlayers[i].points * 1.5);
+                                            } else {
+                                                gameAfterPlay.rounds[roundInDb].roundPlayers[i].points+= gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromisePoints;
+                                            }
                                         }
                                     }
     
@@ -627,6 +696,7 @@ try {
                         onlyTotalPromise: val.onlyTotalPromise,
                         freeTrump: val.freeTrump,
                         hiddenTrump: val.hiddenTrump,
+                        speedPromise: val.speedPromise,
                         privateSpeedGame: val.privateSpeedGame,
                         imInThisGame: pf.imInThisGame(val.humanPlayers, data.myId)
                     });

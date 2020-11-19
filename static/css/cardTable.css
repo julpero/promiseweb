@@ -111,6 +111,13 @@ html {
     border-bottom: dotted grey 1px;
     font-size: smaller;
 }
+.speedPromiseBonus {
+    font-weight: bold;
+    color: darkgreen;
+}
+.speedPromisePenalty {
+    color: darkred;
+}
 .promiseKept {
     font-weight: bold;
     color: darkgreen;
