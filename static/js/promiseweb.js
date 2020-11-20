@@ -772,7 +772,7 @@ function privateSpeedGamer(myRound) {
     }
 }
 
-function initPrivateSpeedTimer(cardsAbleToPlay) {
+function initPrivateSpeedTimer(cardsAbleToPlay, myRound) {
     timerTime = Math.min(Math.max(cardsAbleToPlay * 1500, 4000), Math.max(myRound.cardsInRound * 800, 4000));
     console.log('timerTime (s): ', timerTime/1000);
     usedTime = window.localStorage.getItem('usedTime');
@@ -796,7 +796,7 @@ function playRound(myRound, freeTrump, privateSpeedGame) {
     if (isMyPlayTurn(myRound)) {
         showMyTurn();
         var cardsAbleToPlay = initCardsToPlay(myRound, freeTrump);
-        if (privateSpeedGame) initPrivateSpeedTimer(cardsAbleToPlay);
+        if (privateSpeedGame) initPrivateSpeedTimer(cardsAbleToPlay, myRound);
     } else {
         showWhoIsPlaying(myRound);
         dimMyCards(myRound, 0.8);
