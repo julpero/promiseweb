@@ -341,8 +341,9 @@ function initPromise(myRound, evenPromisesAllowed, speedPromise) {
             promiseButton.addClass(' validPromiseButton');
             promiseButton.prop('disabled', false);
             $('#makePromiseButton'+i).on('click', function() {
-                $('.makePromiseButton').off('click');
                 deleteIntervaller();
+                $('.makePromiseButton').off('click');
+                $('.validPromiseButton').prop('disabled', true);
                 var promiseDetails = { gameId: myRound.gameId,
                     roundInd: myRound.roundInd,
                     myId: window.localStorage.getItem('uUID'),
