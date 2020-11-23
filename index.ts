@@ -531,7 +531,15 @@ try {
                         
                         var chatLine = playerName+' promised';
                         if (thisGame.visiblePromiseRound) chatLine+= ' '+promiseInt;
-                        if (thisGame.speedPromise) chatLine+= ' with modifier '+speedPromisePoints;
+                        if (thisGame.speedPromise) {
+                            if (speedPromisePoints == 1) {
+                                chatLine+= ' with Speed Promise!';
+                            } else if (speedPromisePoints == 0) {
+                                chatLine+= ' without any bonus';
+                            } else {
+                                chatLine+= ' with '+speedPromisePoints+' penalty points';
+                            }
+                        }
                         io.to(gameInfo.id).emit('new chat line', chatLine);
                         // fn(gameInfo); // just DEBUG
                     } else {
@@ -610,12 +618,10 @@ try {
                                         } else {
                                             gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = 0;
                                         }
-                                        if (gameInDb.speedPromise && gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromisePoints != 0) {
-                                            if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromisePoints == 1) {
-                                                gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = Math.ceil(gameAfterPlay.rounds[roundInDb].roundPlayers[i].points * 1.5);
-                                            } else {
-                                                gameAfterPlay.rounds[roundInDb].roundPlayers[i].points+= gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromisePoints;
-                                            }
+                                        if (gameInDb.speedPromise) {
+                                            var speedPromiseTotal = pf.speedPromiseSolver(gameAfterPlay.rounds[roundInDb], i);
+                                            gameAfterPlay.rounds[roundInDb].roundPlayers[i].points+= speedPromiseTotal;
+                                            gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromiseTotal = speedPromiseTotal;
                                         }
                                     }
     
