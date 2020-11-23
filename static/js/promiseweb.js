@@ -282,6 +282,7 @@ function mySpeedPromisePoints(myRound) {
 function makeSpeedPromise(speedPromiseObj) {
     socket.emit('speedpromise', speedPromiseObj, function (resultObj) {
         if (resultObj.speedOk) {
+            $('.validPromiseButton').prop('disabled', false);
             if (resultObj.fullSpeedPromises) {
                 // now player already get maximum thinking penalty
             } else {
@@ -289,7 +290,8 @@ function makeSpeedPromise(speedPromiseObj) {
                 initSpeedPromiseTimer(resultObj.round);
             }
         } else {
-            alert('Oops, something wen\'t wrong... Please refesh this page.');
+            alert('Oops, something went wrong... Please refesh this page.\n\n'+resultObj.debug);
+            console.log(resultObj);
         }
     });
 }
@@ -300,6 +302,7 @@ function speedPromiser(myRound) {
     window.localStorage.setItem('usedTime', usedTime);
     if (usedTime > timerTime) {
         // $('.card').off('click touchstart');
+        $('.validPromiseButton').prop('disabled', true);
         deleteIntervaller();
         console.log('SPEEDPROMISE!');
         var speedPromiseObj = {
@@ -335,6 +338,8 @@ function initPromise(myRound, evenPromisesAllowed, speedPromise) {
         var promiseButton = $('<button id="makePromiseButton'+i+'" value="'+i+'"></button>').addClass('btn btn-primary makePromiseButton').text(i);
         node.append(promiseButton);
         if (evenPromisesAllowed || !isEvenPromise(myRound, i)) {
+            promiseButton.addClass(' validPromiseButton');
+            promiseButton.prop('disabled', false);
             $('#makePromiseButton'+i).on('click', function() {
                 $('.makePromiseButton').off('click');
                 deleteIntervaller();
@@ -351,6 +356,7 @@ function initPromise(myRound, evenPromisesAllowed, speedPromise) {
             });
         } else {
             promiseButton.addClass('disabled');
+            promiseButton.prop('disabled', true);
         }
     }
 
