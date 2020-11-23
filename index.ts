@@ -409,7 +409,8 @@ try {
                 var resultObj = {
                     speedOk: false,
                     fullSpeedPromises: false,
-                    round: null
+                    round: null,
+                    debug: null,
                 }
 
                 const database = mongoUtil.getDb();
@@ -422,7 +423,6 @@ try {
                      };
                 var gameInDb = await collection.findOne(query);
                 if (gameInDb !== null && gameInDb.speedPromise) {
-                    //var promiseInt = parseInt(promiseDetails.promise, 10);
                     var playerName = pf.getPlayerNameById(speedPromiseObj.myId, gameInDb.humanPlayers);
                     for (var i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
                         var chkInd = 1 + i; // start from next to dealer
@@ -449,14 +449,23 @@ try {
 
                                         const playerRound = pf.roundToPlayer(speedPromiseObj.myId, speedPromiseObj.roundInd, gameInDb, false, false, false);
                                         resultObj.round = playerRound;
-
+                                        resultObj.debug = null;
                                         break;
+                                    } else {
+                                        resultObj.debug = 'DB error when updating speed promise';
                                     }
+                                } else {
+                                    resultObj.debug = 'Already maximum promise penalty';
                                 }
+                            } else {
+                                resultObj.debug = 'Not my promise turn';
                             }
+                        } else {
+                            resultObj.debug = 'All players have made promise';
                         }
                     }
-
+                } else {
+                    resultObj.debug = 'No game in DB';
                 }
 
                 fn(resultObj);
