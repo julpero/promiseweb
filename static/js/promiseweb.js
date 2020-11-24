@@ -301,7 +301,6 @@ function speedPromiser(myRound) {
     usedTime+= intervalTime;
     window.localStorage.setItem('usedTime', usedTime);
     if (usedTime > timerTime) {
-        // $('.card').off('click touchstart');
         $('.validPromiseButton').prop('disabled', true);
         deleteIntervaller();
         console.log('SPEEDPROMISE!');
@@ -521,6 +520,13 @@ function classToCardMapper(classStr) {
         }
     }
     return null;
+}
+
+function usedTimeOk(usedTime) {
+    if (usedTime == null || usedTime == undefined || usedTime == '') {
+        return false;
+    }
+    return true;
 }
 
 function deleteIntervaller() {
@@ -766,7 +772,13 @@ function playSpeedGamerCard(myRound) {
 }
 
 function privateSpeedGamer(myRound) {
+    if (!usedTimeOk(timerTime) || isNaN(timerTime)) {
+        alert('Oops... Something wrong with timerTime (privateSpeedGamer), please reload browser...\n\n'+timerTime);
+    }
     usedTime = parseInt(window.localStorage.getItem('usedTime'), 10);
+    if (!usedTimeOk(usedTime) || isNaN(usedTime)) {
+        alert('Oops... Something wrong with usedTime (privateSpeedGamer), please reload browser...\n\n'+usedTime);
+    }
     usedTime+= intervalTime;
     window.localStorage.setItem('usedTime', usedTime);
     if (usedTime > timerTime) {
@@ -781,13 +793,19 @@ function privateSpeedGamer(myRound) {
 
 function initPrivateSpeedTimer(cardsAbleToPlay, myRound) {
     timerTime = Math.min(Math.max(cardsAbleToPlay * 1500, 4000), Math.max(myRound.cardsInRound * 800, 4000));
+    if (!usedTimeOk(timerTime) || isNaN(timerTime)) {
+        alert('Oops... Something wrong with timerTime (initPrivateSpeedTimer), please reload browser...\n\n'+timerTime);
+    }
     console.log('timerTime (s): ', timerTime/1000);
     usedTime = window.localStorage.getItem('usedTime');
-    if (usedTime == null) {
+    if (!usedTimeOk(usedTime)) {
         usedTime = 0;
         window.localStorage.setItem('usedTime', usedTime);
     } else {
         usedTime = parseInt(usedTime, 10);
+        if (!usedTimeOk(usedTime) || isNaN(usedTime)) {
+            alert('Oops... Something wrong with usedTime (initPrivateSpeedTimer), please reload browser...\n\n'+usedTime);
+        }
     }
     drawSpeedBar(timerTime, timerTime-usedTime);
     intervaller = setInterval(privateSpeedGamer, intervalTime, myRound);
