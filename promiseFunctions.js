@@ -1,5 +1,8 @@
 var doc = require('card-deck');
 
+const speedPromiseMultiplierEven = 0.4;
+const speedPromiseMultiplierNotEven = 0.6;
+
 module.exports = {
 
     roundToPlayer: function (playerId, roundInd, thisGame, doReloadInit, newRound, gameOver) {
@@ -211,8 +214,53 @@ module.exports = {
             }
         });
         return retVal;
+    },
+
+    speedPromiseSolver: function (round, i) {
+        var speedPromiseTotal = 0;
+        if (round.roundPlayers[i].speedPromisePoints == 1) {
+            // player has made speed promise
+            if (round.roundPlayers[i].promise == round.roundPlayers[i].keeps) {
+                // speed promise is kept
+                // speed promise is 0.3 times (even round) or 0.6 times 
+                speedPromiseTotal = Math.ceil(round.roundPlayers[i].points * (isEvenRound(round) ? speedPromiseMultiplierEven : speedPromiseMultiplierNotEven));
+            } else {
+                // speed promise went wrong
+                // penalty is half of it what player may have got if speed promise is kept, including bonus
+                var pointsIfKept = 0;
+                if (round.roundPlayers[i].promise == 0) {
+                    if (round.cardsInRound > 5) {
+                        pointsIfKept = Math.ceil(15 * (isEvenRound(round) ? 1 + speedPromiseMultiplierEven : 1 + speedPromiseMultiplierNotEven));
+                    } else {
+                        pointsIfKept = Math.ceil(5 * (isEvenRound(round) ? 1 + speedPromiseMultiplierEven : 1 + speedPromiseMultiplierNotEven));
+                    }
+                } else {
+                    pointsIfKept = Math.ceil((10 + round.roundPlayers[i].promise) * (isEvenRound(round) ? 1 + speedPromiseMultiplierEven : 1 + speedPromiseMultiplierNotEven));
+                }
+                speedPromiseTotal = Math.ceil(-0.5 * pointsIfKept);
+            }
+        } else if (round.roundPlayers[i].speedPromisePoints == 0) {
+            // no changes to points
+        } else if (round.roundPlayers[i].speedPromisePoints < 0) {
+            // player promise went to penalties
+            speedPromiseTotal = round.roundPlayers[i].speedPromisePoints; // speedPromisePoints are already negative
+        }
+
+        return speedPromiseTotal;
     }
 
+}
+
+function isEvenRound(round) {
+    return round.totalPromise == round.cardsInRound;
+}
+
+function isOverPromisedRound(round) {
+    return round.totalPromise > round.cardsInRound;
+}
+
+function isUnderPromisedRound(round) {
+    return round.totalPromise < round.cardsInRound;
 }
 
 function showTrumpCard(thisGame, roundInd) {
@@ -253,6 +301,7 @@ function getRoundPlayers(myName, round, showPromises) {
             keeps: player.keeps,
             cardPlayed: getPlayerPlayedCard(player.name, round.cardsPlayed),
             speedPromisePoints: player.speedPromisePoints,
+            speedPromiseTotal: player.speedPromiseTotal,
         });
     });
     return players;
@@ -397,6 +446,7 @@ function getPromiseTable(thisGame) {
                 keep: thisGame.game.rounds[j].roundPlayers[i].keeps,
                 points: thisGame.game.rounds[j].roundPlayers[i].points,
                 speedPromisePoints: thisGame.game.rounds[j].roundPlayers[i].speedPromisePoints,
+                speedPromiseTotal: thisGame.game.rounds[j].roundPlayers[i].speedPromiseTotal,
             });
             if (i == 0) {
                 rounds.push({
@@ -444,6 +494,7 @@ function initRound(roundIndex, cardsInRound, players, speedPromise) {
             cardsToDebug: sortedPlayerCards,
             type: player.type,
             speedPromisePoints: speedPromise ? 1 : null,
+            speedPromiseTotal: null,
         });
     });
 

@@ -301,7 +301,6 @@ function speedPromiser(myRound) {
     usedTime+= intervalTime;
     window.localStorage.setItem('usedTime', usedTime);
     if (usedTime > timerTime) {
-        // $('.card').off('click touchstart');
         $('.validPromiseButton').prop('disabled', true);
         deleteIntervaller();
         console.log('SPEEDPROMISE!');
@@ -341,8 +340,9 @@ function initPromise(myRound, evenPromisesAllowed, speedPromise) {
             promiseButton.addClass(' validPromiseButton');
             promiseButton.prop('disabled', false);
             $('#makePromiseButton'+i).on('click', function() {
-                $('.makePromiseButton').off('click');
                 deleteIntervaller();
+                $('.makePromiseButton').off('click');
+                $('.validPromiseButton').prop('disabled', true);
                 var promiseDetails = { gameId: myRound.gameId,
                     roundInd: myRound.roundInd,
                     myId: window.localStorage.getItem('uUID'),
@@ -422,7 +422,7 @@ function showPlayerPromises(myRound, showPromise, showSpeedPromise) {
         var tableIdx = otherPlayerMapper(idx, myRound.players);
         if (player.promise != null) {
             $('#player'+tableIdx+'Keeps').html('k: '+player.keeps);
-            var speedPromiseStr = showSpeedPromise ? ' ('+(player.speedPromisePoints == 1 ? '*1.5' : player.speedPromisePoints)+')' : '';
+            var speedPromiseStr = showSpeedPromise ? ' ('+(player.speedPromisePoints == 1 ? '+' : player.speedPromisePoints)+')' : '';
             if (!showPromise && tableIdx != 0) {
                 if (showSpeedPromise) $('#player'+tableIdx+'Promised').html('p: '+speedPromiseStr);
                 return;
@@ -432,17 +432,17 @@ function showPlayerPromises(myRound, showPromise, showSpeedPromise) {
             if (player.promise == player.keeps) {
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseOver');
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseUnder');
-                if (!$('#player'+tableIdx+'Keeps').hasClass('gamePromiseKeeping')) $('#player'+tableIdx+'Keeps').addClass('gamePromiseKeeping');
+                $('#player'+tableIdx+'Keeps').addClass('gamePromiseKeeping');
             }
             if (player.promise < player.keeps) {
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseKeeping');
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseUnder');
-                if (!$('#player'+tableIdx+'Keeps').hasClass('gamePromiseOver')) $('#player'+tableIdx+'Keeps').addClass('gamePromiseOver');
+                $('#player'+tableIdx+'Keeps').addClass('gamePromiseOver');
             }
             if (player.promise > player.keeps) {
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseKeeping');
                 $('#player'+tableIdx+'Keeps').removeClass('gamePromiseOver');
-                if (!$('#player'+tableIdx+'Keeps').hasClass('gamePromiseUnder')) $('#player'+tableIdx+'Keeps').addClass('gamePromiseUnder');
+                $('#player'+tableIdx+'Keeps').addClass('gamePromiseUnder');
             }
             $('#player'+tableIdx+'ProgressBar').empty();
             $('#player'+tableIdx+'ProgressBar').append(drawPromiseAsProgress(myRound.cardsInRound, player.promise, player.keeps));
@@ -520,6 +520,13 @@ function classToCardMapper(classStr) {
         }
     }
     return null;
+}
+
+function usedTimeOk(usedTime) {
+    if (usedTime == null || usedTime == undefined || usedTime == '') {
+        return false;
+    }
+    return true;
 }
 
 function deleteIntervaller() {
@@ -765,7 +772,13 @@ function playSpeedGamerCard(myRound) {
 }
 
 function privateSpeedGamer(myRound) {
+    if (!usedTimeOk(timerTime) || isNaN(timerTime)) {
+        alert('Oops... Something wrong with timerTime (privateSpeedGamer), please reload browser...\n\n'+timerTime);
+    }
     usedTime = parseInt(window.localStorage.getItem('usedTime'), 10);
+    if (!usedTimeOk(usedTime) || isNaN(usedTime)) {
+        alert('Oops... Something wrong with usedTime (privateSpeedGamer), please reload browser...\n\n'+usedTime);
+    }
     usedTime+= intervalTime;
     window.localStorage.setItem('usedTime', usedTime);
     if (usedTime > timerTime) {
@@ -780,13 +793,19 @@ function privateSpeedGamer(myRound) {
 
 function initPrivateSpeedTimer(cardsAbleToPlay, myRound) {
     timerTime = Math.min(Math.max(cardsAbleToPlay * 1500, 4000), Math.max(myRound.cardsInRound * 800, 4000));
+    if (!usedTimeOk(timerTime) || isNaN(timerTime)) {
+        alert('Oops... Something wrong with timerTime (initPrivateSpeedTimer), please reload browser...\n\n'+timerTime);
+    }
     console.log('timerTime (s): ', timerTime/1000);
     usedTime = window.localStorage.getItem('usedTime');
-    if (usedTime == null) {
+    if (!usedTimeOk(usedTime)) {
         usedTime = 0;
         window.localStorage.setItem('usedTime', usedTime);
     } else {
         usedTime = parseInt(usedTime, 10);
+        if (!usedTimeOk(usedTime) || isNaN(usedTime)) {
+            alert('Oops... Something wrong with usedTime (initPrivateSpeedTimer), please reload browser...\n\n'+usedTime);
+        }
     }
     drawSpeedBar(timerTime, timerTime-usedTime);
     intervaller = setInterval(privateSpeedGamer, intervalTime, myRound);
@@ -969,21 +988,25 @@ function initPromiseTable(promiseTable) {
                 }
             }
             var promise = promiseTable.promisesByPlayers[i][j];
+            var speedPromiseStr = promise.speedPromisePoints != null && promise.speedPromisePoints != 0 ? (promise.speedPromisePoints == 1 ? '+' : promise.speedPromisePoints) : '';
             var promiseStr = (promise != null) ? promise.promise : '&nbsp;';
             $('#player'+i+'Prom'+j).html(promiseStr);
             if (promise.points != null) {
+                var tooltipStr = "";
                 if (promise.keep == promise.promise) {
-                    if (!$('#player'+i+'Prom'+j).hasClass('promiseKept')) $('#player'+i+'Prom'+j).addClass('promiseKept');
+                    $('#player'+i+'Prom'+j).addClass('promiseKept');
                     playerKept++;
                 } else if (promise.keep > promise.promise) {
-                    if (!$('#player'+i+'Prom'+j).hasClass('promiseOver')) $('#player'+i+'Prom'+j).addClass('promiseOver');
-                    $('#player'+i+'Prom'+j).tooltip({title: "won: " + promise.keep + "/" + promise.promise});
+                    $('#player'+i+'Prom'+j).addClass('promiseOver');
+                    tooltipStr = 'won: ' + promise.keep + '/' + promise.promise;
                     playerOver++;
                 } else {
-                    if (!$('#player'+i+'Prom'+j).hasClass('promiseUnder')) $('#player'+i+'Prom'+j).addClass('promiseUnder');
-                    $('#player'+i+'Prom'+j).tooltip({title: "won: " + promise.keep + "/" + promise.promise});
+                    $('#player'+i+'Prom'+j).addClass('promiseUnder');
+                    tooltipStr = 'won: ' + promise.keep + '/' + promise.promise;
                     playerUnder++;
                 }
+                if (speedPromiseStr != '') tooltipStr+= ' ('+speedPromiseStr+')';
+                $('#player'+i+'Prom'+j).tooltip({title: tooltipStr});
             }
         }
         $('#player'+i+'PromiseName').tooltip({title: "kept: " + playerKept + " / over: " + playerOver + " / under: " + playerUnder});
@@ -1000,6 +1023,7 @@ function initScoreBoard(promiseTable, gameOver) {
             var currentPoints = promiseTable.promisesByPlayers[i][j].points;
             if (currentPoints != null) {
                 var speedPromisePoints = promiseTable.promisesByPlayers[i][j].speedPromisePoints;
+                var speedPromiseTotal = promiseTable.promisesByPlayers[i][j].speedPromiseTotal;
                 var tooltipStr = 'Total '+currentPoints;
                 if (currentPoints != 0) {
                     playerPoints+= currentPoints;
@@ -1011,10 +1035,10 @@ function initScoreBoard(promiseTable, gameOver) {
                 }
                 if (speedPromisePoints == 1) {
                     $('#player'+i+'Points'+j).addClass('speedPromiseBonus');
-                    tooltipStr+= (currentPoints > 0) ? ', including '+Math.ceil(0.5 * currentPoints)+' promise bonus' : ', missed promise bonus';
+                    tooltipStr+= (currentPoints > 0) ? ', including '+ speedPromiseTotal +' promise bonus' : ', missed promise bonus';
                 } else if (speedPromisePoints < 0) {
                     $('#player'+i+'Points'+j).addClass('speedPromisePenalty');
-                    tooltipStr+= ', including '+speedPromisePoints+' promise penalty'
+                    tooltipStr+= ', including '+ speedPromiseTotal +' promise penalty'
                 }
                 $('#player'+i+'Points'+j).tooltip({title: tooltipStr});
             }

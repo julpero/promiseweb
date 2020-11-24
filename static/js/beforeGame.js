@@ -218,9 +218,13 @@ function initLeavingButtons() {
         var leaveGameObj = { gameId: $('#currentGameId').val(), playerId: $('#leavingUId').val()};
         socket.emit('leave ongoing game', leaveGameObj, function(retVal) {
             if (retVal.leavingResult == 'LEAVED') {
+                deleteIntervaller();
+                $('.validPromiseButton').prop('disabled', true);
+                $('.makePromiseButton').off('click');
+                $('.card').off('click touchstart');
                 alert('You have now left the game. Please click OK and then refresh this page.');
             } else {
-                alert('Something wen\'t wrong! Try to refresh page and see what happens...');
+                alert('Something went wrong! Try to refresh page and see what happens...');
             }
         });
     });
