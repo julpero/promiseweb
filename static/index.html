@@ -133,54 +133,78 @@
                             </label>
                             <input type="text" class="form-control" id="newGameMyName">
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="noEvenPromises">
-                            <label class="form-check-label" for="noEvenPromises">
-                                Do not allow even promises
-                            </label>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="noEvenPromises">
+                                    <label class="form-check-label" for="noEvenPromises">
+                                        Do not allow even promises
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="hidePromiseRound">
+                                    <label class="form-check-label" for="hidePromiseRound">
+                                        Hidden promise round
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="hidePromiseRound">
-                            <label class="form-check-label" for="hidePromiseRound">
-                                Hidden promise round
-                            </label>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="onlyTotalPromise">
+                                    <label class="form-check-label" for="onlyTotalPromise">
+                                        Show only total promises
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="mustTrump">
+                                    <label class="form-check-label" for="mustTrump">
+                                        Must play trump
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="onlyTotalPromise">
-                            <label class="form-check-label" for="onlyTotalPromise">
-                                Show only total promises
-                            </label>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="hiddenTrump">
+                                    <label class="form-check-label" for="hiddenTrump">
+                                        Trump is hidden when promising
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="speedPromise">
+                                    <label class="form-check-label" for="speedPromise">
+                                        Speed promise
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="mustTrump">
-                            <label class="form-check-label" for="mustTrump">
-                                Must play trump
-                            </label>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="privateSpeedGame">
+                                    <label class="form-check-label" for="privateSpeedGame">
+                                        Private speed game
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <!-- <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="privateSpeedGame">
+                                    <label class="form-check-label" for="publicSpeedGame">
+                                        Public speed game
+                                    </label>
+                                </div> -->
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="hiddenTrump">
-                            <label class="form-check-label" for="hiddenTrump">
-                                Trump is hidden when promising
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="speedPromise">
-                            <label class="form-check-label" for="speedPromise">
-                                Speed promise
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="privateSpeedGame">
-                            <label class="form-check-label" for="privateSpeedGame">
-                                Private speed game
-                            </label>
-                        </div>
-                        <!-- <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="privateSpeedGame">
-                            <label class="form-check-label" for="publicSpeedGame">
-                                Public speed game
-                            </label>
-                        </div> -->
                         <div class="form-group">
                             <label for="newGamePassword">
                                 Password for new game, leave empty if this is a public game
@@ -318,6 +342,7 @@
         <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+        <script src="/js/common.js"></script>
         <script src="/js/tableLayouts.js"></script>
         <script src="/js/beforeGame.js"></script>
         <script src="/js/promiseweb.js"></script>
