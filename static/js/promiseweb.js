@@ -523,7 +523,7 @@ function classToCardMapper(classStr) {
 }
 
 function usedTimeOk(usedTime) {
-    if (usedTime == null || usedTime == undefined || usedTime == '') {
+    if (usedTime == null || usedTime == undefined || usedTime === '') {
         return false;
     }
     return true;
