@@ -83,7 +83,6 @@ function revealTrumpCard(trumpCard) {
 }
 
 function drawTrumpCard(myRound) {
-    debugger
     var trumpCard = myRound.trumpCard;
     var cardsToPlayers = myRound.players.length * myRound.cardsInRound;
     var $deckDiv = document.getElementById('trumpDiv');
