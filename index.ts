@@ -720,6 +720,37 @@ try {
                 fn(games);
                 console.log(games);
             });
+
+            // reporting functiions
+            socket.on('get games for report', async (data, fn) => {
+                console.log('start to get games');
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const query = { gameStatus: 2 };
+                const cursor = await collection.find(query);
+    
+                var games = [];
+                await cursor.forEach(function(val) {
+                    games.push({
+                        id: val._id.toString(),
+                        created: val.createDateTime,
+                        startRound: val.startRound,
+                        turnRound: val.turnRound,
+                        endRound: val.endRound,
+                        humanPlayers: pf.parsedHumanPlayers(val.humanPlayers),
+                        evenPromisesAllowed: val.evenPromisesAllowed,
+                        visiblePromiseRound: val.visiblePromiseRound,
+                        onlyTotalPromise: val.onlyTotalPromise,
+                        freeTrump: val.freeTrump,
+                        hiddenTrump: val.hiddenTrump,
+                        speedPromise: val.speedPromise,
+                        privateSpeedGame: val.privateSpeedGame,
+                    });
+                });
+    
+                fn(games);
+            });
+                
         });
     });
 } catch (error) {
