@@ -26,6 +26,9 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
         <!-- <link rel="stylesheet" type="text/css" href="/css/cardGallery.css"> -->
         <!-- <link rel="stylesheet" type="text/css" href="/css/cardTable.css"> -->
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript">
+        </script>
     </head>
     <body>
         
@@ -38,14 +41,15 @@
                     <a class="btn btn-primary" data-toggle="collapse" href="#chooseGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         One game
                     </a>
-                    <div class="collapse" id="chooseGameCollapse"></div>
                 </div>
                 <div class="col">
-                    <a class="btn btn-primary" data-toggle="collapse" href="#createGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary" data-toggle="collapse" href="#averageReportCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Averages
                     </a>
                 </div>
             </div>
+            <div class="collapse" id="chooseGameCollapse"></div>
+            <div class="collapse" id="averageReportCollapse"></div>
         </div>
 
         <script src="/socket.io/socket.io.js"></script>
@@ -57,7 +61,9 @@
         <script src="/js/report.js"></script>
         <script type="text/javascript">
             const socket = io();
-            mainInit();
+            // mainInit();
+            google.charts.load('current', {'packages':['bar']});
+            google.charts.setOnLoadCallback(mainInit);
         </script>
 
     </body>

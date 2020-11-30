@@ -721,7 +721,8 @@ try {
                 console.log(games);
             });
 
-            // reporting functiions
+            /* reporting functions */
+
             socket.on('get games for report', async (data, fn) => {
                 console.log('start to get games');
                 const database = mongoUtil.getDb();
@@ -750,7 +751,46 @@ try {
     
                 fn(games);
             });
-                
+            
+            socket.on('get average report', async (data, fn) => {
+                console.log('start to get games');
+                var averageReport = {
+                    gamesPlayed: null,
+                };
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const aggregation = [
+                    {$match: {
+                        gameStatus: {$eq: 2}
+                    }},
+                    {$unwind: {
+                        path: "$humanPlayers",
+                        includeArrayIndex: 'string',
+                        preserveNullAndEmptyArrays: true
+                    }},
+                    {$group: {
+                        _id: "$humanPlayers.name",
+                        games: {
+                        $push : "$$ROOT"
+                        },
+                        count: {$sum:1}
+                    }},
+                    {$sort: {
+                        _id: 1
+                    }}
+                ];
+                const cursor = await collection.aggregate(aggregation);
+    
+                var games = [];
+                await cursor.forEach(function(val) {
+                    games.push(val);
+                });
+
+                averageReport.gamesPlayed = games;
+    
+                fn(averageReport);
+            });
+            
         });
     });
 } catch (error) {
