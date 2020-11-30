@@ -720,6 +720,77 @@ try {
                 fn(games);
                 console.log(games);
             });
+
+            /* reporting functions */
+
+            socket.on('get games for report', async (data, fn) => {
+                console.log('start to get games');
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const query = { gameStatus: 2 };
+                const cursor = await collection.find(query);
+    
+                var games = [];
+                await cursor.forEach(function(val) {
+                    games.push({
+                        id: val._id.toString(),
+                        created: val.createDateTime,
+                        startRound: val.startRound,
+                        turnRound: val.turnRound,
+                        endRound: val.endRound,
+                        humanPlayers: pf.parsedHumanPlayers(val.humanPlayers),
+                        evenPromisesAllowed: val.evenPromisesAllowed,
+                        visiblePromiseRound: val.visiblePromiseRound,
+                        onlyTotalPromise: val.onlyTotalPromise,
+                        freeTrump: val.freeTrump,
+                        hiddenTrump: val.hiddenTrump,
+                        speedPromise: val.speedPromise,
+                        privateSpeedGame: val.privateSpeedGame,
+                    });
+                });
+    
+                fn(games);
+            });
+            
+            socket.on('get average report', async (data, fn) => {
+                console.log('start to get games');
+                var averageReport = {
+                    gamesPlayed: null,
+                };
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const aggregation = [
+                    {$match: {
+                        gameStatus: {$eq: 2}
+                    }},
+                    {$unwind: {
+                        path: "$humanPlayers",
+                        includeArrayIndex: 'string',
+                        preserveNullAndEmptyArrays: true
+                    }},
+                    {$group: {
+                        _id: "$humanPlayers.name",
+                        games: {
+                        $push : "$$ROOT"
+                        },
+                        count: {$sum:1}
+                    }},
+                    {$sort: {
+                        _id: 1
+                    }}
+                ];
+                const cursor = await collection.aggregate(aggregation);
+    
+                var games = [];
+                await cursor.forEach(function(val) {
+                    games.push(val);
+                });
+
+                averageReport.gamesPlayed = games;
+    
+                fn(averageReport);
+            });
+            
         });
     });
 } catch (error) {
