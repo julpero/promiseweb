@@ -22,9 +22,22 @@ function initAverageEvent() {
     });
 }
 
+function initNickChangeEvent() {
+    $('#chooseNickGameCollapse').on('shown.bs.collapse', function () {
+        socket.emit('get games for report', {}, function (response) {
+            showNickChanger(response);
+        });
+    });
+
+    $('#chooseNickGameCollapse').on('hidden.bs.collapse', function () {
+        $('#chooseNickGameCollapse').empty();
+    });
+}
+
 function initEvents() {
     initGameListEvent();
     initAverageEvent();
+    initNickChangeEvent();
 }
 
 function enableButtons() {
