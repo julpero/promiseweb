@@ -868,6 +868,64 @@ try {
 
                 fn(averageReport);
             });
+
+            socket.on('change nick', async (data, fn) => {
+                console.log('start to change nick');
+                var ObjectId = require('mongodb').ObjectId;
+                var searchId = new ObjectId(data.gameId);
+                const oldName = data.oldName;
+                const newName = data.newName;
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const query = {
+                    gameStatus: 2,
+                    _id: searchId,
+                };
+                const gameInDb = await collection.findOne(query);
+                var newHumanPlayers = gameInDb.humanPlayers;
+                var newGame = gameInDb.game;
+                if (gameInDb != null) {
+                    for (var i = 0; i < newHumanPlayers.length; i++) {
+                        if (newHumanPlayers[i].name == oldName) {
+                            newHumanPlayers[i].name = newName;
+                            break;
+                        }
+                    }
+                    for (var i = 0; i < newGame.playerOrder.length; i++) {
+                        if (newGame.playerOrder[i] == oldName) {
+                            newGame.playerOrder[i] = newName;
+                            break;
+                        }
+                    }
+                    for (var i = 0; i < newGame.rounds.length; i++) {
+                        for (var j = 0; j < newGame.rounds[i].roundPlayers.length; j++) {
+                            if (newGame.rounds[i].roundPlayers[j].name == oldName) {
+                                newGame.rounds[i].roundPlayers[j].name = newName;
+                                break;
+                            }
+                        }
+                        for (var j = 0; j < newGame.rounds[i].cardsPlayed.length; j++) {
+                            for (var k = 0; k < newGame.rounds[i].cardsPlayed[j].length; k++) {
+                                if (newGame.rounds[i].cardsPlayed[j][k].name == oldName) {
+                                    newGame.rounds[i].cardsPlayed[j][k].name = newName;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                }
+                const options = { upsert: true };
+                const updateDoc = {
+                    $set: {
+                        humanPlayers: newHumanPlayers,
+                        game: newGame,
+                    }
+                };
+                const result = await collection.updateOne(query, updateDoc, options);
+                
+                fn();
+            });
             
         });
     });
