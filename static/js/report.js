@@ -26,10 +26,11 @@ function showGames(gameList) {
     });
 }
 
-function showAverageGamesPlayed(reportObject) {
+function showGamesPlayed(reportObject) {
+    var reportIdName = 'gamesPlayedReport';
     var node = $('#averageReportCollapse');
     var reportRow = $('<div></div').addClass('row');
-    var reportCol = $('<div id="averageGamesPlayed"></div').addClass('col');
+    var reportCol = $('<div id="'+reportIdName+'"></div').addClass('col');
     reportRow.append(reportCol);
     node.append(reportRow);
 
@@ -43,7 +44,7 @@ function showAverageGamesPlayed(reportObject) {
         legend: { position: 'none' },
         chart: {
             title: 'Games played',
-            subtitle: 'number of games played by nickname',
+            subtitle: 'number of all games played by nickname',
         },
         axes: {
             x: {
@@ -52,11 +53,44 @@ function showAverageGamesPlayed(reportObject) {
         },
         bar: { groupWidth: "90%" }
     };
-    var chart = new google.charts.Bar(document.getElementById('averageGamesPlayed'));
+    var chart = new google.charts.Bar(document.getElementById(reportIdName));
     chart.draw(reportData, google.charts.Bar.convertOptions(options));
 }
 
+function showAveragePointsPerGames(reportObject) {
+    var reportIdName = 'averagePointsPerGamesReport';
+    var node = $('#averageReportCollapse');
+    var reportRow = $('<div></div').addClass('row');
+    var reportCol = $('<div id="'+reportIdName+'"></div').addClass('col');
+    reportRow.append(reportCol);
+    node.append(reportRow);
+
+    var reportDataArr = [['Name', 'all games', 'regular games']];
+    reportObject.forEach(function (playerGames) {
+        reportDataArr.push([playerGames._id, Math.round(playerGames.avgAll), Math.round(playerGames.avgRegular)]);
+    });
+    var reportData = new google.visualization.arrayToDataTable(reportDataArr);
+    var options = {
+        height: 400,
+        legend: { position: 'none' },
+        chart: {
+            title: 'Average points',
+            subtitle: 'average points of all and regular games played by nickname',
+        },
+        axes: {
+            x: {
+                0: { side: 'bottom', label: 'Player'} // Top x-axis.
+            }
+        },
+        bar: { groupWidth: "90%" }
+    };
+    var chart = new google.charts.Bar(document.getElementById(reportIdName));
+    chart.draw(reportData, google.charts.Bar.convertOptions(options));
+}
+
+
 function showAverages(gameObject) {
     console.log(gameObject);
-    showAverageGamesPlayed(gameObject.gamesPlayed);
+    showGamesPlayed(gameObject.gamesPlayed);
+    showAveragePointsPerGames(gameObject.averagePointsPerGames);
 }
