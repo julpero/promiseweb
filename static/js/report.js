@@ -66,12 +66,19 @@ function showGames(gameList) {
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
 
         var btnId = 'showGameButton' + game.id;
-        var showGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton').text('Show report'));
+        var showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary reportGameButton').text('Show report'));
         gameContainerDiv.append(($('<div>').addClass('col-2')).append(showGameButton));
 
         gameListContainer.append(gameContainerDiv);
-
     });
+
+    $('.reportGameButton').on('click', function() {
+        var getReportObj = { gameId: this.value };
+        socket.emit('get game report', getReportObj, function(gameReportData) {
+            console.log(gameReportData);
+            showOneGameReport(gameReportData);
+        });
+});
 }
 
 function showGamesPlayed(reportObject) {
@@ -136,6 +143,34 @@ function showAveragePointsPerGames(reportObject) {
     chart.draw(reportData, google.charts.Bar.convertOptions(options));
 }
 
+function showOneGameReport(reportObject) {
+    var reportIdName = 'oneGameReportBody';
+
+    var reportData = new google.visualization.DataTable();
+    reportData.addColumn('number', 'Round');
+    reportObject.players.forEach(function(player) {
+        reportData.addColumn('number', player);
+    });
+    reportData.addRows(reportObject.points);
+
+    var options = {
+        height: 600,
+        width: 1000,
+        legend: { position: 'right' },
+        chart: {
+            title: 'Points in game',
+            subtitle: 'cumulative points per round',
+        },
+        axes: {
+            x: {
+                0: { side: 'bottom', label: 'Round'}
+            }
+        },
+    };
+    var chart = new google.charts.Line(document.getElementById(reportIdName));
+    chart.draw(reportData, google.charts.Line.convertOptions(options));
+    $('#oneGameReportModal').modal('toggle');
+}
 
 function showAverages(gameObject) {
     console.log(gameObject);
