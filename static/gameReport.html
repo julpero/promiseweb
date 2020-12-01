@@ -24,11 +24,7 @@
 
         <title>promiseweb - Promise Card Game</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-        <!-- <link rel="stylesheet" type="text/css" href="/css/cardGallery.css"> -->
-        <!-- <link rel="stylesheet" type="text/css" href="/css/cardTable.css"> -->
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-        <script type="text/javascript">
-        </script>
     </head>
     <body>
         
@@ -83,7 +79,7 @@
         <script type="text/javascript">
             const socket = io();
             // mainInit();
-            google.charts.load('current', {'packages':['bar', 'line', 'corechart']});
+            google.charts.load('current', {'packages':['bar', 'line']});
             google.charts.setOnLoadCallback(mainInit);
         </script>
 
