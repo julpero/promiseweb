@@ -13,6 +13,7 @@ app.use(express.static('node_modules/deck-of-cards/dist'))
 app.use(express.static('node_modules/jquery-color-animation'))
 
 const pf = require(__dirname + '/promiseFunctions.js');
+const rf = require(__dirname + '/reportFunctions.js');
 const sm = require(__dirname + '/clientSocketMapper.js');
 const ai = require(__dirname + '/aiPlayer.js');
 
@@ -756,10 +757,13 @@ try {
                 console.log('start to get games');
                 var averageReport = {
                     gamesPlayed: null,
+                    averagePointsPerGames: null,
                 };
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
-                const aggregation = [
+
+                // games played
+                const aggregationA = [
                     {$match: {
                         gameStatus: {$eq: 2}
                     }},
@@ -770,8 +774,34 @@ try {
                     }},
                     {$group: {
                         _id: "$humanPlayers.name",
+                        count: {$sum:1}
+                    }},
+                    {$sort: {
+                        _id: 1
+                    }}
+                ];
+                var cursor = await collection.aggregate(aggregationA);
+    
+                var games = [];
+                await cursor.forEach(function(val) {
+                    games.push(val);
+                });
+                averageReport.gamesPlayed = games;
+
+                // average points, all games
+                const aggregationC = [
+                    {$match: {
+                        gameStatus: {$eq: 2},
+                    }},
+                    {$unwind: {
+                        path: "$humanPlayers",
+                        includeArrayIndex: 'string',
+                        preserveNullAndEmptyArrays: true
+                    }},
+                    {$group: {
+                        _id: "$humanPlayers.name",
                         games: {
-                        $push : "$$ROOT"
+                             $push : "$$ROOT"
                         },
                         count: {$sum:1}
                     }},
@@ -779,15 +809,55 @@ try {
                         _id: 1
                     }}
                 ];
-                const cursor = await collection.aggregate(aggregation);
-    
-                var games = [];
+                cursor = await collection.aggregate(aggregationC);
+                games = [];
                 await cursor.forEach(function(val) {
-                    games.push(val);
+                    games.push({
+                        _id: val._id,
+                        avgAll: rf.averagePoints(val.games, val._id),
+                        avgRegular: null,
+                    });
                 });
+                // average points, regular games
+                const aggregationB = [
+                    {$match: {
+                        gameStatus: {$eq: 2},
+                        evenPromisesAllowed: {$in: [true, null]},
+                        visiblePromiseRound: {$in: [true, null]},
+                        onlyTotalPromise: {$in: [false, null]},
+                        freeTrump: {$in: [true, null]},
+                        hiddenTrump: {$in: [false, null]},
+                        speedPromise: {$in: [false, null]},
+                        privateSpeedGame: {$in: [false, null]},
+                    }},
+                    {$unwind: {
+                        path: "$humanPlayers",
+                        includeArrayIndex: 'string',
+                        preserveNullAndEmptyArrays: true
+                    }},
+                    {$group: {
+                        _id: "$humanPlayers.name",
+                        games: {
+                             $push : "$$ROOT"
+                        },
+                        count: {$sum:1}
+                    }},
+                    {$sort: {
+                        _id: 1
+                    }}
+                ];
+                cursor = await collection.aggregate(aggregationB);
+                await cursor.forEach(function(val) {
+                    var avgRegular = rf.averagePoints(val.games, val._id);
+                    for (var i = 0; i < games.length; i++) {
+                        if (games[i]._id == val._id) {
+                            games[i].avgRegular = avgRegular;
+                            break;
+                        }
+                    }
+                });
+                averageReport.averagePointsPerGames = games;
 
-                averageReport.gamesPlayed = games;
-    
                 fn(averageReport);
             });
             
