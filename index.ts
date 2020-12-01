@@ -793,6 +793,10 @@ try {
                     {$match: {
                         gameStatus: {$eq: 2},
                     }},
+                    {$project: {
+                        "game.rounds.cardsPlayed": 0,
+                        "game.playerOrder": 0
+                    }},
                     {$unwind: {
                         path: "$humanPlayers",
                         includeArrayIndex: 'string',
@@ -829,6 +833,10 @@ try {
                         hiddenTrump: {$in: [false, null]},
                         speedPromise: {$in: [false, null]},
                         privateSpeedGame: {$in: [false, null]},
+                    }},
+                    {$project: {
+                        "game.rounds.cardsPlayed": 0,
+                        "game.playerOrder": 0
                     }},
                     {$unwind: {
                         path: "$humanPlayers",
