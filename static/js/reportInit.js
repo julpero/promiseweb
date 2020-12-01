@@ -27,7 +27,11 @@ function initEvents() {
     initAverageEvent();
 }
 
+function enableButtons() {
+    $('.report-button').removeClass('disabled');
+}
+
 function mainInit() {
     initEvents();
-    // initButtons();
+    enableButtons();
 }

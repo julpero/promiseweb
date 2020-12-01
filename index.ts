@@ -770,9 +770,9 @@ try {
                     }},
                     {$group: {
                         _id: "$humanPlayers.name",
-                        games: {
-                        $push : "$$ROOT"
-                        },
+                        // games: {
+                        //     $push : "$$ROOT"
+                        // },
                         count: {$sum:1}
                     }},
                     {$sort: {

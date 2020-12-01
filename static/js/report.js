@@ -35,11 +35,11 @@ function showAverageGamesPlayed(reportObject) {
 
     var reportDataArr = [['Name', 'Played']];
     reportObject.forEach(function (playerGames) {
-        reportDataArr.push([playerGames._id, playerGames.games.length]);
+        reportDataArr.push([playerGames._id, playerGames.count]);
     });
     var reportData = new google.visualization.arrayToDataTable(reportDataArr);
     var options = {
-        width: 800,
+        height: 400,
         legend: { position: 'none' },
         chart: {
             title: 'Games played',
