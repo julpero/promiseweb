@@ -66,11 +66,14 @@ function showGames(gameList) {
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
 
         var btnId = 'showGameButton' + game.id;
-        var showGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton').text('Show report'));
+        var showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary reportGameButton').text('Show report'));
         gameContainerDiv.append(($('<div>').addClass('col-2')).append(showGameButton));
 
         gameListContainer.append(gameContainerDiv);
+    });
 
+    $('.reportGameButton').on('click', function() {
+        getOneGameReport(this.value);
     });
 }
 
@@ -135,7 +138,6 @@ function showAveragePointsPerGames(reportObject) {
     var chart = new google.charts.Bar(document.getElementById(reportIdName));
     chart.draw(reportData, google.charts.Bar.convertOptions(options));
 }
-
 
 function showAverages(gameObject) {
     console.log(gameObject);

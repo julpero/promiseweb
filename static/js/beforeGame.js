@@ -252,12 +252,20 @@ function initChatButton() {
     });
 }
 
+function initShowReportButton() {
+    $('#showGameReportButton').on('click', function() {
+        var gameId = $('#currentGameId').val();
+        getOneGameReport(gameId);
+    });
+}
+
 function initButtons() {
     initcreateNewGameButton();
     initRulesCheck();
     initLeavingButtons();
     initJoinByIdButton();
     initChatButton();
+    initShowReportButton();
 }
 
 function initEvents() {
