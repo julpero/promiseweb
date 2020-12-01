@@ -758,6 +758,7 @@ try {
                 var retObj = {
                     players: null,
                     points: null,
+                    keeps: null,
                 };
                 var ObjectId = require('mongodb').ObjectId;
                 var searchId = new ObjectId(data.gameId);
@@ -772,10 +773,12 @@ try {
                 var players = [];
                 var totalPointsByPlayer = [];
                 var startPointsArr = [0];
+                var keepsArr = [];
                 for (var i = 0; i < gameInDb.humanPlayers.length; i++) {
                     players.push(gameInDb.humanPlayers[i].name);
                     totalPointsByPlayer[i] = 0;
                     startPointsArr.push(0);
+                    keepsArr.push(0);
                 }
                 retObj.players = players;
                 
@@ -786,10 +789,12 @@ try {
                     for (var j = 0; j < gameInDb.game.rounds[i].roundPlayers.length; j++) {
                         totalPointsByPlayer[j]+= gameInDb.game.rounds[i].roundPlayers[j].points;
                         pointsByRound.push(totalPointsByPlayer[j]);
+                        if (gameInDb.game.rounds[i].roundPlayers[j].promise == gameInDb.game.rounds[i].roundPlayers[j].keeps) keepsArr[j]++;
                     }
                     pointsArr.push(pointsByRound);
                 }
                 retObj.points = pointsArr;
+                retObj.keeps = keepsArr;
     
                 fn(retObj);
             });

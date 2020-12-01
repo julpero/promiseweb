@@ -64,6 +64,8 @@
                     </div>
                     <div class="modal-body" id="oneGameReportBody">
                     </div>
+                    <div class="modal-body" id="oneGameKeepsBody">
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
@@ -81,7 +83,7 @@
         <script type="text/javascript">
             const socket = io();
             // mainInit();
-            google.charts.load('current', {'packages':['bar', 'line']});
+            google.charts.load('current', {'packages':['bar', 'line', 'corechart']});
             google.charts.setOnLoadCallback(mainInit);
         </script>
 
