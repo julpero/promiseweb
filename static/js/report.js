@@ -1,3 +1,51 @@
+function showNickChanger(gameList) {
+    var gameListContainer = $('#chooseNickGameCollapse');
+    console.log(gameList);
+    gameList.forEach(function (game) {
+        var gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
+        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
+
+        var oldNameCol = $('<div></div>').addClass('col-2');
+        var oldNameInput = $('<input id="oldName'+game.id+'" type="text">');
+        var newNameCol = $('<div></div>').addClass('col-2');
+        var newNameInput = $('<input id="newName'+game.id+'" type="text">');
+        oldNameCol.append(oldNameInput);
+        gameContainerDiv.append(oldNameCol);
+        newNameCol.append(newNameInput);
+        gameContainerDiv.append(newNameCol);
+
+        var btnId = 'changeNick' + game.id;
+        var showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary change-nick-button').text('Change'));
+        gameContainerDiv.append(($('<div>').addClass('col-2')).append(showGameButton));
+
+        gameListContainer.append(gameContainerDiv);
+
+    });
+
+    $('.change-nick-button').on('click', function() {
+        console.log(this.value);
+        const oldName = $('#oldName'+this.value).val().trim();
+        const newName = $('#newName'+this.value).val().trim();
+
+        if (oldName != newName && newName != '') {
+            var nickChangeObj = {
+                gameId: this.value,
+                oldName: oldName ,
+                newName: newName,
+            };
+    
+            socket.emit('change nick', nickChangeObj, function() {
+                socket.emit('get games for report', {}, function (response) {
+                    $('#chooseNickGameCollapse').empty();
+                    showNickChanger(response);
+                });
+            });
+        } else {
+            alert('New name must be different than old name!');
+        }
+    });
+}
+
 function showGames(gameList) {
     var gameListContainer = $('#chooseGameCollapse');
     console.log(gameList);
