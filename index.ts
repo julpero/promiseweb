@@ -89,7 +89,7 @@ try {
                                     };
                     const games = collection.find(query);
                     await games.forEach(function (game) {
-                        game.humanPlayers.forEach( function(player) {
+                        game.humanPlayers.forEach(function(player) {
                             if (player.playerId == gameCheck.myId) {
                                 console.log('found game 0');
                                 socket.join(game._id.toString());
@@ -398,7 +398,8 @@ try {
                      };
                 const game = await collection.findOne(query);
                 if (game != null) {
-                    const playerRound = pf.roundToPlayer(getRound.myId, getRound.round, game, doReload, newRound, gameOver);
+                    const stats = (doReload || newRound || gameOver) ? await getStatistics(game) : null;
+                    const playerRound = pf.roundToPlayer(getRound.myId, getRound.round, game, stats, doReload, newRound, gameOver);
                     console.log(playerRound);
         
                     fn(playerRound);
@@ -448,7 +449,7 @@ try {
                                         var chatLine = playerName+' still thinking, speed promise: ' + gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints;
                                         io.to(speedPromiseObj.gameId).emit('new chat line', chatLine);
 
-                                        const playerRound = pf.roundToPlayer(speedPromiseObj.myId, speedPromiseObj.roundInd, gameInDb, false, false, false);
+                                        const playerRound = pf.roundToPlayer(speedPromiseObj.myId, speedPromiseObj.roundInd, gameInDb, null, false, false, false);
                                         resultObj.round = playerRound;
                                         resultObj.debug = null;
                                         break;
@@ -815,7 +816,6 @@ try {
                     }},
                     {$unwind: {
                         path: "$humanPlayers",
-                        includeArrayIndex: 'string',
                         preserveNullAndEmptyArrays: true
                     }},
                     {$group: {
@@ -845,7 +845,6 @@ try {
                     }},
                     {$unwind: {
                         path: "$humanPlayers",
-                        includeArrayIndex: 'string',
                         preserveNullAndEmptyArrays: true
                     }},
                     {$group: {
@@ -886,7 +885,6 @@ try {
                     }},
                     {$unwind: {
                         path: "$humanPlayers",
-                        includeArrayIndex: 'string',
                         preserveNullAndEmptyArrays: true
                     }},
                     {$group: {
@@ -1033,4 +1031,38 @@ async function startRound(gameInfo, roundInd) {
     }
 
     console.log('round '+roundInd+' started')
+}
+
+async function getPlayerStats(playerName) {
+    const database = mongoUtil.getDb();
+    const collection = database.collection('promiseweb');
+    const aggregationA = [
+        {$match: {
+            gameStatus: {$in: [1,2]},
+            "humanPlayers.name": {$eq: playerName}
+        }},
+        {$unwind: {
+            path: "$humanPlayers",
+            //includeArrayIndex: 'string',
+            preserveNullAndEmptyArrays: true
+        }},
+        {$group: {
+            _id: "$humanPlayers.name",
+            count: {$sum:1}
+        }},
+        {$sort: {
+            _id: 1
+        }}
+    ];
+    var cursor = await collection.aggregate(aggregationA);
+}
+
+async function getStatistics(gameInDb) {
+    var statsObj = {
+        playersKeeps: [],
+    }
+    for (var i = 0; i < gameInDb.humanPlayers.length; i++) {
+        statsObj.playersKeeps.push(gameInDb.humanPlayers[i].name);
+    }
+    return statsObj;
 }
