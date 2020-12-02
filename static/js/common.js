@@ -60,11 +60,14 @@ function showOneKeepsReport(reportObject) {
 }
 
 function getOneGameReport(gameId) {
-    var getReportObj = { gameId: gameId };
-    socket.emit('get game report', getReportObj, function(gameReportData) {
-        console.log(gameReportData);
-        showOneGameReport(gameReportData);
-        showOneKeepsReport(gameReportData);
-        $('#oneGameReportModal').modal('toggle');
+    $('#oneGameReportModal').off('shown.bs.modal');
+    $('#oneGameReportModal').on('shown.bs.modal', function() {
+        var getReportObj = { gameId: gameId };
+        socket.emit('get game report', getReportObj, function(gameReportData) {
+            console.log(gameReportData);
+            showOneGameReport(gameReportData);
+            showOneKeepsReport(gameReportData);
+        });
     });
+    $('#oneGameReportModal').modal('show');
 }
