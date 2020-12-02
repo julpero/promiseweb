@@ -57,6 +57,8 @@ function initcreateNewGameButton() {
             hiddenTrump: $('#hiddenTrump').prop('checked'),
             speedPromise: $('#speedPromise').prop('checked'),
             privateSpeedGame: $('#privateSpeedGame').prop('checked'),
+            opponentPromiseCardValue: $('#opponentPromiseCardValue').prop('checked'),
+            opponentGameCardValue: $('#opponentGameCardValue').prop('checked'),
         };
         if (validateNewGame(gameOptions)) {
             createNewGame(gameOptions);
@@ -130,6 +132,8 @@ function showGames(gameList) {
         if (game.hiddenTrump) ruleStr+= ', hidden trump';
         if (game.speedPromise) ruleStr+= ', speed promise';
         if (game.privateSpeedGame) ruleStr+= ', speed game';
+        if (game.opponentPromiseCardValue) ruleStr+= ', promise hand value';
+        if (game.opponentGameCardValue) ruleStr+= ', game hand value';
         gameContainerDiv.append($('<div>').addClass('col-2').text(ruleStr));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
         var joinBtnStatus = game.imInThisGame ? ' disabled' : '';

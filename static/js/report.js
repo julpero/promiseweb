@@ -62,6 +62,8 @@ function showGames(gameList) {
         if (game.hiddenTrump) ruleStr+= ', hidden trump';
         if (game.speedPromise) ruleStr+= ', speed promise';
         if (game.privateSpeedGame) ruleStr+= ', speed game';
+        if (game.opponentPromiseCardValue) ruleStr+= ', hand value in promise';
+        if (game.opponentGameCardValue) ruleStr+= ', hand value in game';
         gameContainerDiv.append($('<div>').addClass('col-4 report-rules').text(ruleStr));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
 

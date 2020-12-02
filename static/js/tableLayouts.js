@@ -460,6 +460,8 @@ function initRuleList(gameInfo) {
     if (gameInfo.hiddenTrump) node.append($('<li></li>').text('hidden trump'));
     if (gameInfo.speedPromise) node.append($('<li></li>').text('speed promise'));
     if (gameInfo.privateSpeedGame) node.append($('<li></li>').text('speed game'));
+    if (gameInfo.opponentPromiseCardValue) node.append($('<li></li>').text('hand value in promise'));
+    if (gameInfo.opponentGameCardValue) node.append($('<li></li>').text('hand value in game'));
 }
 
 function initSpeedBar(gameInfo) {

@@ -86,6 +86,8 @@ module.exports = {
             hiddenTrump: game.hiddenTrump != null && game.hiddenTrump,
             speedPromise: game.speedPromise != null && game.speedPromise,
             privateSpeedGame: game.privateSpeedGame != null && game.privateSpeedGame,
+            opponentPromiseCardValue: game.opponentPromiseCardValue != null && game.opponentPromiseCardValue,
+            opponentGameCardValue: game.opponentGameCardValue != null && game.opponentGameCardValue,
         };
         return gameInfo;
     },

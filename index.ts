@@ -714,6 +714,8 @@ try {
                         hiddenTrump: val.hiddenTrump,
                         speedPromise: val.speedPromise,
                         privateSpeedGame: val.privateSpeedGame,
+                        opponentPromiseCardValue: val.opponentPromiseCardValue,
+                        opponentGameCardValue: val.opponentGameCardValue,
                         imInThisGame: pf.imInThisGame(val.humanPlayers, data.myId)
                     });
                 });
@@ -747,6 +749,8 @@ try {
                         hiddenTrump: val.hiddenTrump,
                         speedPromise: val.speedPromise,
                         privateSpeedGame: val.privateSpeedGame,
+                        opponentPromiseCardValue: val.opponentPromiseCardValue,
+                        opponentGameCardValue: val.opponentGameCardValue,
                     });
                 });
     
@@ -879,6 +883,8 @@ try {
                         hiddenTrump: {$in: [false, null]},
                         speedPromise: {$in: [false, null]},
                         privateSpeedGame: {$in: [false, null]},
+                        opponentPromiseCardValue: {$in: [false, null]},
+                        opponentGameCardValue: {$in: [false, null]},
                     }},
                     {$project: {
                         "game.rounds.cardsPlayed": 0,
