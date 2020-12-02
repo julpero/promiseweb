@@ -775,7 +775,7 @@ try {
                 var startPointsArr = [0];
                 var keepsArr = [];
                 for (var i = 0; i < gameInDb.game.playerOrder.length; i++) {
-                    players.push(gameInDb.game.playerOrder[i].name);
+                    players.push(gameInDb.game.playerOrder[i].name == null ? gameInDb.game.playerOrder[i] : gameInDb.game.playerOrder[i].name);
                     totalPointsByPlayer[i] = 0;
                     startPointsArr.push(0);
                     keepsArr.push(0);
