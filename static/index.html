@@ -445,7 +445,7 @@
                         $('#myName').val(myRound.myName);
                         browserReload(myRound, gameInfo.speedPromise);
                         initSpeedBar(gameInfo);
-                        getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise);
+                        getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
                     });
                 });
 
@@ -477,7 +477,7 @@
                             initSpeedBar(gameInfo);
                             playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
                         } else {
-                            getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise);
+                            getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
                         }
                     });
                 });
@@ -552,7 +552,7 @@
                             playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
                         } else {
                             initSpeedBar(gameInfo);
-                            getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise);
+                            getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
                         }
                     });
                 });

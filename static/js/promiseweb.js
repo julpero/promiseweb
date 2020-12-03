@@ -455,10 +455,19 @@ function showPlayerPromises(myRound, showPromise, showSpeedPromise) {
     initPromiseTable(myRound.promiseTable);
 }
 
-function getPromise(myRound, evenPromisesAllowed, speedPromise) {
+function showCardValues(handValues) {
+    handValues.forEach(function(handValue) {
+        console.log(handValue);
+        var index = mapPlayerNameToTable(handValue.name);
+        $('#player'+index+'NameCol').append(' - ' + handValue.cardValues);
+    });
+}
+
+function getPromise(myRound, evenPromisesAllowed, speedPromise, opponentPromiseCardValue) {
     checkSmall(myRound.players.length);
     hideThinkings();
     showDealer(myRound);
+    // if (opponentPromiseCardValue) showCardValues(myRound.handValues);
     if (isMyPromiseTurn(myRound)) {
         showMyTurn();
         initPromise(myRound, evenPromisesAllowed, speedPromise);

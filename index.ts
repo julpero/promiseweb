@@ -19,7 +19,7 @@ const ai = require(__dirname + '/aiPlayer.js');
 
 try {
     var mongoUtil = require(__dirname + '/mongoUtil.js');
-    mongoUtil.connectToServer( async function( err, client ) {
+    mongoUtil.connectToServer(async function(err, client ) {
 
         if (err) console.log(err);
         app.get('/', (req, res) => {
