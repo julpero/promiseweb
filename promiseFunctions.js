@@ -26,6 +26,7 @@ module.exports = {
             doReloadInit: doReloadInit,
             newRound: newRound,
             gameOver: gameOver,
+            handValues: getHandValues(thisGame, roundInd),
             // round: round, // comment this when in production!
         };
     },
@@ -86,6 +87,8 @@ module.exports = {
             hiddenTrump: game.hiddenTrump != null && game.hiddenTrump,
             speedPromise: game.speedPromise != null && game.speedPromise,
             privateSpeedGame: game.privateSpeedGame != null && game.privateSpeedGame,
+            opponentPromiseCardValue: game.opponentPromiseCardValue != null && game.opponentPromiseCardValue,
+            opponentGameCardValue: game.opponentGameCardValue != null && game.opponentGameCardValue,
         };
         return gameInfo;
     },
@@ -265,6 +268,29 @@ function isUnderPromisedRound(round) {
 
 function showTrumpCard(thisGame, roundInd) {
     return (!thisGame.hiddenTrump || isRoundPromised(thisGame.game.rounds[roundInd]));
+}
+
+function getHandValues(thisGame, roundInd) {
+    var showHandValue = false;
+    
+    if (thisGame.opponentPromiseCardValue && !isRoundPromised(thisGame.game.rounds[roundInd])) showHandValue = true;
+    if (thisGame.opponentGameCardValue && isRoundPromised(thisGame.game.rounds[roundInd])) showHandValue = true;
+
+    if (showHandValue) {
+        var values = [];
+        for (var i = 0; i < thisGame.game.rounds[roundInd].roundPlayers.length; i++) {
+            var playerValues = 0;
+            for (var j = 0; j < thisGame.game.rounds[roundInd].roundPlayers[i].cards.length; j++) {
+                playerValues+= thisGame.game.rounds[roundInd].roundPlayers[i].cards[j].rank;
+            }
+            values.push({
+                name: thisGame.game.rounds[roundInd].roundPlayers[i].name,
+                cardValues: playerValues,
+            });
+        }
+        return values;
+    }
+    return null;
 }
 
 function getCurrentCardInCharge(cardsPlayed) {
