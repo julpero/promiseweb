@@ -84,7 +84,7 @@ function revealTrumpCard(trumpCard) {
 
 function drawTrumpCard(myRound) {
     var trumpCard = myRound.trumpCard;
-    var cardsToPlayers = myRound.players.length * myRound.cardsInRound + 1;
+    var cardsToPlayers = myRound.players.length * myRound.cardsInRound;
     var $deckDiv = document.getElementById('trumpDiv');
 
     var dummyDeck = Deck();
@@ -203,23 +203,18 @@ function isMyPromiseTurn(myRound) {
     return false;
 }
 
-function getThinkinDiv(type) {
-    var nodeRow = $('<div id="pulsingRow"></div>');
-    var nodeCol = $('<div id="pulsingCol"></div>').addClass('thinking'+type);
-    nodeRow.append(nodeCol);
-    return nodeRow;
-}
-
 function showThinking(id) {
-    $('#player'+id+'Thinking').append(getThinkinDiv('red'));
+    $('#playerTable'+id).addClass('thinking-red-div');
 }
 
 function showMyTurn() {
-    $('#player0Thinking').append(getThinkinDiv('green'));
+    $('#playerTable0').addClass('thinking-green-div');
 }
 
 function hideThinkings() {
     $('#pulsingRow').remove();
+    $('.thinking-red-div').removeClass('thinking-red-div');
+    $('.thinking-green-div').removeClass('thinking-green-div');
 }
 
 function showWhoIsPromising(myRound) {
@@ -455,10 +450,23 @@ function showPlayerPromises(myRound, showPromise, showSpeedPromise) {
     initPromiseTable(myRound.promiseTable);
 }
 
-function getPromise(myRound, evenPromisesAllowed, speedPromise) {
+function showCardValues(handValues) {
+    handValues.forEach(function(handValue) {
+        console.log(handValue);
+        var index = mapPlayerNameToTable(handValue.name);
+        $('#player'+index+'StatsCol1').text('hv: '+handValue.cardValues);
+    });
+}
+
+function hideCardValues() {
+    $('.hand-value-col').empty();
+}
+
+function getPromise(myRound, evenPromisesAllowed, speedPromise, opponentPromiseCardValue) {
     checkSmall(myRound.players.length);
     hideThinkings();
     showDealer(myRound);
+    if (opponentPromiseCardValue) showCardValues(myRound.handValues);
     if (isMyPromiseTurn(myRound)) {
         showMyTurn();
         initPromise(myRound, evenPromisesAllowed, speedPromise);
@@ -523,7 +531,7 @@ function classToCardMapper(classStr) {
 }
 
 function usedTimeOk(usedTime) {
-    if (usedTime == null || usedTime == undefined || usedTime == '') {
+    if (usedTime == null || usedTime == undefined || usedTime === '') {
         return false;
     }
     return true;
@@ -811,13 +819,18 @@ function initPrivateSpeedTimer(cardsAbleToPlay, myRound) {
     intervaller = setInterval(privateSpeedGamer, intervalTime, myRound);
 }
 
-function playRound(myRound, freeTrump, privateSpeedGame) {
+function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
     checkSmall(myRound.players.length);
     hideThinkings();
     hidePromise();
     showDealer(myRound);
     highlightWinningCard(myRound);
     $('#myInfoRow').show();
+    if (opponentGameCardValue) {
+        showCardValues(myRound.handValues);
+    } else {
+        hideCardValues();
+    }
     if (isMyPlayTurn(myRound)) {
         showMyTurn();
         var cardsAbleToPlay = initCardsToPlay(myRound, freeTrump);

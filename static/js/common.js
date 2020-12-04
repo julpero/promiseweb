@@ -9,14 +9,13 @@ function gamePlayersToStr(players, totalHumans, totalComputers) {
     return retStr;
 }
 
-
 function showOneGameReport(reportObject) {
     var reportIdName = 'oneGameReportBody';
     var reportData = new google.visualization.DataTable();
     reportData.addColumn('number', 'Round');
-    reportObject.players.forEach(function(player) {
-        reportData.addColumn('number', player);
-    });
+    for (var i = 0; i < reportObject.players.length; i++) {
+        reportData.addColumn('number', reportObject.players[i]);
+    }
     reportData.addRows(reportObject.points);
 
     var options = {

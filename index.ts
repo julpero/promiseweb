@@ -19,7 +19,7 @@ const ai = require(__dirname + '/aiPlayer.js');
 
 try {
     var mongoUtil = require(__dirname + '/mongoUtil.js');
-    mongoUtil.connectToServer( async function( err, client ) {
+    mongoUtil.connectToServer(async function(err, client ) {
 
         if (err) console.log(err);
         app.get('/', (req, res) => {
@@ -715,6 +715,8 @@ try {
                         hiddenTrump: val.hiddenTrump,
                         speedPromise: val.speedPromise,
                         privateSpeedGame: val.privateSpeedGame,
+                        opponentPromiseCardValue: val.opponentPromiseCardValue,
+                        opponentGameCardValue: val.opponentGameCardValue,
                         imInThisGame: pf.imInThisGame(val.humanPlayers, data.myId)
                     });
                 });
@@ -748,6 +750,8 @@ try {
                         hiddenTrump: val.hiddenTrump,
                         speedPromise: val.speedPromise,
                         privateSpeedGame: val.privateSpeedGame,
+                        opponentPromiseCardValue: val.opponentPromiseCardValue,
+                        opponentGameCardValue: val.opponentGameCardValue,
                     });
                 });
     
@@ -775,8 +779,8 @@ try {
                 var totalPointsByPlayer = [];
                 var startPointsArr = [0];
                 var keepsArr = [];
-                for (var i = 0; i < gameInDb.humanPlayers.length; i++) {
-                    players.push(gameInDb.humanPlayers[i].name);
+                for (var i = 0; i < gameInDb.game.playerOrder.length; i++) {
+                    players.push(gameInDb.game.playerOrder[i].name == null ? gameInDb.game.playerOrder[i] : gameInDb.game.playerOrder[i].name);
                     totalPointsByPlayer[i] = 0;
                     startPointsArr.push(0);
                     keepsArr.push(0);
@@ -878,6 +882,8 @@ try {
                         hiddenTrump: {$in: [false, null]},
                         speedPromise: {$in: [false, null]},
                         privateSpeedGame: {$in: [false, null]},
+                        opponentPromiseCardValue: {$in: [false, null]},
+                        opponentGameCardValue: {$in: [false, null]},
                     }},
                     {$project: {
                         "game.rounds.cardsPlayed": 0,

@@ -133,54 +133,96 @@
                             </label>
                             <input type="text" class="form-control" id="newGameMyName">
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="noEvenPromises">
-                            <label class="form-check-label" for="noEvenPromises">
-                                Do not allow even promises
-                            </label>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="noEvenPromises">
+                                    <label class="form-check-label" for="noEvenPromises">
+                                        Do not allow even promises
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="hidePromiseRound">
+                                    <label class="form-check-label" for="hidePromiseRound">
+                                        Hidden promise round
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="hidePromiseRound">
-                            <label class="form-check-label" for="hidePromiseRound">
-                                Hidden promise round
-                            </label>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="onlyTotalPromise">
+                                    <label class="form-check-label" for="onlyTotalPromise">
+                                        Show only total promises
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="mustTrump">
+                                    <label class="form-check-label" for="mustTrump">
+                                        Must play trump
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="onlyTotalPromise">
-                            <label class="form-check-label" for="onlyTotalPromise">
-                                Show only total promises
-                            </label>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="hiddenTrump">
+                                    <label class="form-check-label" for="hiddenTrump">
+                                        Trump is hidden when promising
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="speedPromise">
+                                    <label class="form-check-label" for="speedPromise">
+                                        Speed promise
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="mustTrump">
-                            <label class="form-check-label" for="mustTrump">
-                                Must play trump
-                            </label>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="privateSpeedGame">
+                                    <label class="form-check-label" for="privateSpeedGame">
+                                        Private speed game
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <!-- <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="privateSpeedGame">
+                                    <label class="form-check-label" for="publicSpeedGame">
+                                        Public speed game
+                                    </label>
+                                </div> -->
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="hiddenTrump">
-                            <label class="form-check-label" for="hiddenTrump">
-                                Trump is hidden when promising
-                            </label>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="opponentPromiseCardValue">
+                                    <label class="form-check-label" for="opponentPromiseCardValue">
+                                        Show hand value when promising
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="opponentGameCardValue">
+                                    <label class="form-check-label" for="opponentGameCardValue">
+                                        Show hand value in game
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="speedPromise">
-                            <label class="form-check-label" for="speedPromise">
-                                Speed promise
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="privateSpeedGame">
-                            <label class="form-check-label" for="privateSpeedGame">
-                                Private speed game
-                            </label>
-                        </div>
-                        <!-- <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="privateSpeedGame">
-                            <label class="form-check-label" for="publicSpeedGame">
-                                Public speed game
-                            </label>
-                        </div> -->
                         <div class="form-group">
                             <label for="newGamePassword">
                                 Password for new game, leave empty if this is a public game
@@ -403,7 +445,7 @@
                         $('#myName').val(myRound.myName);
                         browserReload(myRound, gameInfo.speedPromise);
                         initSpeedBar(gameInfo);
-                        getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise);
+                        getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
                     });
                 });
 
@@ -433,9 +475,9 @@
                             showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[gameInfo.currentRound], gameInfo.onlyTotalPromise, myRound.players);
                             revealTrumpCard(myRound.trumpCard);
                             initSpeedBar(gameInfo);
-                            playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
+                            playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame, gameInfo.opponentGameCardValue);
                         } else {
-                            getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise);
+                            getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
                         }
                     });
                 });
@@ -507,10 +549,10 @@
                         }
                         if (roundPromised(myRound)) {
                             showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[myRound.roundInd], gameInfo.onlyTotalPromise, myRound.players);
-                            playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
+                            playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame, gameInfo.opponentGameCardValue);
                         } else {
                             initSpeedBar(gameInfo);
-                            getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise);
+                            getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
                         }
                     });
                 });
