@@ -5,7 +5,7 @@ const speedPromiseMultiplierNotEven = 0.6;
 
 module.exports = {
 
-    roundToPlayer: function (playerId, roundInd, thisGame, doReloadInit, newRound, gameOver) {
+    roundToPlayer: function (playerId, roundInd, thisGame, statistics, doReloadInit, newRound, gameOver) {
         var round = thisGame.game.rounds[roundInd];
         var playerName = this.getPlayerNameById(playerId, thisGame.humanPlayers);
     
@@ -27,6 +27,7 @@ module.exports = {
             newRound: newRound,
             gameOver: gameOver,
             handValues: getHandValues(thisGame, roundInd),
+            statistics: statistics,
             // round: round, // comment this when in production!
         };
     },
