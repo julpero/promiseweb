@@ -255,7 +255,7 @@ function initTrumpTable() {
 
 function initPlayerTable(index, align, maxCards, colCount) {
     //var nodeRow = $('<div></div>').addClass('row');
-    var nodeCol = $('<div></div>').addClass('col-'+colCount+' playerTableCol');
+    var nodeCol = $('<div id="playerTable'+index+'"></div>').addClass('col-'+colCount+' playerTableCol');
 
     var row1 = $('<div id="player'+index+'row"></div>').addClass('row');
 
@@ -278,23 +278,34 @@ function initPlayerTable(index, align, maxCards, colCount) {
     col31 = $('<div></div>').addClass('col cardCol');
     col32 = $('<div></div>').addClass('col cardCol');
 
-    var cardsWonRow = $('<div></div>').addClass('row');
+    var cardsWonRow = $('<div></div>').addClass('row inner-row');
     for (var i = 0; i < maxCards; i++) {
         var classStr = (i == 0) ? 'col cardCol firstCardCol' : 'col cardCol cardWonCol';
         cardsWonRow.append($('<div id="player'+index+'CardsWon'+i+'Div"></div>').addClass(classStr));
     }
-    var playedCardRow = $('<div></div>').addClass('row');
+    var playedCardRow = $('<div></div>').addClass('row inner-row');
     
+    var statsCol = $('<div id="player'+index+'StatsCol"></div>').addClass('col');
+    var statsRow1 = $('<div></div>').addClass('row');
+    var statsCol1 = $('<div id="player'+index+'StatsCol1"></div>').addClass('col hand-value-col');
+    var statsRow2 = $('<div></div>').addClass('row');
+    var statsCol2 = $('<div id="player'+index+'StatsCol2"></div>').addClass('col');
+
+    statsRow1.append(statsCol1);
+    statsRow2.append(statsCol2);
+    statsCol.append(statsRow1);
+    statsCol.append(statsRow2);
+
     // where are promises and points aligned
     if (align == 'left') {
-        playedCardRow.append($('<div id="player'+index+'Thinking"></div>').addClass('col'));
+        playedCardRow.append(statsCol);
         if (index != 0 && index != 5) playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol playedCardCol'));
         col31.append(cardsWonRow);
         col32.append(playedCardRow);
     }
     if (align == 'right') {
         if (index != 0 && index != 5) playedCardRow.append($('<div id="player'+index+'CardPlayedDiv"></div>').addClass('col cardCol playedCardCol'));
-        playedCardRow.append($('<div id="player'+index+'Thinking"></div>').addClass('col'));
+        playedCardRow.append(statsCol);
         col31.append(playedCardRow);
         col32.append(cardsWonRow);
     }

@@ -203,23 +203,18 @@ function isMyPromiseTurn(myRound) {
     return false;
 }
 
-function getThinkinDiv(type) {
-    var nodeRow = $('<div id="pulsingRow"></div>');
-    var nodeCol = $('<div id="pulsingCol"></div>').addClass('thinking'+type);
-    nodeRow.append(nodeCol);
-    return nodeRow;
-}
-
 function showThinking(id) {
-    $('#player'+id+'Thinking').append(getThinkinDiv('red'));
+    $('#playerTable'+id).addClass('thinking-red-div');
 }
 
 function showMyTurn() {
-    $('#player0Thinking').append(getThinkinDiv('green'));
+    $('#playerTable0').addClass('thinking-green-div');
 }
 
 function hideThinkings() {
     $('#pulsingRow').remove();
+    $('.thinking-red-div').removeClass('thinking-red-div');
+    $('.thinking-green-div').removeClass('thinking-green-div');
 }
 
 function showWhoIsPromising(myRound) {
@@ -459,15 +454,19 @@ function showCardValues(handValues) {
     handValues.forEach(function(handValue) {
         console.log(handValue);
         var index = mapPlayerNameToTable(handValue.name);
-        $('#player'+index+'NameCol').append(' - ' + handValue.cardValues);
+        $('#player'+index+'StatsCol1').text('hv: '+handValue.cardValues);
     });
+}
+
+function hideCardValues() {
+    $('.hand-value-col').empty();
 }
 
 function getPromise(myRound, evenPromisesAllowed, speedPromise, opponentPromiseCardValue) {
     checkSmall(myRound.players.length);
     hideThinkings();
     showDealer(myRound);
-    // if (opponentPromiseCardValue) showCardValues(myRound.handValues);
+    if (opponentPromiseCardValue) showCardValues(myRound.handValues);
     if (isMyPromiseTurn(myRound)) {
         showMyTurn();
         initPromise(myRound, evenPromisesAllowed, speedPromise);
@@ -820,13 +819,18 @@ function initPrivateSpeedTimer(cardsAbleToPlay, myRound) {
     intervaller = setInterval(privateSpeedGamer, intervalTime, myRound);
 }
 
-function playRound(myRound, freeTrump, privateSpeedGame) {
+function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
     checkSmall(myRound.players.length);
     hideThinkings();
     hidePromise();
     showDealer(myRound);
     highlightWinningCard(myRound);
     $('#myInfoRow').show();
+    if (opponentGameCardValue) {
+        showCardValues(myRound.handValues);
+    } else {
+        hideCardValues();
+    }
     if (isMyPlayTurn(myRound)) {
         showMyTurn();
         var cardsAbleToPlay = initCardsToPlay(myRound, freeTrump);

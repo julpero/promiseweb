@@ -475,7 +475,7 @@
                             showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[gameInfo.currentRound], gameInfo.onlyTotalPromise, myRound.players);
                             revealTrumpCard(myRound.trumpCard);
                             initSpeedBar(gameInfo);
-                            playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
+                            playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame, gameInfo.opponentGameCardValue);
                         } else {
                             getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
                         }
@@ -549,7 +549,7 @@
                         }
                         if (roundPromised(myRound)) {
                             showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[myRound.roundInd], gameInfo.onlyTotalPromise, myRound.players);
-                            playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame);
+                            playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame, gameInfo.opponentGameCardValue);
                         } else {
                             initSpeedBar(gameInfo);
                             getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
