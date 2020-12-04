@@ -6,7 +6,10 @@ html {
     display: grid;
     grid-template-columns: ;
 } */
-
+.inner-row {
+    margin-right: 0px;
+    margin-left: 0px;
+}
 .myCardsRowClass {
     padding-left: 60px;
 }
@@ -202,3 +205,35 @@ html {
     }
 }
 
+.thinking-red-div {
+    border-color: rgba(255, 82, 82, 1);
+    outline: rgba(255, 82, 82, 1) solid 1px;
+    animation: pulseRedBorder 2s infinite;
+}
+@keyframes pulseRedBorder {
+    0% {
+        outline: rgba(255, 82, 82, 1) solid 1px;
+    }
+    50% {
+        outline-color: rgba(255, 82, 82, 0.4);
+    }
+    100% {
+        outline: rgba(255, 82, 82, 0) solid 15px;
+    }
+}
+.thinking-green-div {
+    border-color: rgb(00, 255, 00);
+    outline: rgba(00, 255, 00, 1) solid 1px;
+    animation: pulseGreenBorder 2s infinite;
+}
+@keyframes pulseGreenBorder {
+    0% {
+        outline: rgba(00, 255, 00, 1) solid 1px;
+    }
+    50% {
+        outline-color: rgba(00, 255, 00, 0.4);
+    }
+    100% {
+        outline: rgba(00, 255, 00, 0) solid 15px;
+    }
+}
