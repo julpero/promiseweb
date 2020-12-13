@@ -1,4 +1,3 @@
-
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -819,6 +818,69 @@ function initPrivateSpeedTimer(cardsAbleToPlay, myRound) {
     intervaller = setInterval(privateSpeedGamer, intervalTime, myRound);
 }
 
+function findMinMaxPoints(arr) {
+    let min = arr[0].avgPoints, max = arr[0].avgPoints;
+  
+    for (let i = 1, len=arr.length; i < len; i++) {
+        let v = arr[i].avgPoints;
+        min = (v < min) ? v : min;
+        max = (v > max) ? v : max;
+    }
+    return [min, max];
+}
+
+function showPlayerAvgPointsGraph(playerName, playerAvgPoints, min, max) {
+    const playerInd = mapPlayerNameToTable(playerName);
+    const reportColName = 'player'+playerInd+'StatsCol2';
+    var reportDataArr = [['Name', 'AvgPoints']];
+    reportDataArr.push([playerName, playerAvgPoints]);
+    const reportData = new google.visualization.arrayToDataTable(reportDataArr);
+    const options = {
+        height: 20,
+        theme: 'maximized',
+        legend: { position: 'none' },
+        hAxis: {
+            textPosition: 'none',
+            minValue: min,
+            maxValue: max,
+        },
+        vAxis: {
+            textPosition: 'none',
+            title: '',
+        },
+    };
+
+    var chart = new google.visualization.BarChart(document.getElementById(reportColName));
+    chart.draw(reportData, options);
+}
+
+function showPlayerAvgPoints(playerInd, playerAvgPoints, min, max) {
+    const reportColName = 'player'+playerInd+'StatsCol2';
+    $('#'+reportColName).text('avg: '+playerAvgPoints.toFixed(2));
+}
+
+function showPlayerKeepPrecent(playerInd, keeps, total) {
+    const reportColName = 'player'+playerInd+'StatsCol3';
+    const keepPercent = 100 * (keeps / total);
+    $('#'+reportColName).text('kp: '+keepPercent.toFixed(1)+'%');
+}
+
+function showPlayerKeepStats(playerKeeps) {
+    const minMaxPoints = findMinMaxPoints(playerKeeps);
+    const minAvgPoints = Math.min(0, minMaxPoints[0]);
+    const maxAvgPoints = minMaxPoints[1];
+    playerKeeps.forEach(function (playerKeep) {
+        const playerInd = mapPlayerNameToTable(playerKeep._id);
+        showPlayerAvgPoints(playerInd, playerKeep.avgPoints, minAvgPoints, maxAvgPoints);
+        showPlayerKeepPrecent(playerInd, playerKeep.keeps, playerKeep.total);
+    });
+}
+
+function showLiveStats(myRound) {
+    if (myRound.statistics == null) return;
+    if (myRound.statistics.playersKeeps != null) showPlayerKeepStats(myRound.statistics.playersKeeps);
+}
+
 function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
     checkSmall(myRound.players.length);
     hideThinkings();
@@ -839,6 +901,7 @@ function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) 
         showWhoIsPlaying(myRound);
         dimMyCards(myRound, 0.8);
     }
+    showLiveStats(myRound)
 }
 
 function getCardFromDiv(divStr) {

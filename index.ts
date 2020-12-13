@@ -398,7 +398,8 @@ try {
                      };
                 const game = await collection.findOne(query);
                 if (game != null) {
-                    const stats = (doReload || newRound || gameOver) ? await getStatistics(game) : null;
+                    var playerName = pf.getPlayerNameById(getRound.myId, game.humanPlayers);
+                    const stats = (playerName == 'ju-ha' && (doReload || newRound || gameOver)) ? await getStatistics(game) : null;
                     const playerRound = pf.roundToPlayer(getRound.myId, getRound.round, game, stats, doReload, newRound, gameOver);
                     console.log(playerRound);
         
@@ -1040,27 +1041,64 @@ async function startRound(gameInfo, roundInd) {
 }
 
 async function getPlayerStats(playerName) {
+    var stats = null;
     const database = mongoUtil.getDb();
     const collection = database.collection('promiseweb');
-    const aggregationA = [
-        {$match: {
-            gameStatus: {$in: [1,2]},
-            "humanPlayers.name": {$eq: playerName}
-        }},
-        {$unwind: {
-            path: "$humanPlayers",
-            //includeArrayIndex: 'string',
-            preserveNullAndEmptyArrays: true
-        }},
-        {$group: {
-            _id: "$humanPlayers.name",
-            count: {$sum:1}
-        }},
-        {$sort: {
-            _id: 1
-        }}
+    const aggregationA = [{$match: {
+        gameStatus: {$in: [1, 2]},
+        "humanPlayers.name": {$eq: playerName}
+      }}, {$unwind: {
+        path: "$game.rounds",
+        includeArrayIndex: 'roundInd',
+        preserveNullAndEmptyArrays: true
+      }}, {$match: {
+        "game.rounds.roundStatus": {$eq: 2},
+      }}, {$unwind: {
+        path: "$game.rounds.roundPlayers",
+        preserveNullAndEmptyArrays: true
+      }}, {$match: {
+        "game.rounds.roundPlayers.name": {$eq: playerName},
+      }}, {$addFields: {
+        "roundPlayerName": "$game.rounds.roundPlayers.name",
+        "roundPlayerPromise": "$game.rounds.roundPlayers.promise",
+        "roundPlayerKeep": "$game.rounds.roundPlayers.keeps",
+        "roundPlayerPoints": "$game.rounds.roundPlayers.points",
+        "roundKept": { $eq: ["$game.rounds.roundPlayers.keeps", "$game.rounds.roundPlayers.promise"]}
+      }}, {$project: {
+        "roundPlayerName": 1,
+        "roundPlayerPromise": 1,
+        "roundPlayerKeep": 1,
+        "roundPlayerPoints": 1,
+        "roundKept": 1,
+        "roundInd": 1,
+        "createDateTime": 1
+      }}, {$sort: {
+        "createDateTime": -1,
+        "roundInd": -1
+      }}, {$limit: 100}, {$group: {
+        _id: "$roundPlayerName",
+        "avgPoints": {
+          $avg: "$roundPlayerPoints",
+        },
+        "keeps": {
+          $sum: {
+            $cond: {
+              if: {
+                $eq: [ "$roundKept", true ]
+              },
+              then: 1,
+              else: 0
+            }
+          }
+        },
+        "total": {$sum: 1}
+      }}
     ];
     var cursor = await collection.aggregate(aggregationA);
+    await cursor.forEach(function(stat) {
+        stats = stat;
+    });
+    return stats;
 }
 
 async function getStatistics(gameInDb) {
@@ -1068,7 +1106,7 @@ async function getStatistics(gameInDb) {
         playersKeeps: [],
     }
     for (var i = 0; i < gameInDb.humanPlayers.length; i++) {
-        statsObj.playersKeeps.push(gameInDb.humanPlayers[i].name);
+        statsObj.playersKeeps.push(await getPlayerStats(gameInDb.humanPlayers[i].name));
     }
     return statsObj;
 }
