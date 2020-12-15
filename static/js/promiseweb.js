@@ -829,28 +829,58 @@ function findMinMaxPoints(arr) {
     return [min, max];
 }
 
-function showPlayerAvgPointsGraph(playerName, playerAvgPoints, min, max) {
-    const playerInd = mapPlayerNameToTable(playerName);
-    const reportColName = 'player'+playerInd+'StatsCol2';
-    var reportDataArr = [['Name', 'AvgPoints']];
-    reportDataArr.push([playerName, playerAvgPoints]);
+function showPlayersAvgPointsStats(playerKeeps) {
+    const reportColName = 'avgPointsStats';
+    var reportDataArr = [['Player', 'Avg points in all previous games', {type: "string", role: "tooltip"}]];
+    playerKeeps.forEach(function(playerKeep) {
+        reportDataArr.push([playerKeep._id, playerKeep.avgPoints, 'average of '+ playerKeep.avgPoints.toFixed(2) +'\nin all previous '+ playerKeep.total +' games']);
+    });
+    
     const reportData = new google.visualization.arrayToDataTable(reportDataArr);
     const options = {
-        height: 20,
-        theme: 'maximized',
+        height: 145,
+        // theme: 'maximized',
+        chartArea: {width: '100%', height: 145},
         legend: { position: 'none' },
         hAxis: {
-            textPosition: 'none',
-            minValue: min,
-            maxValue: max,
+            textPosition: 'in',
         },
         vAxis: {
-            textPosition: 'none',
+            textPosition: 'in',
+            minValue: 0,
             title: '',
         },
     };
 
-    var chart = new google.visualization.BarChart(document.getElementById(reportColName));
+    var chart = new google.visualization.ColumnChart(document.getElementById(reportColName));
+    chart.draw(reportData, options);
+}
+
+function showPlayersKeepPercentStats(playerKeeps) {
+    const reportColName = 'keepPercentStats';
+    var reportDataArr = [['Player', 'Keep percent in all previous games', {type: "string", role: "tooltip"}]];
+    playerKeeps.forEach(function(playerKeep) {
+        const keepPercentage = 100 * (playerKeep.keeps/playerKeep.total);
+        reportDataArr.push([playerKeep._id, keepPercentage, 'keep percentage '+ (keepPercentage).toFixed(1) +'%\nin all previous '+ playerKeep.total +' games']);
+    });
+    
+    const reportData = new google.visualization.arrayToDataTable(reportDataArr);
+    const options = {
+        height: 145,
+        // theme: 'maximized',
+        chartArea: {width: '100%', height: 145},
+        legend: { position: 'none' },
+        hAxis: {
+            textPosition: 'in',
+        },
+        vAxis: {
+            textPosition: 'in',
+            minValue: 0,
+            title: '',
+        },
+    };
+
+    var chart = new google.visualization.ColumnChart(document.getElementById(reportColName));
     chart.draw(reportData, options);
 }
 
@@ -878,7 +908,11 @@ function showPlayerKeepStats(playerKeeps) {
 
 function showLiveStats(myRound) {
     if (myRound.statistics == null) return;
-    if (myRound.statistics.playersKeeps != null) showPlayerKeepStats(myRound.statistics.playersKeeps);
+    if (myRound.statistics.playersKeeps != null) {
+        //showPlayerKeepStats(myRound.statistics.playersKeeps);
+        showPlayersAvgPointsStats(myRound.statistics.playersKeeps);
+        showPlayersKeepPercentStats(myRound.statistics.playersKeeps);
+    }
 }
 
 function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
