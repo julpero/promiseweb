@@ -299,20 +299,46 @@
             <div class="row fixed-bottom" style="height: 150px;">
                 <!-- container for promise table -->
 
-                <div class="col-7" id="promiseTable" style="border: 1px solid black;">
+                <div class="col-6" id="promiseTable" style="border: 1px solid black;">
                 </div>
 
-                <div class="col-3" id="chat" style="border: 1px solid black;">
+                <div class="col-4" id="chat" style="border: 1px solid black;">
                     <div class="row">
-                        <div class="col">
-                            <textarea id="chatTextArea" class="form-control chatTextBox" rows="5" readonly></textarea>
-                        </div>
-                        <div class="w-100"></div>
-                        <div class="col-10">
-                            <input type="text" id="newChatLine" class="form-control chatTextBox">
-                        </div>
                         <div class="col-2">
-                            <button type="button" class="btn btn-primary btn-sm" id="sendChatButton">&gt;</button>
+                            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                                <a class="nav-link nav-link-sm active" id="v-pills-chat-tab" data-toggle="pill" href="#v-pills-chat" role="tab" aria-controls="v-pills-chat" aria-selected="true">
+                                    Chat
+                                </a>
+                                <a class="nav-link nav-link-sm" id="v-pills-stat-tab" data-toggle="pill" href="#v-pills-stat" role="tab" aria-controls="v-pills-stat" aria-selected="false">
+                                    Stats
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-10" style="margin-top: 2px;">
+                            <div class="tab-content" id="v-pills-tabContent">
+                                <div class="tab-pane fade show active" id="v-pills-chat" role="tabpanel" aria-labelledby="v-pills-chat-tab">
+                                    <div class="row">
+                                        <div class="col">
+                                            <textarea id="chatTextArea" class="form-control chatTextBox" rows="5" readonly></textarea>
+                                        </div>
+                                        <div class="w-100"></div>
+                                        <div class="col-10">
+                                            <input type="text" id="newChatLine" class="form-control chatTextBox">
+                                        </div>
+                                        <div class="col-2">
+                                            <button type="button" class="btn btn-primary btn-sm" id="sendChatButton">&gt;</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade show active" id="v-pills-stat" role="tabpanel" aria-labelledby="v-pills-stat-tab">
+                                    <div class="row">
+                                        <div class="col-6" id="avgPointsStats">
+                                        </div>
+                                        <div class="col-6" id="keepPercentStats">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -394,7 +420,8 @@
         <script src="/jquery.animate-colors-min.js"></script>
 
         <script type="text/javascript">
-            google.charts.load('current', {'packages':['bar', 'line']});
+            google.charts.load('current', {'packages':['bar', 'line', 'corechart']});
+            google.charts.setOnLoadCallback(startMainEvents);
             const socket = io();
 
             const promiseBonusTickTime = 3000;
@@ -406,7 +433,8 @@
             var timerTime = null;
             var usedTime = null;
             var possibleCards = [];
-            $(function () {
+            //$(function () {
+            function startMainEvents () {
                 var joinedGame = null;
                 if (window.localStorage.getItem('uUID')) {
                     console.log(window.localStorage.getItem('uUID'));
@@ -436,6 +464,7 @@
                     $('#gameContainer').show();
                     initRuleList(gameInfo);
                     var getRound = {
+                        gameStarted: true,
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
                         round: 0,
@@ -573,7 +602,8 @@
                     socket.emit('check game', getRound);
                 }
 
-            });
+            // });
+            }
         </script>
     </body>
 </html>

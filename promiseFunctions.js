@@ -251,6 +251,16 @@ module.exports = {
         }
 
         return speedPromiseTotal;
+    },
+
+    debugPlayerName: function (name) {
+        switch (name) {
+            case 'ju-ha':
+            case 'Eka':
+            case 'Toka':
+                return true;
+        }
+        return false;
     }
 
 }
