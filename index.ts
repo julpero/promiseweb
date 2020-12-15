@@ -387,6 +387,7 @@ try {
                 var ObjectId = require('mongodb').ObjectId;
                 var searchId = new ObjectId(getRound.gameId);
     
+                const gameStarted = getRound.gameStarted;
                 const doReload = getRound.doReload;
                 const newRound = getRound.newRound;
                 const gameOver = getRound.gameOver;
@@ -399,7 +400,7 @@ try {
                 const game = await collection.findOne(query);
                 if (game != null) {
                     var playerName = pf.getPlayerNameById(getRound.myId, game.humanPlayers);
-                    const stats = (pf.debugPlayerName(playerName) && (doReload || newRound || gameOver)) ? await getStatistics(game) : null;
+                    const stats = (pf.debugPlayerName(playerName) && (gameStarted || doReload || newRound || gameOver)) ? await getStatistics(game) : null;
                     const playerRound = pf.roundToPlayer(getRound.myId, getRound.round, game, stats, doReload, newRound, gameOver);
                     console.log(playerRound);
         
@@ -1040,14 +1041,45 @@ async function startRound(gameInfo, roundInd) {
     console.log('round '+roundInd+' started')
 }
 
-async function getPlayerStats(playerName) {
+async function getPlayerStats(playerName, equalObj) {
     var stats = null;
+
+    const evenPromisesAllowed = equalObj == null || equalObj.evenPromisesAllowed ? [true, null] : [false];
+    const visiblePromiseRound = equalObj == null || equalObj.visiblePromiseRound ? [true, null] : [false];
+    const onlyTotalPromise = equalObj == null || !equalObj.onlyTotalPromise ? [false, null] : [true];
+    const freeTrump = equalObj == null || equalObj.freeTrump ? [true, null] : [false];
+    const hiddenTrump = equalObj == null || !equalObj.hiddenTrump ? [false, null] : [true];
+    const speedPromise = equalObj == null || !equalObj.speedPromise ? [false, null] : [true];
+    const privateSpeedGame = equalObj == null || !equalObj.privateSpeedGame ? [false, null] : [true];
+    const opponentPromiseCardValue = equalObj == null || !equalObj.opponentPromiseCardValue ? [false, null] : [true];
+    const opponentGameCardValue = equalObj == null || !equalObj.opponentGameCardValue ? [false, null] : [true];
+
     const database = mongoUtil.getDb();
     const collection = database.collection('promiseweb');
-    const aggregationA = [{$match: {
+    const match = equalObj == null
+    ? {
         gameStatus: {$in: [1, 2]},
         "humanPlayers.name": {$eq: playerName}
-      }}, {$unwind: {
+    }
+    : {
+        gameStatus: {$in: [1, 2]},
+        "humanPlayers.name": {$eq: playerName},
+        humanPlayersCount: {$eq: equalObj.humanPlayersCount},
+        startRound: {$eq: equalObj.startRound},
+        turnRound: {$eq: equalObj.turnRound},
+        endRound: {$eq: equalObj.endRound},
+        evenPromisesAllowed: {$in: evenPromisesAllowed},
+        visiblePromiseRound: {$in: visiblePromiseRound},
+        onlyTotalPromise: {$in: onlyTotalPromise},
+        freeTrump: {$in: freeTrump},
+        hiddenTrump: {$in: hiddenTrump},
+        speedPromise: {$in: speedPromise},
+        privateSpeedGame: {$in: privateSpeedGame},
+        opponentPromiseCardValue: {$in: opponentPromiseCardValue},
+        opponentGameCardValue: {$in: opponentGameCardValue},
+    };
+    const aggregationA = [{$match: match
+    }, {$unwind: {
         path: "$game.rounds",
         includeArrayIndex: 'roundInd',
         preserveNullAndEmptyArrays: true
@@ -1102,11 +1134,28 @@ async function getPlayerStats(playerName) {
 }
 
 async function getStatistics(gameInDb) {
+    var equalObj = {
+        humanPlayersCount: gameInDb.humanPlayersCount,
+        startRound: gameInDb.startRound,
+        turnRound: gameInDb.turnRound,
+        endRound: gameInDb.endRound,
+        evenPromisesAllowed: gameInDb.evenPromisesAllowed,
+        visiblePromiseRound: gameInDb.visiblePromiseRound,
+        onlyTotalPromise: gameInDb.onlyTotalPromise,
+        freeTrump: gameInDb.freeTrump,
+        hiddenTrump: gameInDb.hiddenTrump,
+        speedPromise: gameInDb.speedPromise,
+        privateSpeedGame: gameInDb.privateSpeedGame,
+        opponentPromiseCardValue: gameInDb.opponentPromiseCardValue,
+        opponentGameCardValue: gameInDb.opponentGameCardValue,
+    }
     var statsObj = {
         playersKeeps: [],
+        playersEqualKeeps: [],
     }
     for (var i = 0; i < gameInDb.humanPlayers.length; i++) {
-        statsObj.playersKeeps.push(await getPlayerStats(gameInDb.humanPlayers[i].name));
+        statsObj.playersKeeps.push(await getPlayerStats(gameInDb.humanPlayers[i].name, null));
+        statsObj.playersEqualKeeps.push(await getPlayerStats(gameInDb.humanPlayers[i].name, equalObj));
     }
     return statsObj;
 }
