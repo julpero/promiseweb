@@ -5,7 +5,7 @@ const speedPromiseMultiplierNotEven = 0.6;
 
 module.exports = {
 
-    roundToPlayer: function (playerId, roundInd, thisGame, doReloadInit, newRound, gameOver) {
+    roundToPlayer: function (playerId, roundInd, thisGame, statistics, doReloadInit, newRound, gameOver) {
         var round = thisGame.game.rounds[roundInd];
         var playerName = this.getPlayerNameById(playerId, thisGame.humanPlayers);
     
@@ -17,7 +17,7 @@ module.exports = {
             starterPositionIndex: round.starterPositionIndex,
             myName: playerName,
             myCards: getPlayerCards(playerName, round, thisGame.speedPromise),
-            players: getRoundPlayers(playerName, round, showPromisesNow('player', thisGame, roundInd)),
+            players: getRoundPlayers(playerName, round, showPromisesNow('player', thisGame, roundInd), thisGame.humanPlayers),
             trumpCard: showTrumpCard(thisGame, roundInd) ? round.trumpCard : null,
             playerInCharge: getPlayerInCharge(roundInd, this.getCurrentPlayIndex(round), thisGame),
             promiseTable: getPromiseTable(thisGame),
@@ -27,6 +27,7 @@ module.exports = {
             newRound: newRound,
             gameOver: gameOver,
             handValues: getHandValues(thisGame, roundInd),
+            statistics: statistics,
             // round: round, // comment this when in production!
         };
     },
@@ -316,7 +317,14 @@ function getPlayerPlayedCard(playerName, cardsPlayed) {
     return null;
 }
 
-function getRoundPlayers(myName, round, showPromises) {
+function parsePlayerStats(playersStats, playerName) {
+    for (var i = 0; i < playersStats.length; i++) {
+        if (playersStats[i].name == playerName) return playersStats[i].playerStats;
+    }
+    return null;
+}
+
+function getRoundPlayers(myName, round, showPromises, playersStats) {
     var players = [];
     round.roundPlayers.forEach(function (player, idx) {
         players.push({
@@ -328,6 +336,7 @@ function getRoundPlayers(myName, round, showPromises) {
             cardPlayed: getPlayerPlayedCard(player.name, round.cardsPlayed),
             speedPromisePoints: player.speedPromisePoints,
             speedPromiseTotal: player.speedPromiseTotal,
+            playerStats: parsePlayerStats(playersStats, player.name)
         });
     });
     return players;

@@ -289,12 +289,16 @@ function initPlayerTable(index, align, maxCards, colCount) {
     var statsRow1 = $('<div></div>').addClass('row');
     var statsCol1 = $('<div id="player'+index+'StatsCol1"></div>').addClass('col hand-value-col');
     var statsRow2 = $('<div></div>').addClass('row');
-    var statsCol2 = $('<div id="player'+index+'StatsCol2"></div>').addClass('col');
+    var statsCol2 = $('<div id="player'+index+'StatsCol2"></div>').addClass('col stats-col');
+    var statsRow3 = $('<div></div>').addClass('row');
+    var statsCol3 = $('<div id="player'+index+'StatsCol3"></div>').addClass('col stats-col');
 
     statsRow1.append(statsCol1);
     statsRow2.append(statsCol2);
+    statsRow3.append(statsCol3);
     statsCol.append(statsRow1);
     statsCol.append(statsRow2);
+    statsCol.append(statsRow3);
 
     // where are promises and points aligned
     if (align == 'left') {
