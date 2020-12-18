@@ -1,10 +1,8 @@
 var avgStatsChart = null;
-// var avgStatsReportData = null;
 const avgStatsOptions = {
     backgroundColor: '#45a173',
     height: 145,
-    // theme: 'maximized',
-    chartArea: {width: '100%', height: 145},
+    chartArea: {width: '99%', height: 145},
     legend: { position: 'none' },
     hAxis: {
         textPosition: 'in',
@@ -17,12 +15,10 @@ const avgStatsOptions = {
 };
 
 var keepStatsChart = null;
-// var keepsStatsReportData = null;
 const keepStatsOptions = {
     backgroundColor: '#45a173',
     height: 145,
-    // theme: 'maximized',
-    chartArea: {width: '100%', height: 145},
+    chartArea: {width: '99%', height: 145},
     legend: { position: 'none' },
     hAxis: {
         textPosition: 'in',
@@ -871,11 +867,15 @@ function showPlayersAvgPointsStats(playerKeeps, playersEqualKeeps) {
     const reportColName = 'avgPointsStats';
     var reportDataArr = [['Player', 'Avg points in all previous rounds', {type: "string", role: "tooltip"}, 'Avg points in equal previous rounds', {type: "string", role: "tooltip"}]];
     for (var i = 0; i < playerKeeps.length; i++) {
-        const avgPoints = playerKeeps[i].avgPoints;
-        const avgPointsTooltip = 'average of '+ playerKeeps[i].avgPoints.toFixed(2) +' points\nin all previous '+ playerKeeps[i].total +' rounds';
-        const equalAvgPoints = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? playersEqualKeeps[i].avgPoints : 0;
-        const equalAvgPointsTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'average of '+ (equalAvgPoints).toFixed(2) +' points\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-        reportDataArr.push([playerKeeps[i]._id, avgPoints, avgPointsTooltip, equalAvgPoints, equalAvgPointsTooltip]);
+        if (Object.keys(playerKeeps[i]).length <= 1) {
+            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
+        } else {
+            const avgPoints = playerKeeps[i].avgPoints;
+            const avgPointsTooltip = 'average of '+ playerKeeps[i].avgPoints.toFixed(2) +' points\nin all previous '+ playerKeeps[i].total +' rounds';
+            const equalAvgPoints = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? playersEqualKeeps[i].avgPoints : 0;
+            const equalAvgPointsTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'average of '+ (equalAvgPoints).toFixed(2) +' points\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
+            reportDataArr.push([playerKeeps[i]._id, avgPoints, avgPointsTooltip, equalAvgPoints, equalAvgPointsTooltip]);
+        }
     }
     
     const avgStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
@@ -887,11 +887,15 @@ function showPlayersAvgPointsStats(playerKeeps, playersEqualKeeps) {
 function updatePlayersAvgPointsStats(playerKeeps, playersEqualKeeps) {
     var reportDataArr = [['Player', 'Avg points in all previous rounds', {type: "string", role: "tooltip"}, 'Avg points in equal previous rounds', {type: "string", role: "tooltip"}]];
     for (var i = 0; i < playerKeeps.length; i++) {
-        const avgPoints = playerKeeps[i].avgPoints;
-        const avgPointsTooltip = 'average of '+ playerKeeps[i].avgPoints.toFixed(2) +' points\nin all previous '+ playerKeeps[i].total +' rounds';
-        const equalAvgPoints = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? playersEqualKeeps[i].avgPoints : 0;
-        const equalAvgPointsTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'average of '+ (equalAvgPoints).toFixed(2) +' points\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-        reportDataArr.push([playerKeeps[i]._id, avgPoints, avgPointsTooltip, equalAvgPoints, equalAvgPointsTooltip]);
+        if (Object.keys(playerKeeps[i]).length <= 1) {
+            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
+        } else {
+            const avgPoints = playerKeeps[i].avgPoints;
+            const avgPointsTooltip = 'average of '+ playerKeeps[i].avgPoints.toFixed(2) +' points\nin all previous '+ playerKeeps[i].total +' rounds';
+            const equalAvgPoints = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? playersEqualKeeps[i].avgPoints : 0;
+            const equalAvgPointsTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'average of '+ (equalAvgPoints).toFixed(2) +' points\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
+            reportDataArr.push([playerKeeps[i]._id, avgPoints, avgPointsTooltip, equalAvgPoints, equalAvgPointsTooltip]);
+        }
     }
 
     const avgStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
@@ -902,11 +906,15 @@ function showPlayersKeepPercentStats(playerKeeps, playersEqualKeeps) {
     const reportColName = 'keepPercentStats';
     var reportDataArr = [['Player', 'Keep percent in previous rounds', {type: "string", role: "tooltip"}, 'Keep percent in previous equal rounds', {type: "string", role: "tooltip"}]];
     for (var i = 0; i < playerKeeps.length; i++) {
-        const keepPercentage = 100 * (playerKeeps[i].keeps/playerKeeps[i].total);
-        const keepPercentageTooltip = 'keep percentage '+ (keepPercentage).toFixed(1) +'%\nin all previous '+ playerKeeps[i].total +' rounds';
-        const keepEqualPercentage = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 100 * (playersEqualKeeps[i].keeps/playersEqualKeeps[i].total) : 0;
-        const keepEqualPercentageTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'keep percentage '+ (keepEqualPercentage).toFixed(1) +'%\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-        reportDataArr.push([playerKeeps[i]._id, keepPercentage, keepPercentageTooltip, keepEqualPercentage, keepEqualPercentageTooltip]);
+        if (Object.keys(playerKeeps[i]).length <= 1) {
+            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
+        } else {
+            const keepPercentage = 100 * (playerKeeps[i].keeps/playerKeeps[i].total);
+            const keepPercentageTooltip = 'keep percentage '+ (keepPercentage).toFixed(1) +'%\nin all previous '+ playerKeeps[i].total +' rounds';
+            const keepEqualPercentage = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 100 * (playersEqualKeeps[i].keeps/playersEqualKeeps[i].total) : 0;
+            const keepEqualPercentageTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'keep percentage '+ (keepEqualPercentage).toFixed(1) +'%\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
+            reportDataArr.push([playerKeeps[i]._id, keepPercentage, keepPercentageTooltip, keepEqualPercentage, keepEqualPercentageTooltip]);
+        }
     }
     
     const keepsStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
@@ -918,11 +926,15 @@ function showPlayersKeepPercentStats(playerKeeps, playersEqualKeeps) {
 function updatePlayersKeepPercentStats(playerKeeps, playersEqualKeeps) {
     var reportDataArr = [['Player', 'Keep percent in previous rounds', {type: "string", role: "tooltip"}, 'Keep percent in previous equal rounds', {type: "string", role: "tooltip"}]];
     for (var i = 0; i < playerKeeps.length; i++) {
-        const keepPercentage = 100 * (playerKeeps[i].keeps/playerKeeps[i].total);
-        const keepPercentageTooltip = 'keep percentage '+ (keepPercentage).toFixed(1) +'%\nin all previous '+ playerKeeps[i].total +' rounds';
-        const keepEqualPercentage = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 100 * (playersEqualKeeps[i].keeps/playersEqualKeeps[i].total) : 0;
-        const keepEqualPercentageTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'keep percentage '+ (keepEqualPercentage).toFixed(1) +'%\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-        reportDataArr.push([playerKeeps[i]._id, keepPercentage, keepPercentageTooltip, keepEqualPercentage, keepEqualPercentageTooltip]);
+        if (Object.keys(playerKeeps[i]).length <= 1) {
+            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
+        } else {
+            const keepPercentage = 100 * (playerKeeps[i].keeps/playerKeeps[i].total);
+            const keepPercentageTooltip = 'keep percentage '+ (keepPercentage).toFixed(1) +'%\nin all previous '+ playerKeeps[i].total +' rounds';
+            const keepEqualPercentage = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 100 * (playersEqualKeeps[i].keeps/playersEqualKeeps[i].total) : 0;
+            const keepEqualPercentageTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'keep percentage '+ (keepEqualPercentage).toFixed(1) +'%\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
+            reportDataArr.push([playerKeeps[i]._id, keepPercentage, keepPercentageTooltip, keepEqualPercentage, keepEqualPercentageTooltip]);
+        }
     }
     
     const keepsStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
@@ -1224,6 +1236,46 @@ function checkSmall(playerCount) {
     }
 }
 
+function printPointStats(players) {
+    if ($('#pointsStats').children().length > 0) return;
+
+    const reportColName = 'pointsStats';
+    var reportDataArr = [['Player', 'Points in previous games', {type: "string", role: "tooltip"}, 'Points in previous equal games', {type: "string", role: "tooltip"}]];
+    for (var i = 0; i < players.length; i++) {
+        const allGamesSum = players[i].playerStats.playersAllGames.reduce((a, b) => a + b, 0);
+        const allGamesCount = players[i].playerStats.playersAllGames.length;
+        const allGamesAvg = allGamesSum/allGamesCount;
+        const equalGamesSum = players[i].playerStats.playersEqualGames.reduce((a, b) => a + b, 0);
+        const equalGamesCount = players[i].playerStats.playersEqualGames.length;
+        const equalGamesAvg = equalGamesSum/equalGamesCount;
+        const allGamesTooltip = 'avg points  '+ (allGamesAvg).toFixed(1) +'\nin all previous '+ allGamesCount +' games';
+        const equalGamesTooltip = 'avg points  '+ (equalGamesAvg).toFixed(1) +'\nin all previous '+ equalGamesCount +' equal games';
+        reportDataArr.push([players[i].name, allGamesAvg, allGamesTooltip, equalGamesAvg, equalGamesTooltip]);
+    }
+    
+    const pointStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
+    const pointStatsOptions = {
+        backgroundColor: '#45a173',
+        height: 145,
+        // theme: 'maximized',
+        chartArea: {width: '99%', height: 145},
+        legend: { position: 'none' },
+        hAxis: {
+            textPosition: 'in',
+        },
+        vAxis: {
+            textPosition: 'in',
+            minValue: 0,
+            // maxValue: 100,
+            title: '',
+        },
+    };
+    
+    var pointStatsChart = new google.visualization.ColumnChart(document.getElementById(reportColName));
+    pointStatsChart.draw(pointStatsReportData, pointStatsOptions);
+
+}
+
 function browserReload(myRound, speedPromise) {
     initCardTable(myRound);
     initOtherPlayers(myRound);
@@ -1233,6 +1285,7 @@ function browserReload(myRound, speedPromise) {
     showPlayedCards(myRound);
     showWonCards(myRound);
     checkSmall(myRound.players.length);
+    printPointStats(myRound.players)
 }
 
 function appendToChat(text) {
