@@ -401,7 +401,7 @@ try {
                 const game = await collection.findOne(query);
                 if (game != null) {
                     var playerName = pf.getPlayerNameById(getRound.myId, game.humanPlayers);
-                    const stats = (pf.debugPlayerName(playerName) && (gameStarted || doReload || newRound || gameOver)) ? await getStatistics(game) : null;
+                    const stats = (gameStarted || doReload || newRound || gameOver) ? await getStatistics(game) : null;
                     const playerRound = pf.roundToPlayer(getRound.myId, getRound.round, game, stats, doReload, newRound, gameOver);
                     console.log(playerRound);
         
@@ -793,6 +793,7 @@ try {
                 var pointsArr = [];
                 pointsArr.push(startPointsArr);
                 for (var i = 0; i < gameInDb.game.rounds.length; i++) {
+                    if (gameInDb.game.rounds[i].roundStatus != 2) break;
                     var pointsByRound = [i+1];
                     for (var j = 0; j < gameInDb.game.rounds[i].roundPlayers.length; j++) {
                         totalPointsByPlayer[j]+= gameInDb.game.rounds[i].roundPlayers[j].points;
