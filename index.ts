@@ -357,7 +357,7 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
     
-                const query = { gameStatus: { $lte: 1 }, 'humanPlayers.playerId': {$eq: gameOptions.humanPlayers[0].playerId } };
+                const query = { gameStatus: { $lte: 1 } };
                 const cursor = await collection.find(query);
                 await cursor.forEach(function(val) {
                     for (var i = 0; i < val.humanPlayers.length; i++) {
