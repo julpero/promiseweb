@@ -1,8 +1,9 @@
 module.exports = {
     averagePoints: function (games, playerName) {
         var totalPoints = 0;
+        self = this;
         games.forEach(function(game) {
-            totalPoints+= this.getGamePoints(game.game, playerName);
+            totalPoints+= self.getGamePoints(game.game, playerName);
         });
 
         return totalPoints / games.length;
