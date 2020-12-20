@@ -401,7 +401,7 @@ try {
                 const game = await collection.findOne(query);
                 if (game != null) {
                     //var playerName = pf.getPlayerNameById(getRound.myId, game.humanPlayers);
-                    const stats = (gameStarted || doReload || newRound || gameOver) ? await getStatistics(game) : null;
+                    const stats = null;// (gameStarted || doReload || newRound || gameOver) ? await getStatistics(game) : null;
                     const playerRound = pf.roundToPlayer(getRound.myId, getRound.round, game, stats, doReload, newRound, gameOver);
                     console.log(playerRound);
         
