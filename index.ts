@@ -720,6 +720,7 @@ try {
                         privateSpeedGame: val.privateSpeedGame,
                         opponentPromiseCardValue: val.opponentPromiseCardValue,
                         opponentGameCardValue: val.opponentGameCardValue,
+                        hiddenCardsMode: val.hiddenCardsMode,
                         imInThisGame: pf.imInThisGame(val.humanPlayers, data.myId)
                     });
                 });
@@ -755,6 +756,7 @@ try {
                         privateSpeedGame: val.privateSpeedGame,
                         opponentPromiseCardValue: val.opponentPromiseCardValue,
                         opponentGameCardValue: val.opponentGameCardValue,
+                        hiddenCardsMode: val.hiddenCardsMode,
                     });
                 });
     
@@ -888,6 +890,7 @@ try {
                         privateSpeedGame: {$in: [false, null]},
                         opponentPromiseCardValue: {$in: [false, null]},
                         opponentGameCardValue: {$in: [false, null]},
+                        hiddenCardsMode: {$in: [0, null]},
                     }},
                     {$project: {
                         "game.rounds.cardsPlayed": 0,
@@ -1055,6 +1058,7 @@ async function getPlayerPreviousStats(playerName, equalObj) {
     const privateSpeedGame = equalObj == null || !equalObj.privateSpeedGame ? [false, null] : [true];
     const opponentPromiseCardValue = equalObj == null || !equalObj.opponentPromiseCardValue ? [false, null] : [true];
     const opponentGameCardValue = equalObj == null || !equalObj.opponentGameCardValue ? [false, null] : [true];
+    const hiddenCardsMode = equalObj == null || equalObj.hiddenCardsMode == null || equalObj.hiddenCardsMode == 0 ? [0, null] : [equalObj.hiddenCardsMode];
 
     const database = mongoUtil.getDb();
     const collection = database.collection('promiseweb');
@@ -1079,6 +1083,7 @@ async function getPlayerPreviousStats(playerName, equalObj) {
         privateSpeedGame: {$in: privateSpeedGame},
         opponentPromiseCardValue: {$in: opponentPromiseCardValue},
         opponentGameCardValue: {$in: opponentGameCardValue},
+        hiddenCardsMode: {$in: hiddenCardsMode},
     };
     const aggregationA = [{$match: match
     }, {$sort: {
@@ -1104,6 +1109,7 @@ async function getPlayerStats(playerName, equalObj) {
     const privateSpeedGame = equalObj == null || !equalObj.privateSpeedGame ? [false, null] : [true];
     const opponentPromiseCardValue = equalObj == null || !equalObj.opponentPromiseCardValue ? [false, null] : [true];
     const opponentGameCardValue = equalObj == null || !equalObj.opponentGameCardValue ? [false, null] : [true];
+    const hiddenCardsMode = equalObj == null || equalObj.hiddenCardsMode == null || equalObj.hiddenCardsMode == 0 ? [0, null] : [equalObj.hiddenCardsMode];
 
     const database = mongoUtil.getDb();
     const collection = database.collection('promiseweb');
@@ -1128,6 +1134,7 @@ async function getPlayerStats(playerName, equalObj) {
         privateSpeedGame: {$in: privateSpeedGame},
         opponentPromiseCardValue: {$in: opponentPromiseCardValue},
         opponentGameCardValue: {$in: opponentGameCardValue},
+        hiddenCardsMode: {$in: hiddenCardsMode},
     };
     const aggregationA = [{$match: match
     }, {$unwind: {
@@ -1202,6 +1209,7 @@ function parseEqualObj(gameInDb) {
         privateSpeedGame: gameInDb.privateSpeedGame,
         opponentPromiseCardValue: gameInDb.opponentPromiseCardValue,
         opponentGameCardValue: gameInDb.opponentGameCardValue,
+        hiddenCardsMode: gameInDb.hiddenCardsMode,
     }
 }
 
