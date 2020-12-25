@@ -197,12 +197,11 @@
                                 </div>
                             </div>
                             <div class="col">
-                                <!-- <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="privateSpeedGame">
-                                    <label class="form-check-label" for="publicSpeedGame">
-                                        Public speed game
-                                    </label>
-                                </div> -->
+                                <select class="form-control form-control-sm" id="hiddenCardsMode">
+                                    <option value="0">show cards normally</option>
+                                    <option value="1">show only card in charge</option>
+                                    <option value="2">show card in charge and winning card</option>
+                                </select>
                             </div>
                         </div>
                         <div class="row">
@@ -523,14 +522,14 @@
 
                     if (gameInfo.eventInfo != null) {
                         // animate played card
-                        var playedCard = gameInfo.eventInfo.playedCard;
-                        var cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
-                        var cardPlayedByIndex = gameInfo.eventInfo.cardPlayedByIndex;
-                        var players = gameInfo.humanPlayers;
+                        const playedCard = gameInfo.eventInfo.playedCard;
+                        const cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
+                        const cardPlayedByIndex = gameInfo.eventInfo.cardPlayedByIndex;
+                        const players = gameInfo.humanPlayers;
                         newRound = gameInfo.eventInfo.newRound;
                         gameOver = gameInfo.eventInfo.gameOver;
                         
-                        await moveCardFromHandToTable(playedCard, cardPlayedBy)
+                        await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay)
                             .then(async function() {
                                 if (gameInfo.eventInfo.newPlay) {
                                     var winnerName = gameInfo.eventInfo.winnerName;

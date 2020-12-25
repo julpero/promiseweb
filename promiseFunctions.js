@@ -6,9 +6,11 @@ const speedPromiseMultiplierNotEven = 0.6;
 module.exports = {
 
     roundToPlayer: function (playerId, roundInd, thisGame, statistics, doReloadInit, newRound, gameOver) {
-        var round = thisGame.game.rounds[roundInd];
-        var playerName = this.getPlayerNameById(playerId, thisGame.humanPlayers);
-    
+        const round = thisGame.game.rounds[roundInd];
+        const playerName = this.getPlayerNameById(playerId, thisGame.humanPlayers);
+        const play = this.getCurrentPlayIndex(round);
+        const playerGoingToWinThisPlay = this.winnerOfPlay(round.cardsPlayed[play], round.trumpCard.suit);
+
         return {
             gameId: thisGame._id.toString(),
             roundInd: roundInd,
@@ -17,12 +19,13 @@ module.exports = {
             starterPositionIndex: round.starterPositionIndex,
             myName: playerName,
             myCards: getPlayerCards(playerName, round, thisGame.speedPromise),
-            players: getRoundPlayers(playerName, round, showPromisesNow('player', thisGame, roundInd), thisGame.humanPlayers),
+            players: getRoundPlayers(playerName, round, play, showPromisesNow('player', thisGame, roundInd), thisGame.humanPlayers, thisGame.hiddenCardsMode, playerGoingToWinThisPlay),
             trumpCard: showTrumpCard(thisGame, roundInd) ? round.trumpCard : null,
             playerInCharge: getPlayerInCharge(roundInd, this.getCurrentPlayIndex(round), thisGame),
             promiseTable: getPromiseTable(thisGame),
             cardInCharge: getCurrentCardInCharge(round.cardsPlayed),
-            cardsPlayed: round.cardsPlayed,
+            playerGoingToWinThisPlay: playerGoingToWinThisPlay,
+            cardsPlayed: getCardsPlayed(round.cardsPlayed, thisGame.game.playerOrder.length, play, playerName, thisGame.hiddenCardsMode, playerGoingToWinThisPlay),
             doReloadInit: doReloadInit,
             newRound: newRound,
             gameOver: gameOver,
@@ -90,6 +93,7 @@ module.exports = {
             privateSpeedGame: game.privateSpeedGame != null && game.privateSpeedGame,
             opponentPromiseCardValue: game.opponentPromiseCardValue != null && game.opponentPromiseCardValue,
             opponentGameCardValue: game.opponentGameCardValue != null && game.opponentGameCardValue,
+            hiddenCardsMode: game.hiddenCardsMode == null ? 0 : game.hiddenCardsMode,
         };
         return gameInfo;
     },
@@ -103,12 +107,13 @@ module.exports = {
         return playerIndex;
     },
                     
-    winnerOfPlay: function (cardsPlayed, trumpSuit) {
-        var winner = cardsPlayed[0].name;
-        var winningCard = cardsPlayed[0].card;
-        for (var i = 1; i < cardsPlayed.length; i++) {
+    winnerOfPlay: function (cardsPlayedInPlay, trumpSuit) {
+        if (cardsPlayedInPlay.length == 0) return null;
+        var winner = cardsPlayedInPlay[0].name;
+        var winningCard = cardsPlayedInPlay[0].card;
+        for (var i = 1; i < cardsPlayedInPlay.length; i++) {
             var wins = false;
-            var currentCard = cardsPlayed[i].card;
+            var currentCard = cardsPlayedInPlay[i].card;
             if (winningCard.suit == trumpSuit) {
                 // has to be bigger trump to win
                 wins = currentCard.suit == trumpSuit && currentCard.rank > winningCard.rank;
@@ -120,7 +125,7 @@ module.exports = {
                 wins = currentCard.suit == winningCard.suit && currentCard.rank > winningCard.rank;
             }
             if (wins) {
-                winner = cardsPlayed[i].name;
+                winner = cardsPlayedInPlay[i].name;
                 winningCard = currentCard;
             }
         }
@@ -251,7 +256,15 @@ module.exports = {
         }
 
         return speedPromiseTotal;
+    },
+
+    okToReturnCard: function (hiddenCardsMode, thisIsFirstCard, thisIsLastCard, thisIsWinnerCard) {
+        if (hiddenCardsMode == null || hiddenCardsMode == 0) return true;
+        if (hiddenCardsMode == 2 && thisIsWinnerCard) return true;
+        if (thisIsFirstCard || thisIsLastCard) return true;
+        return false;
     }
+
 
 }
 
@@ -269,6 +282,36 @@ function isUnderPromisedRound(round) {
 
 function showTrumpCard(thisGame, roundInd) {
     return (!thisGame.hiddenTrump || isRoundPromised(thisGame.game.rounds[roundInd]));
+}
+
+function getCardsPlayed(cardsPlayed, playerCount, play, playerName, hiddenCardsMode, playerGoingToWinThisPlay) {
+    if (hiddenCardsMode == null || hiddenCardsMode == 0) return cardsPlayed;
+    var retArr = [];
+    for (var i = 0; i < cardsPlayed.length; i++) {
+        if (i != play || cardsPlayed[i].length == playerCount) {
+            retArr.push(cardsPlayed[i]);
+        } else {
+            var playArr = [];
+            for (var j = 0; j < cardsPlayed[i].length; j++) {
+                if ((j == 0) || (cardsPlayed[i][j].name == playerName) || (hiddenCardsMode == 2 && cardsPlayed[i][j].name == playerGoingToWinThisPlay)) { // show card in charge and winning card
+                    playArr.push({
+                        name: cardsPlayed[i][j].name,
+                        card: cardsPlayed[i][j].card,
+                    });
+                } else {
+                    playArr.push({
+                        name: cardsPlayed[i][j].name,
+                        card: {
+                            suit: 'dummy',
+                            rank: 0,
+                        },
+                    });
+                }
+            }
+            retArr.push(playArr);
+        }
+    }
+    return retArr;
 }
 
 function getHandValues(thisGame, roundInd) {
@@ -309,10 +352,10 @@ function getPlayerCards(name, round, speedPromise) {
     return cards;
 }
 
-function getPlayerPlayedCard(playerName, cardsPlayed) {
+function getPlayerPlayedCard(playerName, cardsPlayed, returnCard) {
     var currentPlay = cardsPlayed[cardsPlayed.length-1];
     for (var i = 0; i < currentPlay.length; i++) {
-        if (currentPlay[i].name == playerName) return currentPlay[i].card;
+        if (currentPlay[i].name == playerName) return returnCard ? currentPlay[i].card : { suit: 'dummy', rank: 0 };
     }
     return null;
 }
@@ -324,16 +367,32 @@ function parsePlayerStats(playersStats, playerName) {
     return null;
 }
 
-function getRoundPlayers(myName, round, showPromises, playersStats) {
+function getFirstPlayerInThePlay(round, play) {
+    if (round.cardsPlayed[play] && round.cardsPlayed[play].length > 0) return round.cardsPlayed[play][0].name;
+    if (play == 0 && round.cardsPlayed[play].length == 0) return round.roundPlayers[round.starterPositionIndex].name;
+    return module.exports.winnerOfPlay(round.cardsPlayed[play-1], round.trumpCard.suit);
+}
+
+function getLastPlayerInThePlay(round, play) {
+    if (round.cardsPlayed[play] && round.cardsPlayed[play].length == round.roundPlayers.length) return round.cardsPlayed[play][round.cardsPlayed[play].length-1].name;
+    return "thisisnotvalid";
+}
+
+function getRoundPlayers(myName, round, play, showPromises, playersStats, hiddenCardsMode, playerGoingToWinThisPlay) {
     var players = [];
+    const firstPlayerInThePlay = getFirstPlayerInThePlay(round, play);
+    const lastPlayerInThePlay = getLastPlayerInThePlay(round, play);
+
     round.roundPlayers.forEach(function (player, idx) {
+        const thisIsMe = player.name == myName;
+        const returnCard = thisIsMe || module.exports.okToReturnCard(hiddenCardsMode, player.name == firstPlayerInThePlay, player.name == lastPlayerInThePlay, player.name == playerGoingToWinThisPlay);
         players.push({
-            thisIsMe: player.name == myName,
+            thisIsMe: thisIsMe,
             dealer: round.dealerPositionIndex == idx,
             name: player.name,
-            promise: showPromises || player.name == myName ? player.promise : (player.promise == null) ? null : -1,
+            promise: showPromises || thisIsMe ? player.promise : (player.promise == null) ? null : -1,
             keeps: player.keeps,
-            cardPlayed: getPlayerPlayedCard(player.name, round.cardsPlayed),
+            cardPlayed: getPlayerPlayedCard(player.name, round.cardsPlayed, returnCard),
             speedPromisePoints: player.speedPromisePoints,
             speedPromiseTotal: player.speedPromiseTotal,
             playerStats: parsePlayerStats(playersStats, player.name)
