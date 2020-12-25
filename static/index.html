@@ -522,14 +522,14 @@
 
                     if (gameInfo.eventInfo != null) {
                         // animate played card
-                        var playedCard = gameInfo.eventInfo.playedCard;
-                        var cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
-                        var cardPlayedByIndex = gameInfo.eventInfo.cardPlayedByIndex;
-                        var players = gameInfo.humanPlayers;
+                        const playedCard = gameInfo.eventInfo.playedCard;
+                        const cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
+                        const cardPlayedByIndex = gameInfo.eventInfo.cardPlayedByIndex;
+                        const players = gameInfo.humanPlayers;
                         newRound = gameInfo.eventInfo.newRound;
                         gameOver = gameInfo.eventInfo.gameOver;
                         
-                        await moveCardFromHandToTable(playedCard, cardPlayedBy)
+                        await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay)
                             .then(async function() {
                                 if (gameInfo.eventInfo.newPlay) {
                                     var winnerName = gameInfo.eventInfo.winnerName;

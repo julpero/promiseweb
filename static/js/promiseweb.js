@@ -654,7 +654,7 @@ function highlightWinningCard(myRound) {
     var playedCards = myRound.cardsPlayed[myRound.cardsPlayed.length-1]; // last is current
     if (playedCards.length == 0) return;
 
-    var winnerName = winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
+    var winnerName = myRound.playerGoingToWinThisPlay ?? winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
 
     for (var i = 0; i < playedCards.length; i++) {
         var playerIndex = mapPlayerNameToTable(playedCards[i].name);
@@ -663,11 +663,11 @@ function highlightWinningCard(myRound) {
         if (cardPlayedDivs.length == 1) {
             var cardPlayedDiv = cardPlayedDivs[0];
             if (i == 0) {
-                $(cardPlayedDiv).addClass('cardInCharge');
+                $(cardPlayedDiv).addClass('charge-black-div');
             } else if (playedCards[i].name == winnerName) {
-                $(cardPlayedDiv).addClass('cardToWin');
+                $(cardPlayedDiv).addClass('winning-yellow-div');
             } else {
-                $(cardPlayedDiv).removeClass('cardToWin');
+                $(cardPlayedDiv).removeClass('winning-yellow-div');
             }
         }
     }
@@ -675,20 +675,22 @@ function highlightWinningCard(myRound) {
 
 function showPlayedCards(myRound) {
     var deck = Deck();
-    var playedCards = myRound.cardsPlayed[myRound.cardsPlayed.length-1]; // last is current
+    var dummyDeck = Deck();
+    const playedCards = myRound.cardsPlayed[myRound.cardsPlayed.length-1]; // last is current
     if (playedCards.length == 0) return;
 
-    var winnerName = winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
+    const winnerName = myRound.playerGoingToWinThisPlay ?? winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
+    var dummyCardIndex = 0;
 
     for (var i = 0; i < playedCards.length; i++) {
-        var playerIndex = mapPlayerNameToTable(playedCards[i].name);
-        var cardPlayed = playedCards[i].card;
+        const playerIndex = mapPlayerNameToTable(playedCards[i].name);
+        const cardPlayed = playedCards[i].card;
         
         var $container = document.getElementById('player'+playerIndex+'CardPlayedDiv');
-        var cardIndex = getCardIndex(deck.cards, cardPlayed);
-        var card = deck.cards[cardIndex];
+        const cardIndex = cardPlayed.suit == 'dummy' ? dummyCardIndex++ : getCardIndex(deck.cards, cardPlayed);
+        var card = cardPlayed.suit == 'dummy' ? dummyDeck.cards[cardIndex] :  deck.cards[cardIndex];
         card.mount($container);
-        card.setSide('front');
+        cardPlayed.suit == 'dummy' ? card.setSide('back') : card.setSide('front');
         card.animateTo({
             x: randomNegToPos(2),
             y: randomNegToPos(2),
@@ -702,13 +704,13 @@ function showPlayedCards(myRound) {
             var cardPlayedDivs = $('#player'+playerIndex+'CardPlayedDiv').children();
             if (cardPlayedDivs.length == 1) {
                 var cardPlayedDiv = cardPlayedDivs[0];
-                $(cardPlayedDiv).addClass('cardInCharge');
+                $(cardPlayedDiv).addClass('charge-black-div');
             }
         } else if (playedCards[i].name == winnerName) {
             var cardPlayedDivs = $('#player'+playerIndex+'CardPlayedDiv').children();
             if (cardPlayedDivs.length == 1) {
                 var cardPlayedDiv = cardPlayedDivs[0];
-                $(cardPlayedDiv).addClass('cardToWin');
+                $(cardPlayedDiv).addClass('winning-yellow-div');
             }
         }
     }
@@ -763,7 +765,7 @@ function showWonCards(myRound) {
     for (var i = 0; i < myRound.cardsPlayed.length; i++) {
         var playedCards = myRound.cardsPlayed[i];
         if (playedCards.length == playerCount) {
-            var winnerName = winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
+            var winnerName = myRound.playerGoingToWinThisPlay ?? winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
             var playerIndex = mapPlayerNameToTable(winnerName);
             var wonIndex = getNextFreeCardWonDiv(playerIndex);
             var $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
@@ -1086,24 +1088,44 @@ function getCurrentCardContainer(card) {
     return 0;
 }
 
-async function moveCardFromHandToTable(card, playerName) {
+async function moveCardFromHandToTable(card, playerName, cardsInThisPlay) {
     var deck = Deck();
-    var cardIndex = getCardIndex(deck.cards, card);
-    var movingCard = deck.cards[cardIndex];
 
-    var playerIndex = mapPlayerNameToTable(playerName);
-    var containerIndex = playerIndex == 0 ? getCurrentCardContainer(card) : getLastCardContainer(playerIndex);
+    if (cardsInThisPlay != null)
+    {
+        for (var i = 0; i < cardsInThisPlay.length; i++) {
+            if (playerName == cardsInThisPlay[i].name) continue;
+    
+            const thisPlayerIndex = mapPlayerNameToTable(cardsInThisPlay[i].name);
+            var $thisContainerTo = document.getElementById('player'+thisPlayerIndex+'CardPlayedDiv');
+            const cardToCheck = getCardFromDiv('player'+thisPlayerIndex+'CardPlayedDiv');
+            if (cardToCheck == null || cardToCheck.suit != cardsInThisPlay[i].card.suit || cardToCheck.rank != cardsInThisPlay[i].card.rank) {
+                $('#player'+thisPlayerIndex+'CardPlayedDiv').empty();
+                const thisCardIndex = getCardIndex(deck.cards, cardsInThisPlay[i].card);
+                const thisCard = deck.cards[thisCardIndex];
+                thisCard.mount($thisContainerTo);
+                thisCard.setSide('front');
+            }
+        }
+    }
+
+    const cardIndex = card.suit == "dummy" ? 0 : getCardIndex(deck.cards, card);
+    const movingCard = deck.cards[cardIndex];
+
+    const playerIndex = mapPlayerNameToTable(playerName);
+    const containerIndex = playerIndex == 0 ? getCurrentCardContainer(card) : getLastCardContainer(playerIndex);
     $('#player'+playerIndex+'CardCol'+containerIndex).empty();
 
     // var $containerFrom = document.getElementById('player'+playerIndex+'CardCol'+containerIndex);
     var $containerTo = document.getElementById('player'+playerIndex+'CardPlayedDiv');
-    var containerFromPosition = $('#player'+playerIndex+'CardCol'+containerIndex).offset();
-    var containerToPosition = $('#player'+playerIndex+'CardPlayedDiv').offset();
+    const containerFromPosition = $('#player'+playerIndex+'CardCol'+containerIndex).offset();
+    const containerToPosition = $('#player'+playerIndex+'CardPlayedDiv').offset();
 
-    var delay = 300;
-    var duration = 800;
+    const delay = (cardsInThisPlay != null) ? 1700 : 300;
+    const duration = (cardsInThisPlay != null) ? 1200 : 800;
 
     movingCard.mount($containerTo);
+    movingCard.setSide('back');
     movingCard.animateTo({
         delay: 0,
         duration: 0,
@@ -1112,7 +1134,7 @@ async function moveCardFromHandToTable(card, playerName) {
         y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
         rot: randomNegToPos(5),
         onComplete: async function() {
-            movingCard.setSide('front');
+            if (card.suit != "dummy") movingCard.setSide('front');
             movingCard.animateTo({
                 delay: delay,
                 duration: duration,

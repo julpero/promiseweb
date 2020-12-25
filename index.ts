@@ -400,7 +400,6 @@ try {
                      };
                 const game = await collection.findOne(query);
                 if (game != null) {
-                    //var playerName = pf.getPlayerNameById(getRound.myId, game.humanPlayers);
                     const stats = (gameStarted || doReload || newRound || gameOver) ? await getStatistics(game) : null;
                     const playerRound = pf.roundToPlayer(getRound.myId, getRound.round, game, stats, doReload, newRound, gameOver);
                     console.log(playerRound);
@@ -559,6 +558,7 @@ try {
                 var cardPlayedOk = false;
     
                 var eventInfo = null;
+                var eventInfoToCardPlayer = null;
     
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
@@ -590,17 +590,19 @@ try {
     
                             var newPlay = false;
                             var newRound = false;
-                            var winnerName = null;
+                            var cardsInThisPlay = null;
+                            var winnerName = pf.winnerOfPlay(gameAfterPlay.rounds[roundInDb].cardsPlayed[play], gameAfterPlay.rounds[roundInDb].trumpCard.suit);
                             var gameStatus = 1;
                             
                             if (gameAfterPlay.rounds[roundInDb].cardsPlayed[play].length == gameInDb.humanPlayersCount + gameInDb.botPlayersCount) {
                                 // this was the last card of the play
                                 // let's see who wins this play and will be starter of the next play
                                 newPlay = true;
-                                winnerName = pf.winnerOfPlay(gameAfterPlay.rounds[roundInDb].cardsPlayed[play], gameAfterPlay.rounds[roundInDb].trumpCard.suit);
                                 var winnerIndex = pf.getPlayerIndexByName(winnerName, round.roundPlayers);
     
                                 gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps++;
+
+                                cardsInThisPlay = gameAfterPlay.rounds[roundInDb].cardsPlayed[play];
 
                                 io.to(playDetails.gameId).emit('new chat line', winnerName+' won this play');
                                 
@@ -660,6 +662,17 @@ try {
                                 cardPlayedOk = true;
                                 
                                 eventInfo = {
+                                    playedCard: pf.okToReturnCard(gameInDb.hiddenCardsMode, (round.cardsPlayed[play].length == 1), (newPlay || newRound || gameOver), winnerName == playerName) ? playedCard : { suit: 'dummy', rank: 0 },
+                                    cardPlayedBy: playerName,
+                                    cardPlayedByIndex: playerInd,
+                                    newPlay: newPlay,
+                                    winnerName: newPlay ? winnerName : null,
+                                    newRound: newRound,
+                                    gameOver: gameOver,
+                                    cardsInThisPlay: cardsInThisPlay,
+                                };
+
+                                eventInfoToCardPlayer = {
                                     playedCard: playedCard,
                                     cardPlayedBy: playerName,
                                     cardPlayedByIndex: playerInd,
@@ -667,6 +680,7 @@ try {
                                     winnerName: newPlay ? winnerName : null,
                                     newRound: newRound,
                                     gameOver: gameOver,
+                                    cardsInThisPlay: cardsInThisPlay,
                                 };
                             }
                         }
@@ -686,7 +700,13 @@ try {
                         var gameInfo = pf.gameToGameInfo(thisGame);
                         gameInfo.currentRound = playDetails.roundInd;
                         gameInfo.eventInfo = eventInfo;
-                        io.to(gameInfo.id).emit('card played', gameInfo);
+
+                        // this gameInfo to all other players than the one who just played card
+                        socket.to(gameInfo.id).emit('card played', gameInfo);
+
+                        // this gameInfo to the player who just played card
+                        gameInfo.eventInfo = eventInfoToCardPlayer;
+                        socket.emit('card played', gameInfo);
             
                         // fn(gameInfo); // just DEBUG
                     }
