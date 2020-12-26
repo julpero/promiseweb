@@ -240,3 +240,35 @@ html {
         outline: rgba(00, 255, 00, 0) solid 15px;
     }
 }
+
+.charge-black-div {
+    outline: rgba(0, 0, 0, 1) solid 1px;
+    animation: pulseBlackBorder 1s infinite;
+}
+@keyframes pulseBlackBorder {
+    0% {
+        outline: rgba(0, 0, 0, 1) solid 1px;
+    }
+    50% {
+        outline-color: rgba(0, 0, 0, 0.4);
+    }
+    100% {
+        outline: rgba(0, 0, 0, 0) solid 5px;
+    }
+}
+
+.winning-yellow-div {
+    outline: rgba(238, 238, 0, 1) solid 1px;
+    animation: pulseYellowBorder 1s infinite;
+}
+@keyframes pulseYellowBorder {
+    0% {
+        outline: rgba(238, 238, 00, 1) solid 1px;
+    }
+    50% {
+        outline-color: rgba(238, 238, 00, 0.4);
+    }
+    100% {
+        outline: rgba(238, 238, 00, 0) solid 10px;
+    }
+}

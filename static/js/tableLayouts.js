@@ -452,6 +452,8 @@ function initRuleList(gameInfo) {
     if (gameInfo.privateSpeedGame) node.append($('<li></li>').text('speed game'));
     if (gameInfo.opponentPromiseCardValue) node.append($('<li></li>').text('hand value in promise'));
     if (gameInfo.opponentGameCardValue) node.append($('<li></li>').text('hand value in game'));
+    if (gameInfo.hiddenCardsMode == 1) node.append($('<li></li>').text('show only card in charge'));
+    if (gameInfo.hiddenCardsMode == 2) node.append($('<li></li>').text('show card in charge and winning card'));
 }
 
 function initSpeedBar(gameInfo) {
