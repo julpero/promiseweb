@@ -1121,8 +1121,8 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay) {
     const containerFromPosition = $('#player'+playerIndex+'CardCol'+containerIndex).offset();
     const containerToPosition = $('#player'+playerIndex+'CardPlayedDiv').offset();
 
-    const delay = (cardsInThisPlay != null) ? 1700 : 300;
-    const duration = (cardsInThisPlay != null) ? 1200 : 800;
+    const delay = (cardsInThisPlay != null && cardsInThisPlay.length > 0) ? 1700 : 300;
+    const duration = (cardsInThisPlay != null && cardsInThisPlay.length > 0) ? 1200 : 800;
 
     movingCard.mount($containerTo);
     movingCard.setSide('back');
