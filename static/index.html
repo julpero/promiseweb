@@ -529,10 +529,10 @@
                         newRound = gameInfo.eventInfo.newRound;
                         gameOver = gameInfo.eventInfo.gameOver;
                         
-                        await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay)
+                        await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay, gameInfo.hiddenCardsMode)
                             .then(async function() {
                                 if (gameInfo.eventInfo.newPlay) {
-                                    var winnerName = gameInfo.eventInfo.winnerName;
+                                    const winnerName = gameInfo.eventInfo.winnerName;
                                     await moveCardFromTableToWinDeck(winnerName, players);
                                 }
                             });
