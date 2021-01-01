@@ -593,6 +593,8 @@ try {
                             var cardsInThisPlay = null;
                             var winnerName = pf.winnerOfPlay(gameAfterPlay.rounds[roundInDb].cardsPlayed[play], gameAfterPlay.rounds[roundInDb].trumpCard.suit);
                             var gameStatus = 1;
+
+                            var gameStatistics = null;
                             
                             if (gameAfterPlay.rounds[roundInDb].cardsPlayed[play].length == gameInDb.humanPlayersCount + gameInDb.botPlayersCount) {
                                 // this was the last card of the play
@@ -637,6 +639,7 @@ try {
                                         gameOver = true;
                                         gameStatus = 2;
                                         io.to(playDetails.gameId).emit('new chat line', 'GAME OVER!');
+                                        gameStatistics = rf.generateGameStatistics(gameAfterPlay);
                                     } else {
                                         // start next round
                                         gameAfterPlay.rounds[roundInDb+1].roundStatus = 1;
@@ -654,6 +657,7 @@ try {
                                 $set: {
                                     gameStatus: gameStatus,
                                     game: gameAfterPlay,
+                                    gameStatistics: gameStatistics,
                                 }
                             };
                             const result = await collection.updateOne(query, updateDoc, options);
@@ -762,6 +766,7 @@ try {
                 await cursor.forEach(function(val) {
                     games.push({
                         id: val._id.toString(),
+                        gameStatistics: val.gameStatistics,
                         created: val.createDateTime,
                         startRound: val.startRound,
                         turnRound: val.turnRound,
@@ -781,6 +786,163 @@ try {
                 });
     
                 fn(games);
+            });
+
+            socket.on('get report data', async (data, fn) => {
+                console.log('start to get report data');
+                var retObj = {
+                    gamesPlayed: null,
+                    playersTotal: null,
+                    mostGamesPlayed: null,
+                    avgPointsPerPlayer: null,
+                    // avgKeepsPerPlayer: null,
+                    avgKeepPercentagePerPlayer: null,
+                    totalPointsPerPlayer: null,
+                };
+
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+
+                // game count
+                const queryGameCount = { gameStatus: 2 };
+                const gameCount = await collection.countDocuments(queryGameCount);
+                retObj.gamesPlayed = gameCount;
+                // ********
+
+                // games played
+                const aggregationGamesPlayed = [{$match: {
+                    gameStatus: {
+                      $eq: 2
+                    }
+                  }}, {$unwind: {
+                    path: '$humanPlayers',
+                    preserveNullAndEmptyArrays: true
+                  }}, {$group: {
+                    _id: '$humanPlayers.name',
+                    count: {
+                      $sum: 1
+                    }
+                  }}, {$sort: {
+                    count: -1
+                  }}, {$limit: 3}
+                ];
+
+                var cursorGamesPlayed = await collection.aggregate(aggregationGamesPlayed);
+                var gamesPlayed = [];
+                await cursorGamesPlayed.forEach(function(val) {
+                    gamesPlayed.push(val);
+                });
+                retObj.mostGamesPlayed = gamesPlayed;
+                // ********
+
+                // average points per player
+                const aggregationAvgPoints = [{$match: {
+                    gameStatus: {
+                      $eq: 2
+                    }
+                  }}, {$unwind: {
+                    path: "$gameStatistics.playersStatistics",
+                    preserveNullAndEmptyArrays: false
+                  }}, {$group: {
+                    _id: "$gameStatistics.playersStatistics.playerName",
+                    playerTotalGames: {$sum: 1},
+                    avgPoints: {$avg: "$gameStatistics.playersStatistics.totalPoints"},
+                  }}, {$match: {
+                    playerTotalGames: {$gte: 3}
+                  }}, {$sort: {
+                    avgPoints: -1
+                  }}, {$limit: 3}
+                ];
+
+                var cursorAvgPoints = await collection.aggregate(aggregationAvgPoints);
+                var avgPointsPerPlayer = [];
+                await cursorAvgPoints.forEach(function(val) {
+                    avgPointsPerPlayer.push(val);
+                });
+                retObj.avgPointsPerPlayer = avgPointsPerPlayer;
+                // ********
+
+                // average points per player
+                const aggregationAvgKeepPercentage = [{$match: {
+                    gameStatus: {
+                      $eq: 2
+                    },
+                    "gameStatistics.roundsPlayed": {$gte: 0}
+                  }}, {$unwind: {
+                    path: "$gameStatistics.playersStatistics",
+                    preserveNullAndEmptyArrays: false
+                  }}, {$group: {
+                    _id: "$gameStatistics.playersStatistics.playerName",
+                    playerTotalGames: {$sum: 1},
+                    playerTotalRounds: {$sum: "$gameStatistics.roundsPlayed"},
+                    playerTotalKeeps: {$sum: "$gameStatistics.playersStatistics.totalKeeps"},
+                  }}, {$match: {
+                    playerTotalGames: {$gte: 3},
+                    playerTotalKeeps: {$gt: 0}
+                  }}, {$project: {
+                    _id: 1,
+                    avgKeepPercentage: {$divide: ["$playerTotalKeeps", "$playerTotalRounds"]}
+                  }}, {$sort: {
+                    avgKeepPercentage: -1
+                  }}, {$limit: 3}
+                ];
+
+                var cursorAvgKeepPercentage = await collection.aggregate(aggregationAvgKeepPercentage);
+                var avgKeepPercentagePerPlayer = [];
+                await cursorAvgKeepPercentage.forEach(function(val) {
+                    avgKeepPercentagePerPlayer.push(val);
+                });
+                retObj.avgKeepPercentagePerPlayer = avgKeepPercentagePerPlayer;
+                // ********
+
+                // total points per player
+                const aggregationTotalPointsPerPlayer = [{$match: {
+                    gameStatus: {
+                      $eq: 2
+                    }
+                  }}, {$unwind: {
+                    path: "$gameStatistics.playersStatistics",
+                    preserveNullAndEmptyArrays: false
+                  }}, {$group: {
+                    _id: "$gameStatistics.playersStatistics.playerName",
+                    playersTotalPoints: {$sum: "$gameStatistics.playersStatistics.totalPoints"}
+                  }}, {$sort: {
+                    playersTotalPoints: -1
+                  }}, {$limit: 3}
+                ];
+
+                var cursorTotalPointsPerPlayer = await collection.aggregate(aggregationTotalPointsPerPlayer);
+                var totalPointsPerPlayer = [];
+                await cursorTotalPointsPerPlayer.forEach(function(val) {
+                    totalPointsPerPlayer.push(val);
+                });
+                retObj.totalPointsPerPlayer = totalPointsPerPlayer;
+                // ********
+
+                // players total
+                const aggregationPlayersTotal = [{$match: {
+                    gameStatus: {
+                      $eq: 2
+                    }
+                  }}, {$group: {
+                    _id: null,
+                    playersTotal: {$sum: "$humanPlayersCount"}
+                  }}, {$project: {
+                    _id: 0
+                  }}
+                ];
+
+                var cursor = await collection.aggregate(aggregationPlayersTotal);
+                var playersTotal = null;
+                await cursor.forEach(function(val) {
+                    playersTotal = val.playersTotal;
+                });
+                retObj.playersTotal = playersTotal;
+                // ********
+
+                console.log(retObj);
+
+                fn(retObj);
             });
             
             socket.on('get game report', async (data, fn) => {
@@ -946,10 +1108,37 @@ try {
                 fn(averageReport);
             });
 
+
+            socket.on('generate game statistics', async (data, fn) => {
+                console.log('start to generate game statistics for '+data.gameId);
+                var ObjectId = require('mongodb').ObjectId;
+                const searchId = new ObjectId(data.gameId);
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const query = {
+                    gameStatus: 2,
+                    _id: searchId,
+                };
+                const gameInDb = await collection.findOne(query);
+                const gameStatistics = rf.generateGameStatistics(gameInDb.game);
+                const options = { upsert: true };
+                const updateDoc = {
+                    $set: {
+                        gameStatistics: gameStatistics,
+                    }
+                };
+                const result = await collection.updateOne(query, updateDoc, options);
+
+                console.log(gameStatistics);
+                
+                fn(gameStatistics);
+
+            });
+
             socket.on('change nick', async (data, fn) => {
                 console.log('start to change nick');
                 var ObjectId = require('mongodb').ObjectId;
-                var searchId = new ObjectId(data.gameId);
+                const searchId = new ObjectId(data.gameId);
                 const oldName = data.oldName;
                 const newName = data.newName;
                 const database = mongoUtil.getDb();

@@ -365,6 +365,24 @@
             </div>
         </div>
 
+        <div class="container-fluid" id="gameReportContainer">
+            <div class="row">
+                <div class="col-12" id="gamesPlayedInfo"></div>
+            </div>
+            <div class="row">
+                <div class="col-1"></div><div class="col-11" id="playersTotalInfo"></div>
+            </div>
+            <div class="row">
+                <div class="col-5"></div><div class="col-7" id="mostGamesPlayed1"></div>
+            </div>
+            <div class="row">
+                <div class="col-6"></div><div class="col-6" id="mostGamesPlayed2"></div>
+            </div>
+            <div class="row">
+                <div class="col-7"></div><div class="col-5" id="mostGamesPlayed3"></div>
+            </div>
+        </div>
+
         <!-- Modal -->
         <div class="modal fade" id="oneGameReportModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl">
@@ -461,6 +479,7 @@
                 socket.on('start game', function(gameInfo) {
                     $('#currentGameId').val(gameInfo.id);
                     $('#myName').val(gameInfo.myName);
+                    $('#gameReportContainer').hide();
                     $('#gameChooser').hide();
                     $('#gameContainer').show();
                     initRuleList(gameInfo);
@@ -529,10 +548,10 @@
                         newRound = gameInfo.eventInfo.newRound;
                         gameOver = gameInfo.eventInfo.gameOver;
                         
-                        await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay)
+                        await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay, gameInfo.hiddenCardsMode)
                             .then(async function() {
                                 if (gameInfo.eventInfo.newPlay) {
-                                    var winnerName = gameInfo.eventInfo.winnerName;
+                                    const winnerName = gameInfo.eventInfo.winnerName;
                                     await moveCardFromTableToWinDeck(winnerName, players);
                                 }
                             });
@@ -565,6 +584,7 @@
                         }
                         if (myRound.doReloadInit) {
                             console.log('reloading...');
+                            $('#gameReportContainer').hide();
                             $('#gameChooser').hide();
                             $('#gameContainer').show();
                             browserReload(myRound, gameInfo.speedPromise);
