@@ -16,7 +16,12 @@ function showNickChanger(gameList) {
 
         var btnId = 'changeNick' + game.id;
         var showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary change-nick-button').text('Change'));
-        gameContainerDiv.append(($('<div>').addClass('col-2')).append(showGameButton));
+        gameContainerDiv.append(($('<div>').addClass('col-1')).append(showGameButton));
+
+        btnId = 'generateReports' + game.id;
+        var generatedStr = game.gameStatistics != null ? new Date(game.gameStatistics.generated).toLocaleString('fi-fi') : 'NULL';
+        var generateReportsButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary generate-report-button').text('Generate '+generatedStr));
+        gameContainerDiv.append(($('<div>').addClass('col-3')).append(generateReportsButton));
 
         gameListContainer.append(gameContainerDiv);
 
@@ -28,7 +33,7 @@ function showNickChanger(gameList) {
         const newName = $('#newName'+this.value).val().trim();
 
         if (oldName != newName && newName != '') {
-            var nickChangeObj = {
+            const nickChangeObj = {
                 gameId: this.value,
                 oldName: oldName ,
                 newName: newName,
@@ -43,6 +48,21 @@ function showNickChanger(gameList) {
         } else {
             alert('New name must be different than old name!');
         }
+    });
+
+    $('.generate-report-button').on('click', function() {
+        console.log(this.value);
+
+        const generateReportObj = {
+            gameId: this.value,
+        };
+        socket.emit('generate game statistics', generateReportObj, function(gameStatistics) {
+            console.log(gameStatistics);
+            socket.emit('get games for report', {}, function (response) {
+                $('#chooseNickGameCollapse').empty();
+                showNickChanger(response);
+            });
+        });
     });
 }
 

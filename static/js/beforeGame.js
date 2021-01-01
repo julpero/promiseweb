@@ -279,7 +279,20 @@ function initEvents() {
     initGameListEvent();
 }
 
+
+function getReportData() {
+    socket.emit('get report data', null, function(response) {
+        console.log(response);
+        $("#gamesPlayedInfo").html('Total of '+response.gamesPlayed+' games played so far...');
+        $("#playersTotalInfo").html(' ... and '+response.playersTotal+' players in those games.');
+        $("#mostGamesPlayed1").html(response.mostGamesPlayed[0]._id+' has played in '+response.mostGamesPlayed[0].count+' of those games,');
+        $("#mostGamesPlayed2").html(response.mostGamesPlayed[1]._id+' attended '+response.mostGamesPlayed[1].count+' times,');
+        $("#mostGamesPlayed3").html('and '+response.mostGamesPlayed[2]._id+' '+response.mostGamesPlayed[2].count+' times.');
+    });
+}
+
 function mainInit() {
     initEvents();
     initButtons();
+    //getReportData();
 }
