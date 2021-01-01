@@ -9,7 +9,7 @@
     },
     "dependencies": {
         "@types/jquery": "^3.5.5",
-        "@types/node": "^14.14.16",
+        "@types/node": "^14.14.17",
         "card-deck": "^1.0.1",
         "deck-of-cards": "^0.1.8",
         "express": "^4.17.1",
