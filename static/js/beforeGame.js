@@ -90,6 +90,11 @@ function validateJoinGame(gameDetails) {
 }
 
 function joinGame(id) {
+    if ($('#myName'+id).val() == '-Lasse-') {
+        if (window.confirm('Olisiko sittenkin \'-lasse-\' ?')) {
+            $('#myName'+id).val('-lasse-');
+        }
+    }
     var gameDetails = { gameId: id,
         myName: $('#myName'+id).val(),
         myId: window.localStorage.getItem('uUID'),
