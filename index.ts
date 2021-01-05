@@ -1301,10 +1301,12 @@ try {
                     }
                 }
                 const options = { upsert: true };
+                const gameStatistics = rf.generateGameStatistics(newGame);
                 const updateDoc = {
                     $set: {
                         humanPlayers: newHumanPlayers,
                         game: newGame,
+                        gameStatistics: gameStatistics,
                     }
                 };
                 const result = await collection.updateOne(query, updateDoc, options);

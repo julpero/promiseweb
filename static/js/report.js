@@ -30,7 +30,8 @@ function showNickChanger(gameList) {
     $('.change-nick-button').on('click', function() {
         console.log(this.value);
         const oldName = $('#oldName'+this.value).val().trim();
-        const newName = $('#newName'+this.value).val().trim();
+        const defNewName = oldNameToNewName(oldName);
+        const newName = defNewName != null ? defNewName : $('#newName'+this.value).val().trim();
 
         if (oldName != newName && newName != '') {
             const nickChangeObj = {
@@ -172,4 +173,13 @@ function showAverages(gameObject) {
 function showErrorNames(errorNames) {
     if (errorNames.length == 0) return '';
     console.log(errorNames);
+    return ' E: '+ errorNames.join(', ');
+}
+
+function oldNameToNewName(oldName) {
+    switch (oldName) {
+        case '-Lasse-': return '-lasse-';
+        case 'Jossu': return 'Johanna';
+    }
+    return null;
 }
