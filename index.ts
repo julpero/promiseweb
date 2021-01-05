@@ -895,65 +895,65 @@ try {
                 retObj.avgPointsPerPlayer = avgPointsPerPlayer;
                 // ********
 
-                // average keep percentage per player
-                console.log('report data - average keep percentage per player');
-                const aggregationAvgKeepPercentage1 = [{$match: {
-                    gameStatus: {
-                      $eq: 2
-                    },
-                    "gameStatistics.roundsPlayed": {$gte: 0},
-                    "gameStatistics.playersStatistics.totalKeeps": {$gte: 0}
-                  }}, {$unwind: {
-                    path: "$gameStatistics.playersStatistics",
-                    preserveNullAndEmptyArrays: false
-                  }}, {$group: {
-                    _id: "$gameStatistics.playersStatistics.playerName",
-                    playerTotalGames: {$sum: 1},
-                    playerTotalRounds: {$sum: "$gameStatistics.roundsPlayed"},
-                  }}, {$match: {
-                    playerTotalGames: {$gte: 3},
-                  }}
-                ];
-                const aggregationAvgKeepPercentage2 = [{$match: {
-                    gameStatus: {
-                      $eq: 2
-                    },
-                    "gameStatistics.roundsPlayed": {$gte: 0},
-                    "gameStatistics.playersStatistics.totalKeeps": {$gte: 0}
-                  }}, {$unwind: {
-                    path: "$gameStatistics.playersStatistics",
-                    preserveNullAndEmptyArrays: false
-                  }}, {$group: {
-                    _id: "$gameStatistics.playersStatistics.playerName",
-                    playerTotalGames: {$sum: 1},
-                    playerTotalKeeps: {$sum: "$gameStatistics.playersStatistics.totalKeeps"},
-                  }}, {$match: {
-                    playerTotalGames: {$gte: 3},
-                  }}
-                ];
+                // // average keep percentage per player
+                // console.log('report data - average keep percentage per player');
+                // const aggregationAvgKeepPercentage1 = [{$match: {
+                //     gameStatus: {
+                //       $eq: 2
+                //     },
+                //     "gameStatistics.roundsPlayed": {$gte: 0},
+                //     "gameStatistics.playersStatistics.totalKeeps": {$gte: 0}
+                //   }}, {$unwind: {
+                //     path: "$gameStatistics.playersStatistics",
+                //     preserveNullAndEmptyArrays: false
+                //   }}, {$group: {
+                //     _id: "$gameStatistics.playersStatistics.playerName",
+                //     playerTotalGames: {$sum: 1},
+                //     playerTotalRounds: {$sum: "$gameStatistics.roundsPlayed"},
+                //   }}, {$match: {
+                //     playerTotalGames: {$gte: 3},
+                //   }}
+                // ];
+                // const aggregationAvgKeepPercentage2 = [{$match: {
+                //     gameStatus: {
+                //       $eq: 2
+                //     },
+                //     "gameStatistics.roundsPlayed": {$gte: 0},
+                //     "gameStatistics.playersStatistics.totalKeeps": {$gte: 0}
+                //   }}, {$unwind: {
+                //     path: "$gameStatistics.playersStatistics",
+                //     preserveNullAndEmptyArrays: false
+                //   }}, {$group: {
+                //     _id: "$gameStatistics.playersStatistics.playerName",
+                //     playerTotalGames: {$sum: 1},
+                //     playerTotalKeeps: {$sum: "$gameStatistics.playersStatistics.totalKeeps"},
+                //   }}, {$match: {
+                //     playerTotalGames: {$gte: 3},
+                //   }}
+                // ];
 
-                const cursorAvgKeepPercentage1 = await collection.aggregate(aggregationAvgKeepPercentage1);
-                var avgKeepPercentagePerPlayer = [];
-                await cursorAvgKeepPercentage1.forEach(function(val) {
-                    avgKeepPercentagePerPlayer.push({
-                        _id: val._id,
-                        avgKeepPercentage: null,
-                        playerTotalRounds: val.playerTotalRounds,
-                        playerTotalKeeps: null,
-                    });
-                });
-                const cursorAvgKeepPercentage2 = await collection.aggregate(aggregationAvgKeepPercentage2);
-                await cursorAvgKeepPercentage2.forEach(function(val) {
-                    for (var i = 0; i < avgKeepPercentagePerPlayer.length; i++) {
-                        if (val._id == avgKeepPercentagePerPlayer[i]._id) {
-                            avgKeepPercentagePerPlayer[i].avgKeepPercentage = val.playerTotalKeeps / avgKeepPercentagePerPlayer[i].playerTotalRounds;
-                            continue;
-                        }
-                    }
-                });
-                const sortedAvgKeepPercentagePerPlayer = avgKeepPercentagePerPlayer.sort(sortAvgKeepPercentagePerPlayer);
-                retObj.avgKeepPercentagePerPlayer = sortedAvgKeepPercentagePerPlayer.slice(0, 3);
-                // ********
+                // const cursorAvgKeepPercentage1 = await collection.aggregate(aggregationAvgKeepPercentage1);
+                // var avgKeepPercentagePerPlayer = [];
+                // await cursorAvgKeepPercentage1.forEach(function(val) {
+                //     avgKeepPercentagePerPlayer.push({
+                //         _id: val._id,
+                //         avgKeepPercentage: null,
+                //         playerTotalRounds: val.playerTotalRounds,
+                //         playerTotalKeeps: null,
+                //     });
+                // });
+                // const cursorAvgKeepPercentage2 = await collection.aggregate(aggregationAvgKeepPercentage2);
+                // await cursorAvgKeepPercentage2.forEach(function(val) {
+                //     for (var i = 0; i < avgKeepPercentagePerPlayer.length; i++) {
+                //         if (val._id == avgKeepPercentagePerPlayer[i]._id) {
+                //             avgKeepPercentagePerPlayer[i].avgKeepPercentage = val.playerTotalKeeps / avgKeepPercentagePerPlayer[i].playerTotalRounds;
+                //             continue;
+                //         }
+                //     }
+                // });
+                // const sortedAvgKeepPercentagePerPlayer = avgKeepPercentagePerPlayer.sort(sortAvgKeepPercentagePerPlayer);
+                // retObj.avgKeepPercentagePerPlayer = sortedAvgKeepPercentagePerPlayer.slice(0, 3);
+                // // ********
 
                 // total points per player
                 console.log('report data - total points per player');
