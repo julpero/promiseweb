@@ -782,6 +782,7 @@ try {
                         opponentPromiseCardValue: val.opponentPromiseCardValue,
                         opponentGameCardValue: val.opponentGameCardValue,
                         hiddenCardsMode: val.hiddenCardsMode,
+                        playerNameErrors: pf.checkPlayerNames(val),
                     });
                 });
     
