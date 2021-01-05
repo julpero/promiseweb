@@ -913,20 +913,19 @@ try {
                     playerTotalKeeps: {$sum: "$gameStatistics.playersStatistics.totalKeeps"},
                   }}, {$match: {
                     playerTotalGames: {$gte: 3},
-                  }}, {$project: {
-                    _id: 1,
-                    avgKeepPercentage: {$divide: ["$playerTotalKeeps", "$playerTotalRounds"]}
-                  }}, {$sort: {
-                    avgKeepPercentage: -1
-                  }}, {$limit: 3}
+                  }}
                 ];
 
                 const cursorAvgKeepPercentage = await collection.aggregate(aggregationAvgKeepPercentage);
                 var avgKeepPercentagePerPlayer = [];
                 await cursorAvgKeepPercentage.forEach(function(val) {
-                    avgKeepPercentagePerPlayer.push(val);
+                    avgKeepPercentagePerPlayer.push({
+                        _id: val._id,
+                        avgKeepPercentage: val.playerTotalKeeps / val.playerTotalRounds,
+                    });
                 });
-                retObj.avgKeepPercentagePerPlayer = avgKeepPercentagePerPlayer;
+                const sortedAvgKeepPercentagePerPlayer = avgKeepPercentagePerPlayer.sort(sortAvgKeepPercentagePerPlayer);
+                retObj.avgKeepPercentagePerPlayer = sortedAvgKeepPercentagePerPlayer.slice(0, 3);
                 // ********
 
                 // total points per player
@@ -1532,4 +1531,10 @@ async function getGamesStatistics(gameInDb, playerName) {
         playersEqualGames: await getPlayerPreviousStats(playerName, equalObj),
     }
     return statsGamesObj;
+}
+
+function sortAvgKeepPercentagePerPlayer(a, b) {
+    if (a.avgKeepPercentage > b.avgKeepPercentage) return -1;
+    if (a.avgKeepPercentage < b.avgKeepPercentage) return 1;
+    return 0;
 }
