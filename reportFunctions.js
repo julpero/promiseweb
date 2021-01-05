@@ -29,6 +29,7 @@ module.exports = {
             playersStatistics: playersStatistics,
             winnerName: playersStatistics[0].playerName,
             roundsPlayed: game.rounds.length,
+            cardsHit: cardsHitInGame(game.rounds),
         }
     }
 }
@@ -80,4 +81,12 @@ function sortPlayerStatistics(a, b) {
     if (a.totalPoints == b.totalPoints && a.totalKeeps > b.totalKeeps) return -1;
     if (a.totalPoints == b.totalPoints && a.totalKeeps < b.totalKeeps) return 1;
     return 0;
+}
+
+function cardsHitInGame(rounds) {
+    var cardsHit = 0;
+    rounds.forEach(function (round) {
+        cardsHit+= round.cardsInRound * round.roundPlayers.length;
+    });
+    return cardsHit;
 }
