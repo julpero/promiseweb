@@ -90,6 +90,11 @@ function validateJoinGame(gameDetails) {
 }
 
 function joinGame(id) {
+    if ($('#myName'+id).val() == '-Lasse-') {
+        if (window.confirm('Olisiko sittenkin \'-lasse-\' ?')) {
+            $('#myName'+id).val('-lasse-');
+        }
+    }
     var gameDetails = { gameId: id,
         myName: $('#myName'+id).val(),
         myId: window.localStorage.getItem('uUID'),
@@ -283,16 +288,38 @@ function initEvents() {
 function getReportData() {
     socket.emit('get report data', null, function(response) {
         console.log(response);
-        $("#gamesPlayedInfo").html('Total of '+response.gamesPlayed+' games played so far...');
-        $("#playersTotalInfo").html(' ... and '+response.playersTotal+' players in those games.');
+        $("#gamesPlayedInfo").html('Total of '+response.gamesPlayed+' games and '+ response.roundsPlayed +' rounds played so far...');
+        $("#playersTotalInfo").html(' ... and '+response.playersTotal+' players hit '+ response.totalCardsHit +' cards in those games.');
+
         $("#mostGamesPlayed1").html(response.mostGamesPlayed[0]._id+' has played in '+response.mostGamesPlayed[0].count+' of those games,');
-        $("#mostGamesPlayed2").html(response.mostGamesPlayed[1]._id+' attended '+response.mostGamesPlayed[1].count+' times,');
+        $("#mostGamesPlayed2").html(response.mostGamesPlayed[1]._id+' attended '+response.mostGamesPlayed[1].count+' times');
         $("#mostGamesPlayed3").html('and '+response.mostGamesPlayed[2]._id+' '+response.mostGamesPlayed[2].count+' times.');
+
+        $("#avgKeepPercentagePerPlayer1").html('Best keep-% belongs to '+response.avgKeepPercentagePerPlayer[0]._id+' and it is '+(100*response.avgKeepPercentagePerPlayer[0].avgKeepPercentage).toFixed(1)+'.');
+        $("#avgKeepPercentagePerPlayer2").html(response.avgKeepPercentagePerPlayer[1]._id+' comes to second with '+(100*response.avgKeepPercentagePerPlayer[1].avgKeepPercentage).toFixed(1)+'% of keeps');
+        $("#avgKeepPercentagePerPlayer3").html('and '+response.avgKeepPercentagePerPlayer[2]._id+' has '+(100*response.avgKeepPercentagePerPlayer[2].avgKeepPercentage).toFixed(1)+' keep-%.');
+
+        $("#totalPointsPerPlayer1").html(response.totalPointsPerPlayer[0]._id+' has gathered total of '+response.totalPointsPerPlayer[0].playersTotalPoints+' points in all games.');
+        $("#totalPointsPerPlayer2").html(response.totalPointsPerPlayer[1]._id+'\'s points are '+response.totalPointsPerPlayer[1].playersTotalPoints);
+        $("#totalPointsPerPlayer3").html('and '+response.totalPointsPerPlayer[2]._id+' comes as third with '+response.totalPointsPerPlayer[2].playersTotalPoints+' points.');
+
+        $("#avgPointsPerPlayer1").html(response.avgPointsPerPlayer[0]._id+' played '+response.avgPointsPerPlayer[0].playerTotalGames+' games with avegare of '+response.avgPointsPerPlayer[0].avgPoints.toFixed(1)+' points.');
+        $("#avgPointsPerPlayer2").html('After '+response.avgPointsPerPlayer[1].playerTotalGames+' games '+response.avgPointsPerPlayer[1]._id+'\'s average points are '+response.avgPointsPerPlayer[1].avgPoints.toFixed(1)+'.');
+        $("#avgPointsPerPlayer3").html(response.avgPointsPerPlayer[2]._id+'\'s average points '+response.avgPointsPerPlayer[2].avgPoints.toFixed(1)+' comes from '+response.avgPointsPerPlayer[2].playerTotalGames+' played games.');
+
+        $("#playerAvgScorePoints1").html(response.avgScorePointsPerPlayer[0]._id+' is the best player with score points '+response.avgScorePointsPerPlayer[0].playerAvgScorePoints.toFixed(2)+'.');
+        $("#playerAvgScorePoints2").html(response.avgScorePointsPerPlayer[1]._id+'\'s '+response.avgScorePointsPerPlayer[1].playerAvgScorePoints.toFixed(2)+' score points is enough for the second place.');
+        $("#playerAvgScorePoints3").html('Third but not least is '+response.avgScorePointsPerPlayer[2]._id+'\'s score points '+response.avgScorePointsPerPlayer[2].playerAvgScorePoints.toFixed(2)+'.');
+        $('#playerAvgScorePointsInfo').html('Score point is calculated: (players in game - your rank in game) / (players in game)');
+
+        $("#playerTotalWins1").html(response.playerTotalWins[0]._id+' has won '+response.playerTotalWins[0].playerTotalWins+' games.');
+        $("#playerTotalWins2").html(response.playerTotalWins[1]._id+' has won '+response.playerTotalWins[1].playerTotalWins+' times');
+        $("#playerTotalWins3").html('and '+response.playerTotalWins[2].playerTotalWins+' games ended to '+response.playerTotalWins[2]._id+'\'s celebrations.');
     });
 }
 
 function mainInit() {
     initEvents();
     initButtons();
-    //getReportData();
+    getReportData();
 }

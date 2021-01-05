@@ -792,9 +792,13 @@ try {
                 console.log('start to get report data');
                 var retObj = {
                     gamesPlayed: null,
+                    roundsPlayed: null,
+                    totalCardsHit: null,
                     playersTotal: null,
                     mostGamesPlayed: null,
+                    playerTotalWins: null,
                     avgPointsPerPlayer: null,
+                    avgScorePointsPerPlayer: null,
                     // avgKeepsPerPlayer: null,
                     avgKeepPercentagePerPlayer: null,
                     totalPointsPerPlayer: null,
@@ -809,7 +813,32 @@ try {
                 retObj.gamesPlayed = gameCount;
                 // ********
 
-                // games played
+                // rounds played
+                const aggregationRoundsPlayed = [{$match: {
+                    gameStatus: {$eq: 2}
+                  }}, {$group: {
+                    _id: null,
+                    totalRounds: {
+                      $sum: "$gameStatistics.roundsPlayed"
+                    },
+                    totalCardsHit: {
+                      $sum: "$gameStatistics.cardsHit"
+                    }
+                  }}
+                ];
+
+                const cursorRoundsPlayed = await collection.aggregate(aggregationRoundsPlayed);
+                var roundsPlayed = null;
+                var totalCardsHit = null;
+                await cursorRoundsPlayed.forEach(function(val) {
+                    roundsPlayed = val.totalRounds;
+                    totalCardsHit = val.totalCardsHit;
+                });
+                retObj.roundsPlayed = roundsPlayed;
+                retObj.totalCardsHit = totalCardsHit;
+                // ********
+
+                // games played per player
                 const aggregationGamesPlayed = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -827,7 +856,7 @@ try {
                   }}, {$limit: 3}
                 ];
 
-                var cursorGamesPlayed = await collection.aggregate(aggregationGamesPlayed);
+                const cursorGamesPlayed = await collection.aggregate(aggregationGamesPlayed);
                 var gamesPlayed = [];
                 await cursorGamesPlayed.forEach(function(val) {
                     gamesPlayed.push(val);
@@ -854,7 +883,7 @@ try {
                   }}, {$limit: 3}
                 ];
 
-                var cursorAvgPoints = await collection.aggregate(aggregationAvgPoints);
+                const cursorAvgPoints = await collection.aggregate(aggregationAvgPoints);
                 var avgPointsPerPlayer = [];
                 await cursorAvgPoints.forEach(function(val) {
                     avgPointsPerPlayer.push(val);
@@ -887,7 +916,7 @@ try {
                   }}, {$limit: 3}
                 ];
 
-                var cursorAvgKeepPercentage = await collection.aggregate(aggregationAvgKeepPercentage);
+                const cursorAvgKeepPercentage = await collection.aggregate(aggregationAvgKeepPercentage);
                 var avgKeepPercentagePerPlayer = [];
                 await cursorAvgKeepPercentage.forEach(function(val) {
                     avgKeepPercentagePerPlayer.push(val);
@@ -911,12 +940,65 @@ try {
                   }}, {$limit: 3}
                 ];
 
-                var cursorTotalPointsPerPlayer = await collection.aggregate(aggregationTotalPointsPerPlayer);
+                const cursorTotalPointsPerPlayer = await collection.aggregate(aggregationTotalPointsPerPlayer);
                 var totalPointsPerPlayer = [];
                 await cursorTotalPointsPerPlayer.forEach(function(val) {
                     totalPointsPerPlayer.push(val);
                 });
                 retObj.totalPointsPerPlayer = totalPointsPerPlayer;
+                // ********
+
+                // total wins per player
+                const aggregationPlayerTotalWins = [{$match: {
+                    gameStatus: {
+                      $eq: 2
+                    }
+                  }}, {$unwind: {
+                    path: "$gameStatistics.playersStatistics",
+                    preserveNullAndEmptyArrays: false
+                  }}, {$match: {
+                    "gameStatistics.playersStatistics.position": {$eq: 1}
+                  }}, {$group: {
+                    _id: "$gameStatistics.playersStatistics.playerName",
+                    playerTotalWins: {$sum: 1},
+                  }}, {$sort: {
+                    playerTotalWins: -1
+                  }}, {$limit: 3}
+                ];
+
+                const cursorPlayerTotalWins = await collection.aggregate(aggregationPlayerTotalWins);
+                var playerTotalWins = [];
+                await cursorPlayerTotalWins.forEach(function(val) {
+                    playerTotalWins.push(val);
+                });
+                retObj.playerTotalWins = playerTotalWins;
+                // ********
+
+                // total points per player
+                const aggregationAvgScorePointsPerPlayer = [{$match: {
+                    gameStatus: {
+                      $eq: 2
+                    }
+                  }}, {$unwind: {
+                    path: "$gameStatistics.playersStatistics",
+                    preserveNullAndEmptyArrays: false
+                  }}, {$group: {
+                    _id: "$gameStatistics.playersStatistics.playerName",
+                    playerTotalGames: {$sum: 1},
+                    playerAvgScorePoints: {$avg: "$gameStatistics.playersStatistics.scorePoints"},
+                  }}, {$match: {
+                    playerTotalGames: {$gte: 3}
+                  }}, {$sort: {
+                    playerAvgScorePoints: -1
+                  }}, {$limit: 3}
+                ];
+
+                const cursorAvgScorePointsPerPlayer = await collection.aggregate(aggregationAvgScorePointsPerPlayer);
+                var avgScorePointsPerPlayer = [];
+                await cursorAvgScorePointsPerPlayer.forEach(function(val) {
+                    avgScorePointsPerPlayer.push(val);
+                });
+                retObj.avgScorePointsPerPlayer = avgScorePointsPerPlayer;
                 // ********
 
                 // players total
@@ -932,9 +1014,9 @@ try {
                   }}
                 ];
 
-                var cursor = await collection.aggregate(aggregationPlayersTotal);
+                const cursorPlayersTotal = await collection.aggregate(aggregationPlayersTotal);
                 var playersTotal = null;
-                await cursor.forEach(function(val) {
+                await cursorPlayersTotal.forEach(function(val) {
                     playersTotal = val.playersTotal;
                 });
                 retObj.playersTotal = playersTotal;
@@ -1179,7 +1261,6 @@ try {
                             }
                         }
                     }
-
                 }
                 const options = { upsert: true };
                 const updateDoc = {
