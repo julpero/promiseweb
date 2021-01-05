@@ -808,12 +808,14 @@ try {
                 const collection = database.collection('promiseweb');
 
                 // game count
+                console.log('report data - game count');
                 const queryGameCount = { gameStatus: 2 };
                 const gameCount = await collection.countDocuments(queryGameCount);
                 retObj.gamesPlayed = gameCount;
                 // ********
 
                 // rounds played
+                console.log('report data - rounds played');
                 const aggregationRoundsPlayed = [{$match: {
                     gameStatus: {$eq: 2}
                   }}, {$group: {
@@ -839,6 +841,7 @@ try {
                 // ********
 
                 // games played per player
+                console.log('report data - games played per player');
                 const aggregationGamesPlayed = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -865,6 +868,7 @@ try {
                 // ********
 
                 // average points per player
+                console.log('report data - average points per player');
                 const aggregationAvgPoints = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -891,7 +895,8 @@ try {
                 retObj.avgPointsPerPlayer = avgPointsPerPlayer;
                 // ********
 
-                // average points per player
+                // average keep percentage per player
+                console.log('report data - average keep percentage per player');
                 const aggregationAvgKeepPercentage = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -925,6 +930,7 @@ try {
                 // ********
 
                 // total points per player
+                console.log('report data - total points per player');
                 const aggregationTotalPointsPerPlayer = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -949,6 +955,7 @@ try {
                 // ********
 
                 // total wins per player
+                console.log('report data - total wins per player');
                 const aggregationPlayerTotalWins = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -974,7 +981,8 @@ try {
                 retObj.playerTotalWins = playerTotalWins;
                 // ********
 
-                // total points per player
+                // average score points per player
+                console.log('report data - average score points per player');
                 const aggregationAvgScorePointsPerPlayer = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -1002,6 +1010,7 @@ try {
                 // ********
 
                 // players total
+                console.log('report data - players total');
                 const aggregationPlayersTotal = [{$match: {
                     gameStatus: {
                       $eq: 2
