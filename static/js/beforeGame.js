@@ -307,9 +307,9 @@ function getReportData() {
         $("#avgPointsPerPlayer2").html('After '+response.avgPointsPerPlayer[1].playerTotalGames+' games '+response.avgPointsPerPlayer[1]._id+'\'s average points are '+response.avgPointsPerPlayer[1].avgPoints.toFixed(1)+'.');
         $("#avgPointsPerPlayer3").html(response.avgPointsPerPlayer[2]._id+'\'s average points '+response.avgPointsPerPlayer[2].avgPoints.toFixed(1)+' comes from '+response.avgPointsPerPlayer[2].playerTotalGames+' played games.');
 
-        $("#playerAvgScorePoints1").html(response.avgScorePointsPerPlayer[0]._id+' is the best player with score points '+response.avgScorePointsPerPlayer[0].playerAvgScorePoints.toFixed(2)+'.');
-        $("#playerAvgScorePoints2").html(response.avgScorePointsPerPlayer[1]._id+'\'s '+response.avgScorePointsPerPlayer[1].playerAvgScorePoints.toFixed(2)+' score points is enough for the second place.');
-        $("#playerAvgScorePoints3").html('Third but not least is '+response.avgScorePointsPerPlayer[2]._id+'\'s score points '+response.avgScorePointsPerPlayer[2].playerAvgScorePoints.toFixed(2)+'.');
+        $("#playerAvgScorePoints1").html(response.avgScorePointsPerPlayer[0]._id+' is the best player with score points '+response.avgScorePointsPerPlayer[0].playerAvgScorePoints.toFixed(3)+'.');
+        $("#playerAvgScorePoints2").html(response.avgScorePointsPerPlayer[1]._id+'\'s '+response.avgScorePointsPerPlayer[1].playerAvgScorePoints.toFixed(3)+' score points is enough for the second place.');
+        $("#playerAvgScorePoints3").html('Third but not least is '+response.avgScorePointsPerPlayer[2]._id+'\'s score points '+response.avgScorePointsPerPlayer[2].playerAvgScorePoints.toFixed(3)+'.');
         $('#playerAvgScorePointsInfo').html('Score point is calculated: (players in game - your rank in game) / (players in game)');
 
         $("#playerTotalWins1").html(response.playerTotalWins[0]._id+' has won '+response.playerTotalWins[0].playerTotalWins+' games.');
