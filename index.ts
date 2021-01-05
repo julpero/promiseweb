@@ -1259,6 +1259,7 @@ try {
                 const searchId = new ObjectId(data.gameId);
                 const oldName = data.oldName;
                 const newName = data.newName;
+                console.log(' '+oldName+' to '+newName);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = {
@@ -1279,7 +1280,7 @@ try {
                         if (newGame.playerOrder[i] == oldName) {
                             newGame.playerOrder[i] = newName;
                         }
-                        if (newGame.playerOrder.name && newGame.playerOrder[i].name == oldName) {
+                        if (newGame.playerOrder[i].name && newGame.playerOrder[i].name == oldName) {
                             newGame.playerOrder[i].name = newName;
                         }
                     }
