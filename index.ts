@@ -900,7 +900,9 @@ try {
                 const aggregationAvgKeepPercentage = [{$match: {
                     gameStatus: {
                       $eq: 2
-                    }
+                    },
+                    "gameStatistics.roundsPlayed": {$gte: 0},
+                    "gameStatistics.playersStatistics.totalKeeps": {$gte: 0}
                   }}, {$unwind: {
                     path: "$gameStatistics.playersStatistics",
                     preserveNullAndEmptyArrays: false
@@ -911,7 +913,6 @@ try {
                     playerTotalKeeps: {$sum: "$gameStatistics.playersStatistics.totalKeeps"},
                   }}, {$match: {
                     playerTotalGames: {$gte: 3},
-                    playerTotalKeeps: {$gt: 0}
                   }}, {$project: {
                     _id: 1,
                     avgKeepPercentage: {$divide: ["$playerTotalKeeps", "$playerTotalRounds"]}
