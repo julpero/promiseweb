@@ -900,8 +900,7 @@ try {
                 const aggregationAvgKeepPercentage = [{$match: {
                     gameStatus: {
                       $eq: 2
-                    },
-                    "gameStatistics.roundsPlayed": {$gte: 0}
+                    }
                   }}, {$unwind: {
                     path: "$gameStatistics.playersStatistics",
                     preserveNullAndEmptyArrays: false
