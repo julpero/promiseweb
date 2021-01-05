@@ -1277,7 +1277,9 @@ try {
                     for (var i = 0; i < newGame.playerOrder.length; i++) {
                         if (newGame.playerOrder[i] == oldName) {
                             newGame.playerOrder[i] = newName;
-                            break;
+                        }
+                        if (newGame.playerOrder.name && newGame.playerOrder[i].name == oldName) {
+                            newGame.playerOrder[i].name = newName;
                         }
                     }
                     for (var i = 0; i < newGame.rounds.length; i++) {
