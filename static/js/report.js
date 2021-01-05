@@ -172,4 +172,5 @@ function showAverages(gameObject) {
 function showErrorNames(errorNames) {
     if (errorNames.length == 0) return '';
     console.log(errorNames);
+    return ' E: '+ errorNames.join(', ');
 }
