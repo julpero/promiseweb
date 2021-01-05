@@ -263,8 +263,34 @@ module.exports = {
         if (hiddenCardsMode == 2 && thisIsWinnerCard) return true;
         if (thisIsFirstCard || thisIsLastCard) return true;
         return false;
-    }
+    },
 
+    checkPlayerNames: function (wholeGame) {
+        var playerNames = [];
+        var wrongNames = [];
+        wholeGame.humanPlayers.forEach (function (humanPlayer) {
+            const name = humanPlayer.name != null ? humanPlayer.name : humanPlayer;
+            playerNames.push(name);
+        });
+        wholeGame.game.playerOrder.forEach(function (player) {
+            const name = player.name != null ? player.name : player;
+            if (!playerNames.includes(name) && !wrongNames.includes(name)) wrongNames.push(name);
+        });
+        wholeGame.game.rounds.forEach(function (round) {
+            round.roundPlayers.forEach(function (roundPlayer) {
+                const name = roundPlayer.name;
+                if (!playerNames.includes(name) && !wrongNames.includes(name)) wrongNames.push(name);
+            });
+            round.cardsPlayed.forEach(function (play) {
+                play.forEach(function (card) {
+                    const name = card.name;
+                    if (!playerNames.includes(name) && !wrongNames.includes(name)) wrongNames.push(name);
+                });
+            });
+        });
+
+        return wrongNames;
+    }
 
 }
 

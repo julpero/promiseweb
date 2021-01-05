@@ -3,7 +3,7 @@ function showNickChanger(gameList) {
     console.log(gameList);
     gameList.forEach(function (game) {
         var gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
-        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
+        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)+showErrorNames(game.playerNameErrors)));
 
         var oldNameCol = $('<div></div>').addClass('col-2');
         var oldNameInput = $('<input id="oldName'+game.id+'" type="text">');
@@ -167,4 +167,9 @@ function showAverages(gameObject) {
     console.log(gameObject);
     showGamesPlayed(gameObject.gamesPlayed);
     showAveragePointsPerGames(gameObject.averagePointsPerGames);
+}
+
+function showErrorNames(errorNames) {
+    if (errorNames.length == 0) return '';
+    console.log(errorNames);
 }
