@@ -32,7 +32,7 @@
         <div class="container-fluid" id="gameChooser">
             <div class="row">
                 <div class="col">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#joinGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary" data-toggle="collapse" data-bs-toggle="collapse" href="#joinGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Show open games
                     </a>
                     <div class="collapse" id="joinGameCollapse">
@@ -41,7 +41,7 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#createGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary" data-toggle="collapse" data-bs-toggle="collapse" href="#createGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Create game
                     </a>
                     <div class="collapse" id="createGameCollapse">
@@ -234,7 +234,7 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#joinGameByIdCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary" data-toggle="collapse" data-bs-toggle="collapse" href="#joinGameByIdCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Join by ID
                     </a>
                     <div class="collapse" id="joinGameByIdCollapse">
@@ -305,10 +305,10 @@
                     <div class="row">
                         <div class="col-2">
                             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                                <a class="nav-link nav-link-sm active" id="v-pills-chat-tab" data-bs-toggle="pill" href="#v-pills-chat" role="tab" aria-controls="v-pills-chat" aria-selected="true">
+                                <a class="nav-link nav-link-sm active" id="v-pills-chat-tab" data-toggle="pill" data-bs-toggle="pill" href="#v-pills-chat" role="tab" aria-controls="v-pills-chat" aria-selected="true">
                                     Chat
                                 </a>
-                                <a class="nav-link nav-link-sm" id="v-pills-stat-tab" data-bs-toggle="pill" href="#v-pills-stat" role="tab" aria-controls="v-pills-stat" aria-selected="false">
+                                <a class="nav-link nav-link-sm" id="v-pills-stat-tab" data-toggle="pill" data-bs-toggle="pill" href="#v-pills-stat" role="tab" aria-controls="v-pills-stat" aria-selected="false">
                                     Stats
                                 </a>
                             </div>
@@ -346,7 +346,7 @@
                 </div>
 
                 <div class="col-2" id="menu" style="border: 1px solid black;">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#leaveGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary" data-toggle="collapse" data-bs-toggle="collapse" href="#leaveGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Leave game
                     </a>
 
@@ -354,7 +354,7 @@
                         really leaving?
                         <div class="btn-group" role="group" aria-label="Leaving buttons">
                             <button type="button" id="dontLeaveButton" class="btn btn-success">No</button>
-                            <button type="button" id="leaveButton" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#leavingGameModal">Yes</button>
+                            <button type="button" id="leaveButton" class="btn btn-danger" data-toggle="modal" data-bs-toggle="modal" data-target="#leavingGameModal" data-bs-target="#leavingGameModal">Yes</button>
                         </div>
                     </div>
 
@@ -419,7 +419,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="oneGameReportModalLabel">Report of the Promise Game</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <button type="button" class="btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -428,7 +428,7 @@
                     <div class="modal-body" id="oneGameKeepsBody">
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
@@ -439,7 +439,7 @@
               <div class="modal-content">
                 <div class="modal-header">
                   <h5 class="modal-title">You are now leaving the game</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                  <button type="button" class="btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                   </button>
                 </div>
@@ -451,7 +451,7 @@
                     <input type="text" id="leavingUId" class="form-control" readonly>
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Close</button>
                 </div>
               </div>
             </div>
