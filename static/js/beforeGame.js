@@ -310,6 +310,11 @@ function getReportData() {
         $("#playerAvgScorePoints1").html(response.avgScorePointsPerPlayer[0]._id+' is the best player with score points '+response.avgScorePointsPerPlayer[0].playerAvgScorePoints.toFixed(3)+'.');
         $("#playerAvgScorePoints2").html(response.avgScorePointsPerPlayer[1]._id+'\'s '+response.avgScorePointsPerPlayer[1].playerAvgScorePoints.toFixed(3)+' score points is enough for the second place.');
         $("#playerAvgScorePoints3").html('Third but not least is '+response.avgScorePointsPerPlayer[2]._id+'\'s score points '+response.avgScorePointsPerPlayer[2].playerAvgScorePoints.toFixed(3)+'.');
+        var restPlayersAvgScorePointsStr = '';
+        for (var i = 3; i < response.avgScorePointsPerPlayer.length; i++) {
+            restPlayersAvgScorePointsStr+= response.avgScorePointsPerPlayer[i]._id+' '+response.avgScorePointsPerPlayer[i].playerAvgScorePoints.toFixed(3)+', ';
+        }
+        $("#restPlayersAvgScorePoints").html(restPlayersAvgScorePointsStr);
         $('#playerAvgScorePointsInfo').html('Score point is calculated: (players in game - your rank in game) / (players in game)');
 
         $("#playerTotalWins1").html(response.playerTotalWins[0]._id+' has won '+response.playerTotalWins[0].playerTotalWins+' games.');

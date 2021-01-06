@@ -1025,7 +1025,7 @@ try {
                     playerTotalGames: {$gte: 3}
                   }}, {$sort: {
                     playerAvgScorePoints: -1
-                  }}, {$limit: 3}
+                  }}, 
                 ];
 
                 const cursorAvgScorePointsPerPlayer = await collection.aggregate(aggregationAvgScorePointsPerPlayer);
