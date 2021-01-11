@@ -288,24 +288,46 @@ function initEvents() {
 function getReportData() {
     socket.emit('get report data', null, function(response) {
         console.log(response);
+        const tooltipTemplate = '<div class="tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-wide"></div></div>';
+
         $("#gamesPlayedInfo").html('Total of '+response.gamesPlayed+' games and '+ response.roundsPlayed +' rounds played so far...');
         $("#playersTotalInfo").html(' ... and '+response.playersTotal+' players hit '+ response.totalCardsHit +' cards in those games.');
 
         $("#mostGamesPlayed1").html(response.mostGamesPlayed[0]._id+' has played in '+response.mostGamesPlayed[0].count+' of those games,');
         $("#mostGamesPlayed2").html(response.mostGamesPlayed[1]._id+' attended '+response.mostGamesPlayed[1].count+' times');
         $("#mostGamesPlayed3").html('and '+response.mostGamesPlayed[2]._id+' '+response.mostGamesPlayed[2].count+' times.');
+        var restMostGamesPlayedStr = '';
+        for (var i = 3; i < response.mostGamesPlayed.length; i++) {
+            restMostGamesPlayedStr+= response.mostGamesPlayed[i]._id+' '+response.mostGamesPlayed[i].count+', ';
+        }
+        $('#mostGamesPlayed3').tooltip({title: restMostGamesPlayedStr, template: tooltipTemplate, placement: 'bottom'});
 
-        // $("#avgKeepPercentagePerPlayer1").html('Best keep-% belongs to '+response.avgKeepPercentagePerPlayer[0]._id+' and it is '+(100*response.avgKeepPercentagePerPlayer[0].avgKeepPercentage).toFixed(1)+'.');
-        // $("#avgKeepPercentagePerPlayer2").html(response.avgKeepPercentagePerPlayer[1]._id+' comes to second with '+(100*response.avgKeepPercentagePerPlayer[1].avgKeepPercentage).toFixed(1)+'% of keeps');
-        // $("#avgKeepPercentagePerPlayer3").html('and '+response.avgKeepPercentagePerPlayer[2]._id+' has '+(100*response.avgKeepPercentagePerPlayer[2].avgKeepPercentage).toFixed(1)+' keep-%.');
+        $("#avgKeepPercentagePerPlayer1").html('Best keep-% belongs to '+response.avgKeepPercentagePerPlayer[0]._id+' and it is '+(100*response.avgKeepPercentagePerPlayer[0].avgKeepPercentage).toFixed(1)+'.');
+        $("#avgKeepPercentagePerPlayer2").html(response.avgKeepPercentagePerPlayer[1]._id+' comes to second with '+(100*response.avgKeepPercentagePerPlayer[1].avgKeepPercentage).toFixed(1)+'% of keeps');
+        $("#avgKeepPercentagePerPlayer3").html('and '+response.avgKeepPercentagePerPlayer[2]._id+' has '+(100*response.avgKeepPercentagePerPlayer[2].avgKeepPercentage).toFixed(1)+' keep-%.');
+        var restKeepPercentagePerPlayerStr = '';
+        for (var i = 3; i < response.avgKeepPercentagePerPlayer.length; i++) {
+            restKeepPercentagePerPlayerStr+= response.avgKeepPercentagePerPlayer[i]._id+' '+(100*response.avgKeepPercentagePerPlayer[i].avgKeepPercentage).toFixed(1)+'%, ';
+        }
+        $('#avgKeepPercentagePerPlayer3').tooltip({title: restKeepPercentagePerPlayerStr, template: tooltipTemplate, placement: 'bottom'});
 
         $("#totalPointsPerPlayer1").html(response.totalPointsPerPlayer[0]._id+' has gathered total of '+response.totalPointsPerPlayer[0].playersTotalPoints+' points in all games.');
         $("#totalPointsPerPlayer2").html(response.totalPointsPerPlayer[1]._id+'\'s points are '+response.totalPointsPerPlayer[1].playersTotalPoints);
         $("#totalPointsPerPlayer3").html('and '+response.totalPointsPerPlayer[2]._id+' comes as third with '+response.totalPointsPerPlayer[2].playersTotalPoints+' points.');
+        var restPointsPerPlayerStr = '';
+        for (var i = 3; i < response.totalPointsPerPlayer.length; i++) {
+            restPointsPerPlayerStr+= response.totalPointsPerPlayer[i]._id+' '+response.totalPointsPerPlayer[i].playersTotalPoints+', ';
+        }
+        $('#totalPointsPerPlayer3').tooltip({title: restPointsPerPlayerStr, template: tooltipTemplate, placement: 'bottom'});
 
         $("#avgPointsPerPlayer1").html(response.avgPointsPerPlayer[0]._id+' played '+response.avgPointsPerPlayer[0].playerTotalGames+' games with avegare of '+response.avgPointsPerPlayer[0].avgPoints.toFixed(1)+' points.');
         $("#avgPointsPerPlayer2").html('After '+response.avgPointsPerPlayer[1].playerTotalGames+' games '+response.avgPointsPerPlayer[1]._id+'\'s average points are '+response.avgPointsPerPlayer[1].avgPoints.toFixed(1)+'.');
         $("#avgPointsPerPlayer3").html(response.avgPointsPerPlayer[2]._id+'\'s average points '+response.avgPointsPerPlayer[2].avgPoints.toFixed(1)+' comes from '+response.avgPointsPerPlayer[2].playerTotalGames+' played games.');
+        var restPlayersAvgPointsPerPlayerStr = '';
+        for (var i = 3; i < response.avgPointsPerPlayer.length; i++) {
+            restPlayersAvgPointsPerPlayerStr+= response.avgPointsPerPlayer[i]._id+' '+response.avgPointsPerPlayer[i].avgPoints.toFixed(1)+', ';
+        }
+        $('#avgPointsPerPlayer3').tooltip({title: restPlayersAvgPointsPerPlayerStr, template: tooltipTemplate, placement: 'bottom'});
 
         $("#playerAvgScorePoints1").html(response.avgScorePointsPerPlayer[0]._id+' is the best player with score points '+response.avgScorePointsPerPlayer[0].playerAvgScorePoints.toFixed(3)+'.');
         $("#playerAvgScorePoints2").html(response.avgScorePointsPerPlayer[1]._id+'\'s '+response.avgScorePointsPerPlayer[1].playerAvgScorePoints.toFixed(3)+' score points is enough for the second place.');
@@ -314,12 +336,17 @@ function getReportData() {
         for (var i = 3; i < response.avgScorePointsPerPlayer.length; i++) {
             restPlayersAvgScorePointsStr+= response.avgScorePointsPerPlayer[i]._id+' '+response.avgScorePointsPerPlayer[i].playerAvgScorePoints.toFixed(3)+', ';
         }
-        $("#restPlayersAvgScorePoints").html(restPlayersAvgScorePointsStr);
+        $('#playerAvgScorePoints3').tooltip({title: restPlayersAvgScorePointsStr, template: tooltipTemplate, placement: 'bottom'});
         $('#playerAvgScorePointsInfo').html('Score point is calculated: (players in game - your rank in game) / (players in game)');
 
         $("#playerTotalWins1").html(response.playerTotalWins[0]._id+' has won '+response.playerTotalWins[0].playerTotalWins+' games.');
         $("#playerTotalWins2").html(response.playerTotalWins[1]._id+' has won '+response.playerTotalWins[1].playerTotalWins+' times');
         $("#playerTotalWins3").html('and '+response.playerTotalWins[2].playerTotalWins+' games ended to '+response.playerTotalWins[2]._id+'\'s celebrations.');
+        var restPlayersTotalWinsStr = '';
+        for (var i = 3; i < response.playerTotalWins.length; i++) {
+            restPlayersTotalWinsStr+= response.playerTotalWins[i]._id+' '+response.playerTotalWins[i].playerTotalWins+', ';
+        }
+        $('#playerTotalWins3').tooltip({title: restPlayersTotalWinsStr, template: tooltipTemplate, placement: 'bottom'});
     });
 }
 
