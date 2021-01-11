@@ -855,9 +855,11 @@ try {
                     count: {
                       $sum: 1
                     }
+                  }}, {$match: {
+                    count: {$gte: 3}
                   }}, {$sort: {
                     count: -1
-                  }}, {$limit: 3}
+                  }}
                 ];
 
                 const cursorGamesPlayed = await collection.aggregate(aggregationGamesPlayed);
@@ -885,7 +887,7 @@ try {
                     playerTotalGames: {$gte: 3}
                   }}, {$sort: {
                     avgPoints: -1
-                  }}, {$limit: 3}
+                  }}
                 ];
 
                 const cursorAvgPoints = await collection.aggregate(aggregationAvgPoints);
@@ -956,10 +958,15 @@ try {
                     preserveNullAndEmptyArrays: false
                   }}, {$group: {
                     _id: "$gameStatistics.playersStatistics.playerName",
+                    playerTotalGames: {$sum: 1},
                     playersTotalPoints: {$sum: "$gameStatistics.playersStatistics.totalPoints"}
+                  }}, {$match: {
+                    playerTotalGames: {
+                      $gte: 3
+                    }
                   }}, {$sort: {
                     playersTotalPoints: -1
-                  }}, {$limit: 3}
+                  }}
                 ];
 
                 const cursorTotalPointsPerPlayer = await collection.aggregate(aggregationTotalPointsPerPlayer);
@@ -976,17 +983,14 @@ try {
                     gameStatus: {
                       $eq: 2
                     }
-                  }}, {$unwind: {
-                    path: "$gameStatistics.playersStatistics",
-                    preserveNullAndEmptyArrays: false
-                  }}, {$match: {
-                    "gameStatistics.playersStatistics.position": {$eq: 1}
                   }}, {$group: {
-                    _id: "$gameStatistics.playersStatistics.playerName",
+                    _id: "$gameStatistics.winnerName",
                     playerTotalWins: {$sum: 1},
+                  }}, {$match: {
+                    playerTotalWins: {$gte: 3}
                   }}, {$sort: {
                     playerTotalWins: -1
-                  }}, {$limit: 3}
+                  }}
                 ];
 
                 const cursorPlayerTotalWins = await collection.aggregate(aggregationPlayerTotalWins);
