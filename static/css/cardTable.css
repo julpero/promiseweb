@@ -152,6 +152,10 @@ html {
     margin-left: 10px;
     font-size: small;
 }
+.tooltip-inner.tooltip-wide {
+    width: 800px !important;
+    min-width: 800px !important;
+}
 .thinkingred {
     background: rgba(255, 82, 82, 1);
     border-radius: 100%;
