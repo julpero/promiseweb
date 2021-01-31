@@ -284,6 +284,19 @@ function initEvents() {
     initGameListEvent();
 }
 
+function usedRulesToHtml(usedRulesCount) {
+    return 'Even promises were disallowed in ' +usedRulesCount.evenPromisesDisallowedCount+' games<br>' +
+    'Promises were hidden in '+usedRulesCount.hiddenPromiseRoundCount+' games<br>' +
+    'Only total promise was shown in '+usedRulesCount.onlyTotalPromiseCount+' games<br>' +
+    'Playing trump card was mandatory in '+usedRulesCount.mustTrumpCount+' games<br>' +
+    'Trump was hidden while promising in '+usedRulesCount.hiddenTrumpCount+' games<br>' +
+    'Speed promise rules was enabled in '+usedRulesCount.speedPromiseCount+' games<br>' +
+    'Speed card playing games was '+usedRulesCount.privateSpeedGameCount+' times<br>' +
+    'Players card value was visible while promising in '+usedRulesCount.opponentPromiseCardValueCount+' games<br>' +
+    'Players card value was visible while playing in '+usedRulesCount.opponentGameCardValueCount+' games<br>' +
+    'Only card in charge was visible in '+usedRulesCount.showOnlyCardInChargeCount+' games<br>' +
+    'Only card in charge and winning card were visible in '+usedRulesCount.showCardInChargeAndWinningCardCount+' games<br>';
+}
 
 function getReportData() {
     socket.emit('get report data', null, function(response) {
@@ -347,6 +360,9 @@ function getReportData() {
             restPlayersTotalWinsStr+= response.playerTotalWins[i]._id+' '+response.playerTotalWins[i].playerTotalWins+', ';
         }
         $('#playerTotalWins3').tooltip({title: restPlayersTotalWinsStr, template: tooltipTemplate, placement: 'bottom'});
+
+        $('#vanillaGames').html(response.vanillaGamesCount+' games played with original rules, rules were used:');
+        $('#usedRules').html(usedRulesToHtml(response.usedRulesCount));
     });
 }
 
