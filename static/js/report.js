@@ -29,7 +29,7 @@ function showNickChanger(gameList) {
 
     $('.change-nick-button').on('click', function() {
         console.log(this.value);
-        const oldName = $('#oldName'+this.value).val().trim();
+        const oldName = $('#oldName'+this.value).val();
         const defNewName = oldNameToNewName(oldName);
         const newName = defNewName != null ? defNewName : $('#newName'+this.value).val().trim();
 

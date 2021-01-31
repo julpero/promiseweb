@@ -17,6 +17,23 @@ const rf = require(__dirname + '/reportFunctions.js');
 const sm = require(__dirname + '/clientSocketMapper.js');
 const ai = require(__dirname + '/aiPlayer.js');
 
+const minGamesToReport = 5;
+const vanillaGameRules = {
+    // startRound: {$eq: 10},
+    // turnRound: {$eq: 1},
+    // endRound: {$eq: 10},
+    evenPromisesAllowed: {$in: [null, true]},
+    visiblePromiseRound: {$in: [null, true]},
+    onlyTotalPromise: {$in: [null, false]},
+    freeTrump: {$in: [null, true]},
+    hiddenTrump: {$in: [null, false]},
+    speedPromise: {$in: [null, false]},
+    privateSpeedGame: {$in: [null, false]},
+    opponentPromiseCardValue: {$in: [null, false]},
+    opponentGameCardValue: {$in: [null, false]},
+    hiddenCardsMode: {$in: [null, 0]},
+};
+
 try {
     var mongoUtil = require(__dirname + '/mongoUtil.js');
     mongoUtil.connectToServer(async function(err, client ) {
@@ -803,6 +820,8 @@ try {
                     // avgKeepsPerPlayer: null,
                     avgKeepPercentagePerPlayer: null,
                     totalPointsPerPlayer: null,
+                    vanillaGamesCount: null,
+                    usedRulesCount: null,
                 };
 
                 const database = mongoUtil.getDb();
@@ -856,7 +875,7 @@ try {
                       $sum: 1
                     }
                   }}, {$match: {
-                    count: {$gte: 3}
+                    count: {$gte: minGamesToReport}
                   }}, {$sort: {
                     count: -1
                   }}
@@ -884,7 +903,7 @@ try {
                     playerTotalGames: {$sum: 1},
                     avgPoints: {$avg: "$gameStatistics.playersStatistics.totalPoints"},
                   }}, {$match: {
-                    playerTotalGames: {$gte: 3}
+                    playerTotalGames: {$gte: minGamesToReport}
                   }}, {$sort: {
                     avgPoints: -1
                   }}
@@ -926,7 +945,7 @@ try {
                     playerTotalKeeps: {$sum: "$gameStatistics.playersStatistics.totalKeeps"}
                   }}, {$match: {
                     playerTotalGames: {
-                      $gte: 3
+                      $gte: minGamesToReport
                     }
                   }}, {$project: {
                     id_: 1,
@@ -962,7 +981,7 @@ try {
                     playersTotalPoints: {$sum: "$gameStatistics.playersStatistics.totalPoints"}
                   }}, {$match: {
                     playerTotalGames: {
-                      $gte: 3
+                      $gte: minGamesToReport
                     }
                   }}, {$sort: {
                     playersTotalPoints: -1
@@ -1015,7 +1034,7 @@ try {
                     playerTotalGames: {$sum: 1},
                     playerAvgScorePoints: {$avg: "$gameStatistics.playersStatistics.scorePoints"},
                   }}, {$match: {
-                    playerTotalGames: {$gte: 3}
+                    playerTotalGames: {$gte: minGamesToReport}
                   }}, {$sort: {
                     playerAvgScorePoints: -1
                   }}, 
@@ -1049,6 +1068,90 @@ try {
                     playersTotal = val.playersTotal;
                 });
                 retObj.playersTotal = playersTotal;
+                // ********
+
+                // vanilla games
+                console.log('report data - vanilla games');
+                const aggregationVanillaGames = [{$match: {
+                    gameStatus: {$eq: 2},
+                  }}, {$match: vanillaGameRules
+                }, {$group: {
+                    _id: null,
+                    gamesTotal: {
+                      $sum: 1
+                    }
+                  }}
+                ];
+
+                const cursorVanillaGames = await collection.aggregate(aggregationVanillaGames);
+                var vanillaGamesCount = null;
+                await cursorVanillaGames.forEach(function(val) {
+                    vanillaGamesCount = val.gamesTotal;
+                });
+                retObj.vanillaGamesCount = vanillaGamesCount;
+                // ********
+
+                // used rules
+                console.log('report data - used rules');
+                const aggregationUsedRules = [{$match: {
+                    gameStatus: {$eq: 2},
+                  }}, {$project: {
+                    item: 1,
+                    evenPromisesDisallowed: {$cond: [{ $eq: ["$evenPromisesAllowed", false]}, 1, 0]},
+                    hiddenPromiseRound: {$cond: [{ $eq: ["$visiblePromiseRound", false]}, 1, 0]},
+                    onlyTotalPromise: {$cond: [{ $eq: ["$onlyTotalPromise", true]}, 1, 0]},
+                    mustTrump: {$cond: [{ $eq: ["$freeTrump", false]}, 1, 0]},
+                    hiddenTrump: {$cond: [{ $eq: ["$hiddenTrump", true]}, 1, 0]},
+                    speedPromise: {$cond: [{ $eq: ["$speedPromise", true]}, 1, 0]},
+                    privateSpeedGame: {$cond: [{ $eq: ["$privateSpeedGame", true]}, 1, 0]},
+                    opponentPromiseCardValue: {$cond: [{ $eq: ["$opponentPromiseCardValue", true]}, 1, 0]},
+                    opponentGameCardValue: {$cond: [{ $eq: ["$opponentGameCardValue", true]}, 1, 0]},
+                    showOnlyCardInCharge: {$cond: [{ $eq: ["$hiddenCardsMode", 1]}, 1, 0]},
+                    showCardInChargeAndWinningCard: {$cond: [{ $eq: ["$hiddenCardsMode", 2]}, 1, 0]},
+                  }}, {$group: {
+                    _id: "$item",
+                    evenPromisesDisallowedCount: {$sum: "$evenPromisesDisallowed"},
+                    hiddenPromiseRoundCount: {$sum: "$hiddenPromiseRound"},
+                    onlyTotalPromiseCount: {$sum: "$onlyTotalPromise"},
+                    mustTrumpCount: {$sum: "$mustTrump"},
+                    hiddenTrumpCount: {$sum: "$hiddenTrump"},
+                    speedPromiseCount: {$sum: "$speedPromise"},
+                    privateSpeedGameCount: {$sum: "$privateSpeedGame"},
+                    opponentPromiseCardValueCount: {$sum: "$opponentPromiseCardValue"},
+                    opponentGameCardValueCount: {$sum: "$opponentGameCardValue"},
+                    showOnlyCardInChargeCount: {$sum: "$showOnlyCardInCharge"},
+                    showCardInChargeAndWinningCardCount: {$sum: "$showCardInChargeAndWinningCard"},
+                  }}
+                ];
+
+                const cursorUsedRules = await collection.aggregate(aggregationUsedRules);
+                var usedRulesCount = {
+                    evenPromisesDisallowedCount: null,
+                    hiddenPromiseRoundCount: null,
+                    onlyTotalPromiseCount: null,
+                    mustTrumpCount: null,
+                    hiddenTrumpCount: null,
+                    speedPromiseCount: null,
+                    privateSpeedGameCount: null,
+                    opponentPromiseCardValueCount: null,
+                    opponentGameCardValueCount: null,
+                    showOnlyCardInChargeCount: null,
+                    showCardInChargeAndWinningCardCount: null,
+                };
+                await cursorUsedRules.forEach(function(val) {
+                    usedRulesCount.evenPromisesDisallowedCount = val.evenPromisesDisallowedCount;
+                    usedRulesCount.hiddenPromiseRoundCount = val.hiddenPromiseRoundCount;
+                    usedRulesCount.onlyTotalPromiseCount = val.onlyTotalPromiseCount;
+                    usedRulesCount.mustTrumpCount = val.mustTrumpCount;
+                    usedRulesCount.hiddenTrumpCount = val.hiddenTrumpCount;
+                    usedRulesCount.speedPromiseCount = val.speedPromiseCount;
+                    usedRulesCount.privateSpeedGameCount = val.privateSpeedGameCount;
+                    usedRulesCount.opponentPromiseCardValueCount = val.opponentPromiseCardValueCount;
+                    usedRulesCount.opponentGameCardValueCount = val.opponentGameCardValueCount;
+                    usedRulesCount.showOnlyCardInChargeCount = val.showOnlyCardInChargeCount;
+                    usedRulesCount.showCardInChargeAndWinningCardCount = val.showCardInChargeAndWinningCardCount;
+                });
+                retObj.usedRulesCount = usedRulesCount;
                 // ********
 
                 console.log(retObj);
