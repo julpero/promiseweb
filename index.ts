@@ -579,6 +579,7 @@ try {
     
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
+                const statsCollection = database.collection('promisewebStats');
                 var ObjectId = require('mongodb').ObjectId;
                 var searchId = new ObjectId(playDetails.gameId);
                 
@@ -649,6 +650,20 @@ try {
                                             gameAfterPlay.rounds[roundInDb].roundPlayers[i].points+= speedPromiseTotal;
                                             gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromiseTotal = speedPromiseTotal;
                                         }
+
+                                        const statsPlayer = {
+                                            game: playDetails.gameId,
+                                            played: new Date().getTime(),
+                                            round: roundInDb,
+                                            name: gameAfterPlay.rounds[roundInDb].roundPlayers[i].name,
+                                            promise: gameAfterPlay.rounds[roundInDb].roundPlayers[i].promise,
+                                            keeps: gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps,
+                                            points: gameAfterPlay.rounds[roundInDb].roundPlayers[i].points,
+                                            kept: gameAfterPlay.rounds[roundInDb].roundPlayers[i].promise == gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps,
+                                            cardsInRound: gameAfterPlay.rounds[roundInDb].cardsInRound,
+                                        }
+                                        const statsResult = await statsCollection.insertOne(statsPlayer);
+                                        console.log('statsResult inserted ' + statsResult.insertedCount + ' with _id: ' + statsResult.insertedId);
                                     }
     
                                     if (gameAfterPlay.rounds.length == roundInDb + 1) {
@@ -656,7 +671,6 @@ try {
                                         gameOver = true;
                                         gameStatus = 2;
                                         io.to(playDetails.gameId).emit('new chat line', 'GAME OVER!');
-                                        gameStatistics = rf.generateGameStatistics(gameAfterPlay);
                                     } else {
                                         // start next round
                                         gameAfterPlay.rounds[roundInDb+1].roundStatus = 1;
@@ -668,6 +682,9 @@ try {
                                     gameAfterPlay.rounds[roundInDb].cardsPlayed.push([]);
                                 }
                             }
+
+                            // let's update game statistics after every card hit
+                            gameStatistics = rf.generateGameStatistics(gameAfterPlay, gameOver);
     
                             const options = { upsert: true };
                             const updateDoc = {
@@ -1361,7 +1378,7 @@ try {
                     _id: searchId,
                 };
                 const gameInDb = await collection.findOne(query);
-                const gameStatistics = rf.generateGameStatistics(gameInDb.game);
+                const gameStatistics = rf.generateGameStatistics(gameInDb.game, true);
                 const options = { upsert: true };
                 const updateDoc = {
                     $set: {
@@ -1425,7 +1442,7 @@ try {
                     }
                 }
                 const options = { upsert: true };
-                const gameStatistics = rf.generateGameStatistics(newGame);
+                const gameStatistics = rf.generateGameStatistics(newGame, true);
                 const updateDoc = {
                     $set: {
                         humanPlayers: newHumanPlayers,
