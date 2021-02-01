@@ -17,7 +17,7 @@ module.exports = {
         return points;
     },
 
-    generateGameStatistics: function(game) {
+    generateGameStatistics: function(game, gameIsPlayed) {
         const playersStatistics = getPlayerStatistics(game).sort(sortPlayerStatistics);
         for (var i = 0; i < playersStatistics.length; i++) {
             const position = i+1;
@@ -27,8 +27,8 @@ module.exports = {
         return {
             generated: new Date().getTime(),
             playersStatistics: playersStatistics,
-            winnerName: playersStatistics[0].playerName,
-            roundsPlayed: game.rounds.length,
+            winnerName: gameIsPlayed ? playersStatistics[0].playerName : '',
+            roundsPlayed: getRoundsPlayed(game.rounds),
             cardsHit: cardsHitInGame(game.rounds),
         }
     }
@@ -83,10 +83,25 @@ function sortPlayerStatistics(a, b) {
     return 0;
 }
 
+function getRoundsPlayed(rounds) {
+    var roundsPlayed = 0;
+    rounds.forEach(function (round) {
+        if (round.roundStatus == 2) {
+            roundsPlayed++;
+        }
+    });
+    return roundsPlayed;
+}
+
 function cardsHitInGame(rounds) {
     var cardsHit = 0;
     rounds.forEach(function (round) {
-        cardsHit+= round.cardsInRound * round.roundPlayers.length;
+        if (round.roundStatus > 0) {
+            round.cardsPlayed.forEach(function (cardArr) {
+                cardsHit+= cardArr.length;
+            });
+            // cardsHit+= round.cardsInRound * round.roundPlayers.length;
+        }
     });
     return cardsHit;
 }
