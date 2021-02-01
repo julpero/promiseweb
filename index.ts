@@ -1072,7 +1072,7 @@ try {
                 // ********
 
                 // players count
-                console.log('report data - vanilla games');
+                console.log('report data - players count');
                 const aggregationPlayerCount = [{$match: {
                     gameStatus: {$eq: 2},
                   }}, {$group: {
