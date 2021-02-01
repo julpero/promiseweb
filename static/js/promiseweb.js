@@ -1032,6 +1032,8 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
     var delay = 400;
     var duration = 900;
     var movingCards = [];
+    var cardLooper = 0;
+    var cardReadyLooper = 0;
 
     for (var i = 0; i < players.length; i++) {
         var containerFromPosition = $('#player'+i+'CardPlayedDiv').offset();
@@ -1044,6 +1046,7 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
         $('#player'+i+'CardPlayedDiv').empty();
         
         movingCards[i].mount($containerTo);
+        movingCards[i].setSide('front');
         movingCards[i].animateTo({
             delay: 0,
             duration: 0,
@@ -1052,17 +1055,19 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
             y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
             rot: randomNegToPos(5),
             onComplete: async function() {
-                for (var j = 0; j < movingCards.length; j++) {
-                    movingCards[j].animateTo({
-                        delay: delay,
-                        duration: duration,
-                        ease: 'quartOut',
-                        x: randomNegToPos(2),
-                        y: randomNegToPos(2),
-                        rot: randomNegToPos(5),
-                    });
-                }
-                
+                movingCards[cardLooper].animateTo({
+                    delay: delay,
+                    duration: duration,
+                    ease: 'quartOut',
+                    x: randomNegToPos(2),
+                    y: randomNegToPos(2),
+                    rot: randomNegToPos(5),
+                    onComplete: async function() {
+                        movingCards[cardReadyLooper].setSide('back');
+                        cardReadyLooper++;
+                    }
+                });
+                cardLooper++;
             }
         });
     }
