@@ -298,6 +298,13 @@ function usedRulesToHtml(usedRulesCount) {
     'Only card in charge and winning card were visible in '+usedRulesCount.showCardInChargeAndWinningCardCount+' games<br>';
 }
 
+function playerCountToHtml(playerCount) {
+    return 'Three player games was played '+playerCount.threePlayers+' times,<br>' +
+    'Four players attended in game '+playerCount.fourPlayers+' times.<br>' +
+    playerCount.fivePlayers+' times was played five player games<br>' +
+    'and six players played game '+playerCount.sixPlayers+' times.';
+}
+
 function getReportData() {
     socket.emit('get report data', null, function(response) {
         console.log(response);
@@ -363,6 +370,8 @@ function getReportData() {
 
         $('#vanillaGames').html(response.vanillaGamesCount+' games played with original rules, rules were used:');
         $('#usedRules').html(usedRulesToHtml(response.usedRulesCount));
+        
+        $('#playerCount').html(playerCountToHtml(response.playerCount));
     });
 }
 

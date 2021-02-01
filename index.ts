@@ -822,6 +822,7 @@ try {
                     totalPointsPerPlayer: null,
                     vanillaGamesCount: null,
                     usedRulesCount: null,
+                    playerCount: null,
                 };
 
                 const database = mongoUtil.getDb();
@@ -1068,6 +1069,32 @@ try {
                     playersTotal = val.playersTotal;
                 });
                 retObj.playersTotal = playersTotal;
+                // ********
+
+                // players count
+                console.log('report data - vanilla games');
+                const aggregationPlayerCount = [{$match: {
+                    gameStatus: {$eq: 2},
+                  }}, {$group: {
+                    _id: "$humanPlayersCount",
+                    lkm: {$sum: 1}
+                  }}
+                ];
+
+                const cursorPlayerCount = await collection.aggregate(aggregationPlayerCount);
+                var playerCount = {
+                    threePlayers: 0,
+                    fourPlayers: 0,
+                    fivePlayers: 0,
+                    sixPlayers: 0,
+                };
+                await cursorPlayerCount.forEach(function(val) {
+                    if (val._id == 3) playerCount.threePlayers = val.lkm;
+                    if (val._id == 4) playerCount.fourPlayers = val.lkm;
+                    if (val._id == 5) playerCount.fivePlayers = val.lkm;
+                    if (val._id == 6) playerCount.sixPlayers = val.lkm;
+                });
+                retObj.playerCount = playerCount;
                 // ********
 
                 // vanilla games
