@@ -9,6 +9,8 @@ server.listen(port, () => {
 });
 
 app.use(express.static('static'))
+app.use(express.static('node_modules/jquery/dist'))
+app.use(express.static('node_modules/bootstrap/dist'))
 app.use(express.static('node_modules/deck-of-cards/dist'))
 app.use(express.static('node_modules/jquery-color-animation'))
 
