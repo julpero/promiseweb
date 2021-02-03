@@ -663,6 +663,7 @@ try {
                                             points: gameAfterPlay.rounds[roundInDb].roundPlayers[i].points,
                                             kept: gameAfterPlay.rounds[roundInDb].roundPlayers[i].promise == gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps,
                                             cardsInRound: gameAfterPlay.rounds[roundInDb].cardsInRound,
+                                            playersInGame: gameAfterPlay.playerOrder.length,
                                         }
                                         const statsResult = await statsCollection.insertOne(statsPlayer);
                                         console.log('statsResult inserted ' + statsResult.insertedCount + ' with _id: ' + statsResult.insertedId);
