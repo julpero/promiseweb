@@ -13,6 +13,7 @@ app.use(express.static('node_modules/jquery/dist'))
 app.use(express.static('node_modules/bootstrap/dist'))
 app.use(express.static('node_modules/deck-of-cards/dist'))
 app.use(express.static('node_modules/jquery-color-animation'))
+app.use(express.static('node_modules/chart.js'))
 
 const pf = require(__dirname + '/promiseFunctions.js');
 const rf = require(__dirname + '/reportFunctions.js');
@@ -1211,7 +1212,10 @@ try {
                 var retObj = {
                     players: null,
                     points: null,
+                    rounds: null,
                     keeps: null,
+                    keepsBig: null, // rounds of 6-10 cards
+                    keepsSmall: null, // rounds of 1-5 cards
                 };
                 var ObjectId = require('mongodb').ObjectId;
                 var searchId = new ObjectId(data.gameId);
@@ -1224,31 +1228,53 @@ try {
                 const gameInDb = await collection.findOne(query);
     
                 var players = [];
-                var totalPointsByPlayer = [];
                 var startPointsArr = [0];
+                var roundsArr = [0];
                 var keepsArr = [];
+                var keepsBigArr = [];
+                var keepsSmallArr = [];
+                var pointsArr = [];
                 for (var i = 0; i < gameInDb.game.playerOrder.length; i++) {
-                    players.push(gameInDb.game.playerOrder[i].name == null ? gameInDb.game.playerOrder[i] : gameInDb.game.playerOrder[i].name);
-                    totalPointsByPlayer[i] = 0;
+                    const playerName = gameInDb.game.playerOrder[i].name == null ? gameInDb.game.playerOrder[i] : gameInDb.game.playerOrder[i].name;
+                    players.push(playerName);
                     startPointsArr.push(0);
                     keepsArr.push(0);
+                    keepsBigArr.push(0);
+                    keepsSmallArr.push(0);
+                    var totalPointsByPlayer = [0];
+                    var pointsPerPlayer = 0;
+                    for (var j = 0; j < gameInDb.game.rounds.length; j++) {
+                        for (var k = 0; k < gameInDb.game.rounds[j].roundPlayers.length; k++) {
+                            if (gameInDb.game.rounds[j].roundPlayers[k].name == playerName) {
+                                pointsPerPlayer+= gameInDb.game.rounds[j].roundPlayers[k].points;
+                                totalPointsByPlayer.push(pointsPerPlayer);
+                            }
+                        }
+                    }
+                    pointsArr.push(totalPointsByPlayer);
                 }
                 retObj.players = players;
                 
-                var pointsArr = [];
-                pointsArr.push(startPointsArr);
                 for (var i = 0; i < gameInDb.game.rounds.length; i++) {
                     if (gameInDb.game.rounds[i].roundStatus != 2) break;
-                    var pointsByRound = [i+1];
+                    roundsArr.push(i+1);
                     for (var j = 0; j < gameInDb.game.rounds[i].roundPlayers.length; j++) {
-                        totalPointsByPlayer[j]+= gameInDb.game.rounds[i].roundPlayers[j].points;
-                        pointsByRound.push(totalPointsByPlayer[j]);
-                        if (gameInDb.game.rounds[i].roundPlayers[j].promise == gameInDb.game.rounds[i].roundPlayers[j].keeps) keepsArr[j]++;
+                        if (gameInDb.game.rounds[i].roundPlayers[j].promise == gameInDb.game.rounds[i].roundPlayers[j].keeps) {
+                            keepsArr[j]++;
+                            if (gameInDb.game.rounds[i].cardsInRound > 5) {
+                                keepsBigArr[j]++;
+                            } else {
+                                keepsSmallArr[j]++;
+                            }
+                        }
                     }
-                    pointsArr.push(pointsByRound);
                 }
+
                 retObj.points = pointsArr;
+                retObj.rounds = roundsArr;
                 retObj.keeps = keepsArr;
+                retObj.keepsBig = keepsBigArr;
+                retObj.keepsSmall = keepsSmallArr;
     
                 fn(retObj);
             });

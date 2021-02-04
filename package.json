@@ -12,6 +12,7 @@
         "@types/node": "^14.14.22",
         "bootstrap": "^4.6.0",
         "card-deck": "^1.0.1",
+        "chart.js": "^2.9.4",
         "deck-of-cards": "^0.1.8",
         "express": "^4.17.1",
         "jquery": "^3.5.1",

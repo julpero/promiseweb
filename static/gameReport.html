@@ -58,9 +58,11 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body" id="oneGameReportBody">
+                    <div class="modal-body">
+                        <canvas id="oneGameReportBody"></canvas>
                     </div>
-                    <div class="modal-body" id="oneGameKeepsBody">
+                    <div class="modal-body">
+                        <canvas id="oneGameKeepsBody"></canvas>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Close</button>
@@ -70,6 +72,7 @@
         </div>
         
         <script src="/socket.io/socket.io.js"></script>
+        <script src="/dist/Chart.min.js"></script>
         <script src="/jquery.min.js"></script>
         <script src="/js/bootstrap.bundle.min.js"></script>
         <script src="/js/common.js"></script>
@@ -78,7 +81,7 @@
         <script type="text/javascript">
             const socket = io();
             // mainInit();
-            google.charts.load('current', {'packages':['bar', 'line']});
+            google.charts.load('current', {'packages':['bar']});
             google.charts.setOnLoadCallback(mainInit);
         </script>
 
