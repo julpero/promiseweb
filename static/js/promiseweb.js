@@ -1266,9 +1266,29 @@ function checkSmall(playerCount) {
 function printPointStats(players) {
     if ($('#pointsStats').children().length > 0) return;
 
-    const reportColName = 'pointsStats';
-    var reportDataArr = [['Player', 'Points in previous games', {type: "string", role: "tooltip"}, 'Points in previous equal games', {type: "string", role: "tooltip"}]];
+    var node = $('#pointsStats');
+    const inGameReportCanvasName = 'averagesReportCanvas';
+    var reportCanvas = $('<canvas id="'+inGameReportCanvasName+'"></canvas>');
+    node.append(reportCanvas);
+    const inGameReportOptions = {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                }
+            }]
+        },
+        title: {
+            display: false,
+        },
+    };
+
+    var datasetsData = [];
+    var playersArr = [];
+    var allArr = [];
+    var equalArr = [];
     for (var i = 0; i < players.length; i++) {
+        playersArr.push(players[i].name);
         const allGamesSum = players[i].playerStats.playersAllGames.reduce((a, b) => a + b, 0);
         const allGamesCount = players[i].playerStats.playersAllGames.length;
         const allGamesAvg = allGamesSum/allGamesCount;
@@ -1277,29 +1297,39 @@ function printPointStats(players) {
         const equalGamesAvg = equalGamesSum/equalGamesCount;
         const allGamesTooltip = 'avg points  '+ (allGamesAvg).toFixed(1) +'\nin all previous '+ allGamesCount +' games';
         const equalGamesTooltip = 'avg points  '+ (equalGamesAvg).toFixed(1) +'\nin all previous '+ equalGamesCount +' equal games';
-        reportDataArr.push([players[i].name, allGamesAvg, allGamesTooltip, equalGamesAvg, equalGamesTooltip]);
+        allArr.push(allGamesAvg);
+        equalArr.push(equalGamesAvg);
+        // reportDataArr.push([players[i].name, allGamesAvg, allGamesTooltip, equalGamesAvg, equalGamesTooltip]);
     }
-    
-    const pointStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-    const pointStatsOptions = {
-        backgroundColor: '#45a173',
-        height: 145,
-        // theme: 'maximized',
-        chartArea: {width: '99%', height: 145},
-        legend: { position: 'none' },
-        hAxis: {
-            textPosition: 'in',
-        },
-        vAxis: {
-            textPosition: 'in',
-            minValue: 0,
-            // maxValue: 100,
-            title: '',
-        },
+    datasetsData.push({
+        label: 'all games',
+        data: allArr,
+        borderWidth: 1,
+        backgroundColor: 'rgba(66,133,244,1.0)',
+        borderWidth: 3,
+    });
+    datasetsData.push({
+        label: 'regular games',
+        data: equalArr,
+        borderWidth: 1,
+        backgroundColor: 'rgba(233,66,66,1.0)',
+        borderWidth: 3,
+    });
+    const barData = {
+        labels: playersArr,
+        datasets: datasetsData,
     };
-    
-    var pointStatsChart = new google.visualization.ColumnChart(document.getElementById(reportColName));
-    pointStatsChart.draw(pointStatsReportData, pointStatsOptions);
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.chart.canvas.id == inGameReportCanvasName) instance.destroy();
+    });
+
+    var ctx = document.getElementById(inGameReportCanvasName);
+    var inGameReportChart = new Chart(ctx, {
+        type: 'bar',
+        data: barData,
+        options: inGameReportOptions,
+    });
 
 }
 

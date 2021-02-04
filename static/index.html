@@ -479,8 +479,6 @@
         <script src="/jquery.animate-colors-min.js"></script>
 
         <script type="text/javascript">
-            google.charts.load('current', {'packages':['bar', 'line', 'corechart']});
-            google.charts.setOnLoadCallback(startMainEvents);
             const socket = io();
 
             const promiseBonusTickTime = 3000;
@@ -492,8 +490,7 @@
             var timerTime = null;
             var usedTime = null;
             var possibleCards = [];
-            //$(function () {
-            function startMainEvents () {
+            $(function () {
                 var joinedGame = null;
                 if (window.localStorage.getItem('uUID')) {
                     console.log(window.localStorage.getItem('uUID'));
@@ -662,9 +659,7 @@
                     };
                     socket.emit('check game', getRound);
                 }
-
-            // });
-            }
+            });
         </script>
     </body>
 </html>
