@@ -72,7 +72,6 @@ function showOneGameReport(reportObject) {
         datasetsData.push({
             label: reportObject.players[i],
             data: reportObject.points[i],
-            borderWidth: 1,
             backgroundColor: 'rgba(0, 0, 0, 0.05)',
             lineTension: 0,
             borderWidth: 3,
@@ -80,7 +79,7 @@ function showOneGameReport(reportObject) {
     }
     colorizeDatasets(datasetsData);
 
-    var pointsData = {
+    const pointsData = {
         labels: labelsData,
         datasets: datasetsData,
     };

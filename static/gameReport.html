@@ -24,7 +24,6 @@
 
         <title>promiseweb - Promise Card Game</title>
         <link rel="stylesheet" href="/css/bootstrap.min.css">
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     </head>
     <body>
         
@@ -80,9 +79,7 @@
         <script src="/js/report.js"></script>
         <script type="text/javascript">
             const socket = io();
-            // mainInit();
-            google.charts.load('current', {'packages':['bar']});
-            google.charts.setOnLoadCallback(mainInit);
+            mainInit();
         </script>
 
     </body>

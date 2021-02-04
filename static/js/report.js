@@ -103,65 +103,115 @@ function showGames(gameList) {
 }
 
 function showGamesPlayed(reportObject) {
-    var reportIdName = 'gamesPlayedReport';
     var node = $('#averageReportCollapse');
-    var reportRow = $('<div></div').addClass('row');
-    var reportCol = $('<div id="'+reportIdName+'"></div').addClass('col');
-    reportRow.append(reportCol);
-    node.append(reportRow);
 
-    var reportDataArr = [['Name', 'Played']];
-    reportObject.forEach(function (playerGames) {
-        reportDataArr.push([playerGames._id, playerGames.count]);
-    });
-    var reportData = new google.visualization.arrayToDataTable(reportDataArr);
-    var options = {
-        height: 400,
-        legend: { position: 'none' },
-        chart: {
-            title: 'Games played',
-            subtitle: 'number of all games played by nickname',
+    const gamesPlayedReportCanvasName = 'gamesPlayedReportCanvas';
+    var reportCanvas = $('<canvas id="'+gamesPlayedReportCanvasName+'"></canvas>');
+    node.append(reportCanvas);
+    const gamesPlayedReportOptions = {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                }
+            }]
         },
-        axes: {
-            x: {
-                0: { side: 'bottom', label: 'Player'} // Top x-axis.
-            }
+        title: {
+            display: true,
+            text: 'Number of all games played by nickname',
         },
-        bar: { groupWidth: "90%" }
     };
-    var chart = new google.charts.Bar(document.getElementById(reportIdName));
-    chart.draw(reportData, google.charts.Bar.convertOptions(options));
+    
+    var datasetsData = [];
+    var playersArr = [];
+    var playedGamesArr = [];
+    for (var i = 0; i < reportObject.length; i++) {
+        playersArr.push(reportObject[i]._id);
+        playedGamesArr.push(reportObject[i].count);
+    }
+    datasetsData.push({
+        label: 'played games',
+        data: playedGamesArr,
+        borderWidth: 1,
+        backgroundColor: 'rgba(66,133,244,1.0)',
+        borderWidth: 3,
+    });
+    const barData = {
+        labels: playersArr,
+        datasets: datasetsData,
+    };
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.chart.canvas.id == gamesPlayedReportCanvasName) instance.destroy();
+    });
+
+    var ctx = document.getElementById(gamesPlayedReportCanvasName);
+    var gamesPlayedChart = new Chart(ctx, {
+        type: 'bar',
+        data: barData,
+        options: gamesPlayedReportOptions,
+    });
+
 }
 
 function showAveragePointsPerGames(reportObject) {
-    var reportIdName = 'averagePointsPerGamesReport';
     var node = $('#averageReportCollapse');
-    var reportRow = $('<div></div').addClass('row');
-    var reportCol = $('<div id="'+reportIdName+'"></div').addClass('col');
-    reportRow.append(reportCol);
-    node.append(reportRow);
 
-    var reportDataArr = [['Name', 'all games', 'regular games']];
-    reportObject.forEach(function (playerGames) {
-        reportDataArr.push([playerGames._id, Math.round(playerGames.avgAll), Math.round(playerGames.avgRegular)]);
-    });
-    var reportData = new google.visualization.arrayToDataTable(reportDataArr);
-    var options = {
-        height: 400,
-        legend: { position: 'none' },
-        chart: {
-            title: 'Average points',
-            subtitle: 'average points of all and regular games played by nickname',
+    const averagesReportCanvasName = 'averagesReportCanvas';
+    var reportCanvas = $('<canvas id="'+averagesReportCanvasName+'"></canvas>');
+    node.append(reportCanvas);
+    const averagesReportOptions = {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                }
+            }]
         },
-        axes: {
-            x: {
-                0: { side: 'bottom', label: 'Player'} // Top x-axis.
-            }
+        title: {
+            display: true,
+            text: 'Average points of all and regular games played by nickname',
         },
-        bar: { groupWidth: "90%" }
     };
-    var chart = new google.charts.Bar(document.getElementById(reportIdName));
-    chart.draw(reportData, google.charts.Bar.convertOptions(options));
+    
+    var datasetsData = [];
+    var playersArr = [];
+    var avgAllArr = [];
+    var avgRegularArr = [];
+    for (var i = 0; i < reportObject.length; i++) {
+        playersArr.push(reportObject[i]._id);
+        avgAllArr.push(reportObject[i].avgAll.toFixed(1));
+        avgRegularArr.push(reportObject[i].avgRegular.toFixed(1));
+    }
+    datasetsData.push({
+        label: 'all games',
+        data: avgAllArr,
+        borderWidth: 1,
+        backgroundColor: 'rgba(66,133,244,1.0)',
+        borderWidth: 3,
+    });
+    datasetsData.push({
+        label: 'regular games',
+        data: avgRegularArr,
+        borderWidth: 1,
+        backgroundColor: 'rgba(233,66,66,1.0)',
+        borderWidth: 3,
+    });
+    const barData = {
+        labels: playersArr,
+        datasets: datasetsData,
+    };
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.chart.canvas.id == averagesReportCanvasName) instance.destroy();
+    });
+
+    var ctx = document.getElementById(averagesReportCanvasName);
+    var gamesPlayedChart = new Chart(ctx, {
+        type: 'bar',
+        data: barData,
+        options: averagesReportOptions,
+    });
 }
 
 function showAverages(gameObject) {
