@@ -28,41 +28,59 @@ function colorizeDatasets(datasets) {
 function showOneGameReport(reportObject) {
     const canvasIdStr = 'oneGameReportBody';
     const pointsOptions = {
-        'scales': {
-            'xAxes': [{
-                'ticks': {
-                    'beginAtZero': true
+        scales: {
+            x: {
+                ticks: {
+                    beginAtZero: true
                 }
-            }]
-        },
-        'title': {
-            display: true,
-            text: 'Cumulative points in game per round'
-        },
-        tooltips: {
-            mode: 'index',
-            intersect: false,
+            }
         },
         hover: {
             mode: 'nearest',
             intersect: true
         },
-        legend: {
-            onHover: function(e, legendItem) {
-                if (pointsChart.hoveringLegendIndex != legendItem.datasetIndex) {
-                    pointsChart.hoveringLegendIndex = legendItem.datasetIndex;
-                    for (var i = 0; i < pointsChart.data.datasets.length; i++) {
-                        var dataset = pointsChart.data.datasets[i];
-                        if (i == legendItem.datasetIndex) {
-                            dataset.borderColor = dataset.accentColor;
-                        } else {
-                            dataset.borderColor = dataset.accentFadedColor;
+        plugins: {
+            title: {
+                display: true,
+                text: 'Cumulative points in game per round'
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+            },
+            legend: {
+                onHover: function(e, legendItem) {
+                    if (pointsChart.hoveringLegendIndex != legendItem.datasetIndex) {
+                        pointsChart.hoveringLegendIndex = legendItem.datasetIndex;
+                        for (var i = 0; i < pointsChart.data.datasets.length; i++) {
+                            var dataset = pointsChart.data.datasets[i];
+                            if (i == legendItem.datasetIndex) {
+                                dataset.borderColor = dataset.accentColor;
+                            } else {
+                                dataset.borderColor = dataset.accentFadedColor;
+                            }
                         }
+                        pointsChart.update();
                     }
-                    pointsChart.update();
                 }
+            },
+            annotation: {
+                annotations: [
+                    {
+                        type: 'box',
+                        drawTime: 'beforeDatasetsDraw',
+                        display: true,
+                        xScaleID: 'x',
+                        yScaleID: 'y',
+                        xMin: reportObject.smallStart,
+                        xMax: reportObject.smallEnd,
+                        borderColor: 'lightgreen',
+                        borderWidth: 1,
+                        backgroundColor: '#E5FFE5',
+                    }
+                ]
             }
-        },
+        }
     };
     
     const labelsData = reportObject.rounds;
@@ -72,9 +90,11 @@ function showOneGameReport(reportObject) {
         datasetsData.push({
             label: reportObject.players[i],
             data: reportObject.points[i],
+            fill: 'origin',
             backgroundColor: 'rgba(0, 0, 0, 0.05)',
             lineTension: 0,
             borderWidth: 3,
+            hoverBorderWidth: 5,
         });
     }
     colorizeDatasets(datasetsData);
@@ -85,7 +105,7 @@ function showOneGameReport(reportObject) {
     };
 
     Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.chart.canvas.id == canvasIdStr) instance.destroy();
+        if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
     var ctx = document.getElementById(canvasIdStr);
@@ -108,58 +128,114 @@ function showOneGameReport(reportObject) {
             }
         }
     });
+
 }
 
 function showOneKeepsReport(reportObject) {
     const canvasIdStr = 'oneGameKeepsBody';
     const keepsOptions = {
-        'scales': {
-            'xAxes': [{
-                'ticks': {
-                    'beginAtZero': true
+        indexAxis: 'y',
+        scales: {
+            x: {
+                stacked: true,
+                ticks: {
+                    beginAtZero: true
                 }
-            }]
+            },
+            y: {
+                stacked: true,
+            }
         },
-        'title': {
-            display: true,
-            text: 'Keeps in game by nickname'
+        plugins: {
+            title: {
+                display: true,
+                text: 'Keeps in game by nickname'
+            }
         }
     };
     
     const labelsData = reportObject.players;
-    const datasets1Data = {
-        label: 'All',
-        data: reportObject.keeps,
-        borderWidth: 1,
-        backgroundColor: 'rgba(66,133,244,1.0)',
-    };
-    const datasets2Data = {
+    const datasetsBigData = {
         label: 'Big rounds',
         data: reportObject.keepsBig,
         borderWidth: 1,
         backgroundColor: 'rgba(255,153,0,0.6)',
     };
-    const datasets3Data = {
+    const datasetsSmallData = {
         label: 'Small rounds',
         data: reportObject.keepsSmall,
         borderWidth: 1,
-        backgroundColor: 'rgba(255,0,0,0.6)',
+        backgroundColor: 'lightgreen',
     };
 
     const keepsData = {
         labels: labelsData,
-        datasets:[datasets1Data, datasets2Data, datasets3Data],
+        datasets:[datasetsBigData, datasetsSmallData],
     };
 
     Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.chart.canvas.id == canvasIdStr) instance.destroy();
+        if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
     var ctx = document.getElementById(canvasIdStr);
     var keepChart = new Chart(ctx, {
-        type: 'horizontalBar',
+        type: 'bar',
         data: keepsData,
         options: keepsOptions,
+    });
+}
+
+function showOnePointsReport(reportObject) {
+    const canvasIdStr = 'oneGamePointsBody';
+    const pointsOptions = {
+        indexAxis: 'y',
+        scales: {
+            x: {
+                stacked: true,
+                ticks: {
+                    beginAtZero: true
+                }
+            },
+            y: {
+                stacked: true,
+            }
+        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'Points in game by nickname'
+            }
+        }
+    };
+    
+    const labelsData = reportObject.players;
+    const datasetsBigData = {
+        label: 'Big rounds',
+        data: reportObject.pointsBig,
+        borderWidth: 1,
+        backgroundColor: 'rgba(255,153,0,0.6)',
+    };
+    const datasetsSmallData = {
+        label: 'Small rounds',
+        data: reportObject.pointsSmall,
+        borderWidth: 1,
+        backgroundColor: 'lightgreen',
+    };
+
+    const pointsData = {
+        labels: labelsData,
+        datasets:[datasetsBigData, datasetsSmallData],
+    };
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.canvas.id == canvasIdStr) instance.destroy();
+    });
+
+    var ctx = document.getElementById(canvasIdStr);
+    var pointsChart = new Chart(ctx, {
+        type: 'bar',
+        data: pointsData,
+        options: pointsOptions,
     });
 }
 
@@ -171,6 +247,7 @@ function getOneGameReport(gameId) {
             console.log(gameReportData);
             showOneGameReport(gameReportData);
             showOneKeepsReport(gameReportData);
+            showOnePointsReport(gameReportData);
         });
     });
     $('#oneGameReportModal').modal('show');

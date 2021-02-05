@@ -14,6 +14,7 @@ app.use(express.static('node_modules/bootstrap/dist'))
 app.use(express.static('node_modules/deck-of-cards/dist'))
 app.use(express.static('node_modules/jquery-color-animation'))
 app.use(express.static('node_modules/chart.js'))
+app.use(express.static('node_modules/chartjs-plugin-annotation'))
 
 const pf = require(__dirname + '/promiseFunctions.js');
 const rf = require(__dirname + '/reportFunctions.js');
@@ -1213,9 +1214,12 @@ try {
                     players: null,
                     points: null,
                     rounds: null,
-                    keeps: null,
+                    pointsBig: null, // rounds of 6-10 cards
+                    pointsSmall: null, // rounds of 1-5 cards
                     keepsBig: null, // rounds of 6-10 cards
                     keepsSmall: null, // rounds of 1-5 cards
+                    smallStart: null,
+                    smallEnd: null,
                 };
                 var ObjectId = require('mongodb').ObjectId;
                 var searchId = new ObjectId(data.gameId);
@@ -1230,7 +1234,8 @@ try {
                 var players = [];
                 var startPointsArr = [0];
                 var roundsArr = [0];
-                var keepsArr = [];
+                var pointsBigArr = [];
+                var pointsSmallArr = [];
                 var keepsBigArr = [];
                 var keepsSmallArr = [];
                 var pointsArr = [];
@@ -1238,20 +1243,29 @@ try {
                     const playerName = gameInDb.game.playerOrder[i].name == null ? gameInDb.game.playerOrder[i] : gameInDb.game.playerOrder[i].name;
                     players.push(playerName);
                     startPointsArr.push(0);
-                    keepsArr.push(0);
                     keepsBigArr.push(0);
                     keepsSmallArr.push(0);
                     var totalPointsByPlayer = [0];
                     var pointsPerPlayer = 0;
+                    var bigPointsPerPlayer = 0;
+                    var smallPointsPerPlayer = 0;
                     for (var j = 0; j < gameInDb.game.rounds.length; j++) {
                         for (var k = 0; k < gameInDb.game.rounds[j].roundPlayers.length; k++) {
                             if (gameInDb.game.rounds[j].roundPlayers[k].name == playerName) {
-                                pointsPerPlayer+= gameInDb.game.rounds[j].roundPlayers[k].points;
+                                const pointsFromRound = gameInDb.game.rounds[j].roundPlayers[k].points;
+                                pointsPerPlayer+= pointsFromRound;
                                 totalPointsByPlayer.push(pointsPerPlayer);
+                                if (gameInDb.game.rounds[j].cardsInRound > 5) {
+                                    bigPointsPerPlayer+= pointsFromRound;
+                                } else {
+                                    smallPointsPerPlayer+= pointsFromRound;
+                                }
                             }
                         }
                     }
                     pointsArr.push(totalPointsByPlayer);
+                    pointsBigArr.push(bigPointsPerPlayer);
+                    pointsSmallArr.push(smallPointsPerPlayer);
                 }
                 retObj.players = players;
                 
@@ -1260,10 +1274,15 @@ try {
                     roundsArr.push(i+1);
                     for (var j = 0; j < gameInDb.game.rounds[i].roundPlayers.length; j++) {
                         if (gameInDb.game.rounds[i].roundPlayers[j].promise == gameInDb.game.rounds[i].roundPlayers[j].keeps) {
-                            keepsArr[j]++;
                             if (gameInDb.game.rounds[i].cardsInRound > 5) {
+                                if (retObj.smallStart != null && retObj.smallEnd == null) {
+                                    retObj.smallEnd = i;
+                                }
                                 keepsBigArr[j]++;
                             } else {
+                                if (retObj.smallStart == null) {
+                                    retObj.smallStart = i;
+                                }
                                 keepsSmallArr[j]++;
                             }
                         }
@@ -1272,7 +1291,8 @@ try {
 
                 retObj.points = pointsArr;
                 retObj.rounds = roundsArr;
-                retObj.keeps = keepsArr;
+                retObj.pointsBig = pointsBigArr;
+                retObj.pointsSmall = pointsSmallArr;
                 retObj.keepsBig = keepsBigArr;
                 retObj.keepsSmall = keepsSmallArr;
     

@@ -70,9 +70,14 @@ function showNickChanger(gameList) {
 function showGames(gameList) {
     var gameListContainer = $('#chooseGameCollapse');
     console.log(gameList);
+    const dateformatoptions = {
+        year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false,
+    };
     gameList.forEach(function (game) {
         var gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
-        var dateStr = game.created;
+        const gameStarted = new Date(game.created).getTime();
+        const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
+        // var dateStr = new Date(game.created).toLocaleDateString(dateformatoptions);
         gameContainerDiv.append($('<div>').addClass('col-2 report-date').text(dateStr));
 
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
@@ -90,8 +95,8 @@ function showGames(gameList) {
         gameContainerDiv.append($('<div>').addClass('col-4 report-rules').text(ruleStr));
         gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
 
-        var btnId = 'showGameButton' + game.id;
-        var showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary reportGameButton').text('Show report'));
+        const btnId = 'showGameButton' + game.id;
+        const showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary reportGameButton').text('Show report'));
         gameContainerDiv.append(($('<div>').addClass('col-2')).append(showGameButton));
 
         gameListContainer.append(gameContainerDiv);
@@ -142,7 +147,7 @@ function showGamesPlayed(reportObject) {
     };
 
     Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.chart.canvas.id == gamesPlayedReportCanvasName) instance.destroy();
+        if (instance.canvas.id == gamesPlayedReportCanvasName) instance.destroy();
     });
 
     var ctx = document.getElementById(gamesPlayedReportCanvasName);
@@ -203,7 +208,7 @@ function showAveragePointsPerGames(reportObject) {
     };
 
     Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.chart.canvas.id == averagesReportCanvasName) instance.destroy();
+        if (instance.canvas.id == averagesReportCanvasName) instance.destroy();
     });
 
     var ctx = document.getElementById(averagesReportCanvasName);
