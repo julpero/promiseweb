@@ -115,16 +115,18 @@ function showGamesPlayed(reportObject) {
     node.append(reportCanvas);
     const gamesPlayedReportOptions = {
         scales: {
-            yAxes: [{
+            y: {
                 ticks: {
                     beginAtZero: true,
                 }
-            }]
+            }
         },
-        title: {
-            display: true,
-            text: 'Number of all games played by nickname',
-        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'Number of all games played by nickname',
+            },
+        }
     };
     
     var datasetsData = [];
@@ -139,6 +141,7 @@ function showGamesPlayed(reportObject) {
         data: playedGamesArr,
         borderWidth: 1,
         backgroundColor: 'rgba(66,133,244,1.0)',
+        borderColor: 'blue',
         borderWidth: 3,
     });
     const barData = {
@@ -167,16 +170,18 @@ function showAveragePointsPerGames(reportObject) {
     node.append(reportCanvas);
     const averagesReportOptions = {
         scales: {
-            yAxes: [{
+            y: {
                 ticks: {
                     beginAtZero: true,
                 }
-            }]
+            }
         },
-        title: {
-            display: true,
-            text: 'Average points of all and regular games played by nickname',
-        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'Average points of all and regular games played by nickname',
+            },
+        }
     };
     
     var datasetsData = [];
@@ -193,6 +198,7 @@ function showAveragePointsPerGames(reportObject) {
         data: avgAllArr,
         borderWidth: 1,
         backgroundColor: 'rgba(66,133,244,1.0)',
+        borderColor: 'blue',
         borderWidth: 3,
     });
     datasetsData.push({
@@ -200,6 +206,7 @@ function showAveragePointsPerGames(reportObject) {
         data: avgRegularArr,
         borderWidth: 1,
         backgroundColor: 'rgba(233,66,66,1.0)',
+        borderColor: 'darkred',
         borderWidth: 3,
     });
     const barData = {
