@@ -308,6 +308,13 @@ function playerCountToHtml(playerCount) {
 function getReportData() {
     socket.emit('get report data', null, function(response) {
         console.log(response);
+        playedGamesGraph(response.mostGamesPlayed);
+        avgKeepPercentageGraph(response.avgKeepPercentagePerPlayer);
+        avgPointsGraph(response.avgPointsPerPlayer);
+        totalPointsGraph(response.totalPointsPerPlayer);
+        totalWinsGraph(response.playerTotalWins);
+        scoreGraph(response.avgScorePointsPerPlayer);
+
         const tooltipTemplate = '<div class="tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-wide"></div></div>';
 
         $("#gamesPlayedInfo").html('Total of '+response.gamesPlayed+' games and '+ response.roundsPlayed +' rounds played so far...');
