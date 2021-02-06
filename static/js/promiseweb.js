@@ -1024,24 +1024,24 @@ function getNextFreeCardWonDiv(playerIndex) {
 async function moveCardFromTableToWinDeck(winnerName, players) {
     var deck = Deck();
 
-    var playerIndex = mapPlayerNameToTable(winnerName);
-    var wonIndex = getNextFreeCardWonDiv(playerIndex);
-    var $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
-    var containerToPosition = $('#player'+playerIndex+'CardsWon'+wonIndex+'Div').offset();
+    const playerIndex = mapPlayerNameToTable(winnerName);
+    const wonIndex = getNextFreeCardWonDiv(playerIndex);
+    const $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
+    const containerToPosition = $('#player'+playerIndex+'CardsWon'+wonIndex+'Div').offset();
 
-    var delay = 400;
-    var duration = 900;
+    const delay = 400;
+    const duration = 900;
     var movingCards = [];
     var cardLooper = 0;
     var cardReadyLooper = 0;
 
     for (var i = 0; i < players.length; i++) {
-        var containerFromPosition = $('#player'+i+'CardPlayedDiv').offset();
-        var cardToCheck = getCardFromDiv('player'+i+'CardPlayedDiv');
+        const containerFromPosition = $('#player'+i+'CardPlayedDiv').offset();
+        const cardToCheck = getCardFromDiv('player'+i+'CardPlayedDiv');
         if (cardToCheck == null) {
             continue;
         }
-        var cardIndex = getCardIndex(deck.cards, cardToCheck);
+        const cardIndex = getCardIndex(deck.cards, cardToCheck);
         movingCards[i] = deck.cards[cardIndex];
         $('#player'+i+'CardPlayedDiv').empty();
         
@@ -1062,7 +1062,7 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
                     x: randomNegToPos(2),
                     y: randomNegToPos(2),
                     rot: randomNegToPos(5),
-                    onComplete: async function() {
+                    onComplete: function() {
                         movingCards[cardReadyLooper].setSide('back');
                         cardReadyLooper++;
                     }
@@ -1094,10 +1094,12 @@ function getCurrentCardContainer(card) {
 }
 
 async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hiddenCardsMode) {
+    console.log('moveCardFromHandToTable, card:', card);
     var deck = Deck();
 
     if (cardsInThisPlay != null)
     {
+        console.log('moveCardFromHandToTable, cardsInThisPlay:', cardsInThisPlay);
         for (var i = 0; i < cardsInThisPlay.length; i++) {
             if (playerName == cardsInThisPlay[i].name) continue;
     
@@ -1114,11 +1116,15 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
         }
     }
 
-    const cardIndex = card.suit == "dummy" ? 0 : getCardIndex(deck.cards, card);
+    const cardIndex = card.suit == 'dummy' ? 0 : getCardIndex(deck.cards, card);
+    console.log('moveCardFromHandToTable, cardIndex:', cardIndex);
     const movingCard = deck.cards[cardIndex];
-
+    console.log('moveCardFromHandToTable, movingCard:', movingCard);
+    
     const playerIndex = mapPlayerNameToTable(playerName);
+    console.log('moveCardFromHandToTable, playerIndex:', playerIndex);
     const containerIndex = playerIndex == 0 ? getCurrentCardContainer(card) : getLastCardContainer(playerIndex);
+    console.log('moveCardFromHandToTable, containerIndex:', containerIndex);
     $('#player'+playerIndex+'CardCol'+containerIndex).empty();
 
     // var $containerFrom = document.getElementById('player'+playerIndex+'CardCol'+containerIndex);
@@ -1139,7 +1145,7 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
         y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
         rot: randomNegToPos(5),
         onComplete: async function() {
-            if (card.suit != "dummy") movingCard.setSide('front');
+            if (card.suit != 'dummy') movingCard.setSide('front');
             movingCard.animateTo({
                 delay: delay,
                 duration: duration,
