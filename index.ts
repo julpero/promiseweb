@@ -133,7 +133,7 @@ try {
                     gameId: leaveGameObj.gameId,
                 }
                 var ObjectId = require('mongodb').ObjectId;
-                var searchId = new ObjectId(leaveGameObj.gameId);
+                const searchId = new ObjectId(leaveGameObj.gameId);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = { gameStatus: 1,
@@ -190,7 +190,7 @@ try {
                 }
 
                 var ObjectId = require('mongodb').ObjectId;
-                var searchId = new ObjectId(leaveGame.gameId);
+                const searchId = new ObjectId(leaveGame.gameId);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = { gameStatus: 0,
@@ -253,7 +253,7 @@ try {
                 console.log('join game by id');
                 console.log(joiningDetails);
                 var ObjectId = require('mongodb').ObjectId;
-                var searchId = new ObjectId(joiningDetails.gameId);
+                const searchId = new ObjectId(joiningDetails.gameId);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = { gameStatus: 1,
@@ -295,7 +295,7 @@ try {
                 var joiningResult = 'NOTSET';
                 console.log(newPlayer);
                 var ObjectId = require('mongodb').ObjectId;
-                var searchId = new ObjectId(newPlayer.gameId);
+                const searchId = new ObjectId(newPlayer.gameId);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = { gameStatus: 0,
@@ -407,7 +407,7 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 var ObjectId = require('mongodb').ObjectId;
-                var searchId = new ObjectId(getRound.gameId);
+                const searchId = new ObjectId(getRound.gameId);
     
                 const gameStarted = getRound.gameStarted;
                 const doReload = getRound.doReload;
@@ -585,7 +585,7 @@ try {
                 const collection = database.collection('promiseweb');
                 const statsCollection = database.collection('promisewebStats');
                 var ObjectId = require('mongodb').ObjectId;
-                var searchId = new ObjectId(playDetails.gameId);
+                const searchId = new ObjectId(playDetails.gameId);
                 
                 const query = { gameStatus: 1,
                     _id: searchId,
@@ -593,15 +593,15 @@ try {
                      };
                 const gameInDb = await collection.findOne(query);
                 if (gameInDb !== null) {
-                    var playedCard = playDetails.playedCard;
-                    var playerName = pf.getPlayerNameById(playDetails.myId, gameInDb.humanPlayers);
+                    const playedCard = playDetails.playedCard;
+                    const playerName = pf.getPlayerNameById(playDetails.myId, gameInDb.humanPlayers);
                     var gameOver = false;
                     if (pf.okToPlayCard(playedCard, playerName, gameInDb)) {
                         var roundInDb = pf.getCurrentRoundIndex(gameInDb);
                         if (roundInDb == playDetails.roundInd) {
                             var round = gameInDb.game.rounds[roundInDb];
                             var play = pf.getCurrentPlayIndex(round);
-                            var playerInd = pf.getPlayerIndexByName(playerName, round.roundPlayers)
+                            const playerInd = pf.getPlayerIndexByName(playerName, round.roundPlayers)
                             var newHandObj = pf.takeCardOut(round.roundPlayers[playerInd].cards, playedCard);
                             var newHand = newHandObj.newHand;
                             round.cardsPlayed[play].push({ name: playerName, card: playedCard });
@@ -613,7 +613,7 @@ try {
                             var newPlay = false;
                             var newRound = false;
                             var cardsInThisPlay = null;
-                            var winnerName = pf.winnerOfPlay(gameAfterPlay.rounds[roundInDb].cardsPlayed[play], gameAfterPlay.rounds[roundInDb].trumpCard.suit);
+                            const winnerName = pf.winnerOfPlay(gameAfterPlay.rounds[roundInDb].cardsPlayed[play], gameAfterPlay.rounds[roundInDb].trumpCard.suit);
                             var gameStatus = 1;
 
                             var gameStatistics = null;
@@ -707,7 +707,6 @@ try {
                                 eventInfo = {
                                     playedCard: pf.okToReturnCard(gameInDb.hiddenCardsMode, (round.cardsPlayed[play].length == 1), (newPlay || newRound || gameOver), winnerName == playerName) ? playedCard : { suit: 'dummy', rank: 0 },
                                     cardPlayedBy: playerName,
-                                    cardPlayedByIndex: playerInd,
                                     newPlay: newPlay,
                                     winnerName: newPlay ? winnerName : null,
                                     newRound: newRound,
@@ -718,7 +717,6 @@ try {
                                 eventInfoToCardPlayer = {
                                     playedCard: playedCard,
                                     cardPlayedBy: playerName,
-                                    cardPlayedByIndex: playerInd,
                                     newPlay: newPlay,
                                     winnerName: newPlay ? winnerName : null,
                                     newRound: newRound,

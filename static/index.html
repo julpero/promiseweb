@@ -526,7 +526,7 @@
                     $('#gameChooser').hide();
                     $('#gameContainer').show();
                     initRuleList(gameInfo);
-                    var getRound = {
+                    const getRound = {
                         gameStarted: true,
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
@@ -545,9 +545,9 @@
                     $('#currentGameId').val(gameInfo.id);
                     console.log('promise made');
                     console.log(gameInfo);
-                    var doReloadInit = gameInfo.reloaded;
+                    const doReloadInit = gameInfo.reloaded;
                     
-                    var getRound = {
+                    const getRound = {
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
                         round: gameInfo.currentRound,
@@ -586,7 +586,6 @@
                         // animate played card
                         const playedCard = gameInfo.eventInfo.playedCard;
                         const cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
-                        const cardPlayedByIndex = gameInfo.eventInfo.cardPlayedByIndex;
                         const players = gameInfo.humanPlayers;
                         newRound = gameInfo.eventInfo.newRound;
                         gameOver = gameInfo.eventInfo.gameOver;
@@ -600,7 +599,7 @@
                             });
                     }
 
-                    var doReloadInit = gameInfo.reloaded;
+                    const doReloadInit = gameInfo.reloaded;
                     var getRoundIndex = gameInfo.currentRound;
                     if (newRound && !gameOver) {
                         getRoundIndex++;
@@ -658,7 +657,7 @@
 
                 if (joinedGame != null) {
                     console.log('joinedGame - check');
-                    var getRound = {
+                    const getRound = {
                         gameId: -1,
                         myId: window.localStorage.getItem('uUID'),
                         round: -1,
