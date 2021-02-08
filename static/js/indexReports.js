@@ -427,3 +427,79 @@ function scoreGraph(reportData) {
     });
 }
 
+
+function liveStatsGraph(reportData) {
+    const canvasIdStr = 'pointsLiveStatsGraph';
+    const graphOptions = {
+        indexAxis: 'x',
+        scales: {
+            x: {
+                ticks: {
+                    beginAtZero: true,
+                }
+            },
+            yPercentages: {
+                type: 'linear',
+                position: 'left',
+            },
+            yAvgs: {
+                type: 'linear',
+                position: 'right',
+            },
+        },
+        plugins: {
+            title: {
+                display: false,
+                text: 'Score points by nickname',
+            },
+            legend: {
+                display: false,
+            },
+        },
+    };
+    
+    var labelsData = [];
+    var valuesDataKeepPercentages = [];
+    var valuesDataAvgPoints = [];
+    var datasetsData = [];
+    var colors = [];
+
+    for (var i = 0; i < reportData.length; i++) {
+        const name = reportData[i]._id;
+        labelsData.push(name);
+        valuesDataKeepPercentages.push((100*reportData[i].keepCount/reportData[i].total).toFixed(1));
+        valuesDataAvgPoints.push((reportData[i].avgPoint).toFixed(1));
+        // colors.push(StringToColor.next(name));
+    }
+    datasetsData.push({
+        label: 'keep%',
+        data: valuesDataKeepPercentages,
+        borderWidth: 1,
+        backgroundColor: 'lightblue',
+        yAxisID: 'yPercentages',
+    });
+    datasetsData.push({
+        label: 'avgpoints',
+        data: valuesDataAvgPoints,
+        borderWidth: 1,
+        backgroundColor: 'lightgrey',
+        yAxisID: 'yAvgs',
+    });
+
+    const graphData = {
+        labels: labelsData,
+        datasets: datasetsData,
+    };
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.canvas.id == canvasIdStr) instance.destroy();
+    });
+
+    var ctx = document.getElementById(canvasIdStr);
+    var graphChart = new Chart(ctx, {
+        type: 'bar',
+        data: graphData,
+        options: graphOptions,
+    });
+}
+

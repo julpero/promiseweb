@@ -292,7 +292,6 @@ function showFrontPageBars(reportData) {
 }
 
 function initShowFrontPageBarsModal(reportData) {
-    console.log('initShowFrontPageBarsModal');
     $('#commonReportModal').on('shown.bs.modal', function () {
         console.log('initShowFrontPageBarsModal 2');
         showFrontPageBars(reportData);
