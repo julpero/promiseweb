@@ -843,6 +843,7 @@ try {
                     vanillaGamesCount: null,
                     usedRulesCount: null,
                     playerCount: null,
+                    playerWinPercentage: null,
                 };
 
                 const database = mongoUtil.getDb();
@@ -1039,6 +1040,24 @@ try {
                     playerTotalWins.push(val);
                 });
                 retObj.playerTotalWins = playerTotalWins;
+                // ********
+
+                // win percentage per player
+                var playerWinPercentageTmp = [];
+                for (var i = 0; i < playerTotalWins.length; i++) {
+                    const winPercentageName = playerTotalWins[i]._id;
+                    const winPercentageWins = playerTotalWins[i].playerTotalWins;
+                    for (var j = 0; j < gamesPlayed.length; j++) {
+                        if (gamesPlayed[j]._id == winPercentageName) {
+                            playerWinPercentageTmp.push({
+                                _id: winPercentageName,
+                                winPercentage: winPercentageWins/gamesPlayed[j].count,
+                            });
+                        }
+                    }
+                }
+                const playerWinPercentage = playerWinPercentageTmp.sort(sortWinPercentage);
+                retObj.playerWinPercentage = playerWinPercentage;
                 // ********
 
                 // average score points per player
@@ -1753,3 +1772,8 @@ async function getGamesStatistics(gameInDb, playerName) {
     return statsGamesObj;
 }
 
+function sortWinPercentage(a, b) {
+    if (a.winPercentage > b.winPercentage) return -1;
+    if (a.winPercentage < b.winPercentage) return 1;
+    return 0;
+}

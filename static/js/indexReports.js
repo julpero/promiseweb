@@ -304,6 +304,68 @@ function totalWinsGraph(reportData) {
 }
 
 
+function winPercentagesGraph(reportData) {
+    const canvasIdStr = 'winPercentagesGraph';
+    const graphOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'x',
+        scales: {
+            x: {
+                ticks: {
+                    beginAtZero: true,
+                }
+            },
+            y: {
+            }
+        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'Win percentages by nickname',
+            },
+            legend: {
+                display: false,
+            },
+        },
+    };
+    
+    var labelsData = [];
+    var valuesData = [];
+    var datasetsData = [];
+    var colors = [];
+
+    for (var i = 0; i < reportData.length; i++) {
+        const name = reportData[i]._id;
+        labelsData.push(name);
+        valuesData.push((100*reportData[i].winPercentage).toFixed(1));
+        colors.push(StringToColor.next(name));
+    }
+    datasetsData.push({
+        label: 'win-%',
+        data: valuesData,
+        borderWidth: 1,
+        backgroundColor: colors,
+    });
+
+    const graphData = {
+        labels: labelsData,
+        datasets: datasetsData,
+    };
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.canvas.id == canvasIdStr) instance.destroy();
+    });
+
+    var ctx = document.getElementById(canvasIdStr);
+    var graphChart = new Chart(ctx, {
+        type: 'bar',
+        data: graphData,
+        options: graphOptions,
+    });
+}
+
+
 function scoreGraph(reportData) {
     const canvasIdStr = 'scoreGraph';
     const graphOptions = {
