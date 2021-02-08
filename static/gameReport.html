@@ -24,11 +24,10 @@
 
         <title>promiseweb - Promise Card Game</title>
         <link rel="stylesheet" href="/css/bootstrap.min.css">
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     </head>
     <body>
         
-        <div class="container" id="reportChooser">
+        <div class="container-fluid" id="reportChooser">
             <div class="row">
                 <div class="col">Choose report</div>
             </div>
@@ -58,9 +57,14 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body" id="oneGameReportBody">
+                    <div class="modal-body">
+                        <canvas id="oneGameReportBody" style="height: 430px"></canvas>
                     </div>
-                    <div class="modal-body" id="oneGameKeepsBody">
+                    <div class="modal-body">
+                        <canvas id="oneGameKeepsBody" style="height: 230px"></canvas>
+                    </div>
+                    <div class="modal-body">
+                        <canvas id="oneGamePointsBody" style="height: 210px"></canvas>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Close</button>
@@ -70,6 +74,8 @@
         </div>
         
         <script src="/socket.io/socket.io.js"></script>
+        <script src="/dist/chart.min.js"></script>
+        <script src="/dist/chartjs-plugin-annotation.js"></script>
         <script src="/jquery.min.js"></script>
         <script src="/js/bootstrap.bundle.min.js"></script>
         <script src="/js/common.js"></script>
@@ -77,9 +83,7 @@
         <script src="/js/report.js"></script>
         <script type="text/javascript">
             const socket = io();
-            // mainInit();
-            google.charts.load('current', {'packages':['bar', 'line']});
-            google.charts.setOnLoadCallback(mainInit);
+            mainInit();
         </script>
 
     </body>

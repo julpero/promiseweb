@@ -13,6 +13,8 @@ app.use(express.static('node_modules/jquery/dist'))
 app.use(express.static('node_modules/bootstrap/dist'))
 app.use(express.static('node_modules/deck-of-cards/dist'))
 app.use(express.static('node_modules/jquery-color-animation'))
+app.use(express.static('node_modules/chart.js'))
+app.use(express.static('node_modules/chartjs-plugin-annotation'))
 
 const pf = require(__dirname + '/promiseFunctions.js');
 const rf = require(__dirname + '/reportFunctions.js');
@@ -841,6 +843,7 @@ try {
                     vanillaGamesCount: null,
                     usedRulesCount: null,
                     playerCount: null,
+                    playerWinPercentage: null,
                 };
 
                 const database = mongoUtil.getDb();
@@ -1039,6 +1042,24 @@ try {
                 retObj.playerTotalWins = playerTotalWins;
                 // ********
 
+                // win percentage per player
+                var playerWinPercentageTmp = [];
+                for (var i = 0; i < playerTotalWins.length; i++) {
+                    const winPercentageName = playerTotalWins[i]._id;
+                    const winPercentageWins = playerTotalWins[i].playerTotalWins;
+                    for (var j = 0; j < gamesPlayed.length; j++) {
+                        if (gamesPlayed[j]._id == winPercentageName) {
+                            playerWinPercentageTmp.push({
+                                _id: winPercentageName,
+                                winPercentage: winPercentageWins/gamesPlayed[j].count,
+                            });
+                        }
+                    }
+                }
+                const playerWinPercentage = playerWinPercentageTmp.sort(sortWinPercentage);
+                retObj.playerWinPercentage = playerWinPercentage;
+                // ********
+
                 // average score points per player
                 console.log('report data - average score points per player');
                 const aggregationAvgScorePointsPerPlayer = [{$match: {
@@ -1209,7 +1230,13 @@ try {
                 var retObj = {
                     players: null,
                     points: null,
-                    keeps: null,
+                    rounds: null,
+                    pointsBig: null, // rounds of 6-10 cards
+                    pointsSmall: null, // rounds of 1-5 cards
+                    keepsBig: null, // rounds of 6-10 cards
+                    keepsSmall: null, // rounds of 1-5 cards
+                    smallStart: null,
+                    smallEnd: null,
                 };
                 var ObjectId = require('mongodb').ObjectId;
                 var searchId = new ObjectId(data.gameId);
@@ -1222,31 +1249,69 @@ try {
                 const gameInDb = await collection.findOne(query);
     
                 var players = [];
-                var totalPointsByPlayer = [];
                 var startPointsArr = [0];
-                var keepsArr = [];
+                var roundsArr = [0];
+                var pointsBigArr = [];
+                var pointsSmallArr = [];
+                var keepsBigArr = [];
+                var keepsSmallArr = [];
+                var pointsArr = [];
                 for (var i = 0; i < gameInDb.game.playerOrder.length; i++) {
-                    players.push(gameInDb.game.playerOrder[i].name == null ? gameInDb.game.playerOrder[i] : gameInDb.game.playerOrder[i].name);
-                    totalPointsByPlayer[i] = 0;
+                    const playerName = gameInDb.game.playerOrder[i].name == null ? gameInDb.game.playerOrder[i] : gameInDb.game.playerOrder[i].name;
+                    players.push(playerName);
                     startPointsArr.push(0);
-                    keepsArr.push(0);
+                    keepsBigArr.push(0);
+                    keepsSmallArr.push(0);
+                    var totalPointsByPlayer = [0];
+                    var pointsPerPlayer = 0;
+                    var bigPointsPerPlayer = 0;
+                    var smallPointsPerPlayer = 0;
+                    for (var j = 0; j < gameInDb.game.rounds.length; j++) {
+                        for (var k = 0; k < gameInDb.game.rounds[j].roundPlayers.length; k++) {
+                            if (gameInDb.game.rounds[j].roundPlayers[k].name == playerName) {
+                                const pointsFromRound = gameInDb.game.rounds[j].roundPlayers[k].points;
+                                pointsPerPlayer+= pointsFromRound;
+                                totalPointsByPlayer.push(pointsPerPlayer);
+                                if (gameInDb.game.rounds[j].cardsInRound > 5) {
+                                    bigPointsPerPlayer+= pointsFromRound;
+                                } else {
+                                    smallPointsPerPlayer+= pointsFromRound;
+                                }
+                            }
+                        }
+                    }
+                    pointsArr.push(totalPointsByPlayer);
+                    pointsBigArr.push(bigPointsPerPlayer);
+                    pointsSmallArr.push(smallPointsPerPlayer);
                 }
                 retObj.players = players;
                 
-                var pointsArr = [];
-                pointsArr.push(startPointsArr);
                 for (var i = 0; i < gameInDb.game.rounds.length; i++) {
                     if (gameInDb.game.rounds[i].roundStatus != 2) break;
-                    var pointsByRound = [i+1];
+                    roundsArr.push(i+1);
                     for (var j = 0; j < gameInDb.game.rounds[i].roundPlayers.length; j++) {
-                        totalPointsByPlayer[j]+= gameInDb.game.rounds[i].roundPlayers[j].points;
-                        pointsByRound.push(totalPointsByPlayer[j]);
-                        if (gameInDb.game.rounds[i].roundPlayers[j].promise == gameInDb.game.rounds[i].roundPlayers[j].keeps) keepsArr[j]++;
+                        if (gameInDb.game.rounds[i].roundPlayers[j].promise == gameInDb.game.rounds[i].roundPlayers[j].keeps) {
+                            if (gameInDb.game.rounds[i].cardsInRound > 5) {
+                                if (retObj.smallStart != null && retObj.smallEnd == null) {
+                                    retObj.smallEnd = i;
+                                }
+                                keepsBigArr[j]++;
+                            } else {
+                                if (retObj.smallStart == null) {
+                                    retObj.smallStart = i;
+                                }
+                                keepsSmallArr[j]++;
+                            }
+                        }
                     }
-                    pointsArr.push(pointsByRound);
                 }
+
                 retObj.points = pointsArr;
-                retObj.keeps = keepsArr;
+                retObj.rounds = roundsArr;
+                retObj.pointsBig = pointsBigArr;
+                retObj.pointsSmall = pointsSmallArr;
+                retObj.keepsBig = keepsBigArr;
+                retObj.keepsSmall = keepsSmallArr;
     
                 fn(retObj);
             });
@@ -1707,3 +1772,8 @@ async function getGamesStatistics(gameInDb, playerName) {
     return statsGamesObj;
 }
 
+function sortWinPercentage(a, b) {
+    if (a.winPercentage > b.winPercentage) return -1;
+    if (a.winPercentage < b.winPercentage) return 1;
+    return 0;
+}

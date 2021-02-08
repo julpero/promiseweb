@@ -280,6 +280,25 @@ function initButtons() {
     initShowReportButton();
 }
 
+function showFrontPageBars(reportData) {
+    console.log('showFrontPageBars');
+    playedGamesGraph(reportData.mostGamesPlayed);
+    avgKeepPercentageGraph(reportData.avgKeepPercentagePerPlayer);
+    avgPointsGraph(reportData.avgPointsPerPlayer);
+    totalPointsGraph(reportData.totalPointsPerPlayer);
+    totalWinsGraph(reportData.playerTotalWins);
+    winPercentagesGraph(reportData.playerWinPercentage);
+    scoreGraph(reportData.avgScorePointsPerPlayer);
+}
+
+function initShowFrontPageBarsModal(reportData) {
+    console.log('initShowFrontPageBarsModal');
+    $('#commonReportModal').on('shown.bs.modal', function () {
+        console.log('initShowFrontPageBarsModal 2');
+        showFrontPageBars(reportData);
+    });
+}
+
 function initEvents() {
     initGameListEvent();
 }
@@ -308,6 +327,7 @@ function playerCountToHtml(playerCount) {
 function getReportData() {
     socket.emit('get report data', null, function(response) {
         console.log(response);
+        initShowFrontPageBarsModal(response);
         const tooltipTemplate = '<div class="tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-wide"></div></div>';
 
         $("#gamesPlayedInfo").html('Total of '+response.gamesPlayed+' games and '+ response.roundsPlayed +' rounds played so far...');
@@ -368,6 +388,15 @@ function getReportData() {
         }
         $('#playerTotalWins3').tooltip({title: restPlayersTotalWinsStr, template: tooltipTemplate, placement: 'bottom'});
 
+        $("#playersWinPercentage1").html(response.playerWinPercentage[0]._id+' has the best winning percentage of '+(100*response.playerWinPercentage[0].winPercentage).toFixed(1)+'%.');
+        $("#playersWinPercentage2").html(response.playerWinPercentage[1]._id+'\' winning percentage is '+(100*response.playerWinPercentage[1].winPercentage).toFixed(1)+'%');
+        $("#playersWinPercentage3").html('and '+response.playerWinPercentage[2]._id+' comes as third by winning '+(100*response.playerWinPercentage[2].winPercentage).toFixed(1)+'% of games.');
+        var restPlayersWinPercentageStr = '';
+        for (var i = 3; i < response.playerWinPercentage.length; i++) {
+            restPlayersWinPercentageStr+= response.playerWinPercentage[i]._id+' '+(100*response.playerWinPercentage[i].winPercentage).toFixed(1)+'%, ';
+        }
+        $('#playersWinPercentage3').tooltip({title: restPlayersWinPercentageStr, template: tooltipTemplate, placement: 'bottom'});
+
         $('#vanillaGames').html(response.vanillaGamesCount+' games played with original rules, rules were used:');
         $('#usedRules').html(usedRulesToHtml(response.usedRulesCount));
         
@@ -380,3 +409,4 @@ function mainInit() {
     initButtons();
     getReportData();
 }
+
