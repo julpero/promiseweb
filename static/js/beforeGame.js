@@ -280,6 +280,24 @@ function initButtons() {
     initShowReportButton();
 }
 
+function showFrontPageBars(reportData) {
+    console.log('showFrontPageBars');
+    playedGamesGraph(reportData.mostGamesPlayed);
+    avgKeepPercentageGraph(reportData.avgKeepPercentagePerPlayer);
+    avgPointsGraph(reportData.avgPointsPerPlayer);
+    totalPointsGraph(reportData.totalPointsPerPlayer);
+    totalWinsGraph(reportData.playerTotalWins);
+    scoreGraph(reportData.avgScorePointsPerPlayer);
+}
+
+function initShowFrontPageBarsModal(reportData) {
+    console.log('initShowFrontPageBarsModal');
+    $('#commonReportModal').on('shown.bs.modal', function () {
+        console.log('initShowFrontPageBarsModal 2');
+        showFrontPageBars(reportData);
+    });
+}
+
 function initEvents() {
     initGameListEvent();
 }
@@ -308,13 +326,7 @@ function playerCountToHtml(playerCount) {
 function getReportData() {
     socket.emit('get report data', null, function(response) {
         console.log(response);
-        playedGamesGraph(response.mostGamesPlayed);
-        avgKeepPercentageGraph(response.avgKeepPercentagePerPlayer);
-        avgPointsGraph(response.avgPointsPerPlayer);
-        totalPointsGraph(response.totalPointsPerPlayer);
-        totalWinsGraph(response.playerTotalWins);
-        scoreGraph(response.avgScorePointsPerPlayer);
-
+        initShowFrontPageBarsModal(response);
         const tooltipTemplate = '<div class="tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-wide"></div></div>';
 
         $("#gamesPlayedInfo").html('Total of '+response.gamesPlayed+' games and '+ response.roundsPlayed +' rounds played so far...');
@@ -387,3 +399,4 @@ function mainInit() {
     initButtons();
     getReportData();
 }
+

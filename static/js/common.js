@@ -50,6 +50,8 @@ function colorizeDatasets(datasets) {
 function showOneGameReport(reportObject) {
     const canvasIdStr = 'oneGameReportBody';
     const pointsOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
         scales: {
             x: {
                 ticks: {
@@ -156,6 +158,8 @@ function showOneGameReport(reportObject) {
 function showOneKeepsReport(reportObject) {
     const canvasIdStr = 'oneGameKeepsBody';
     const keepsOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
         indexAxis: 'y',
         scales: {
             x: {
@@ -210,6 +214,8 @@ function showOneKeepsReport(reportObject) {
 function showOnePointsReport(reportObject) {
     const canvasIdStr = 'oneGamePointsBody';
     const pointsOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
         indexAxis: 'y',
         scales: {
             x: {
@@ -226,7 +232,10 @@ function showOnePointsReport(reportObject) {
             title: {
                 display: true,
                 text: 'Points in game by nickname'
-            }
+            },
+            legend: {
+                display: false,
+            },
         }
     };
     
