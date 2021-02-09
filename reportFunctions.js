@@ -24,13 +24,168 @@ module.exports = {
             playersStatistics[i].position = position;
             playersStatistics[i].scorePoints = (playersStatistics.length-position)/playersStatistics.length;
         }
+
+        var spurtAndMelt = {
+            spurtGap: null,
+            spurtFrom: null,
+            meltGap: null,
+            meltFrom: null,
+            melter: null,
+        }
+        if (gameIsPlayed) {
+            const roundStats = this.getGameReport(game);
+            const winnerName = playersStatistics[0].playerName;
+
+            var maxSpurt = 0;
+            var spurtFrom = 0;
+            var maxMelt = 0;
+            var meltFrom = 0;
+            var melter = '';
+            for (var j = 0; j < roundStats.points[0].length; j++) {
+                var winnerPoints = 0;
+                var roundBest = null;
+                var points1 = null;
+                var points2 = null;
+                var curMelter = '';
+                for (var i = 0; i < roundStats.points.length; i++) {
+                    if (roundStats.players[i] == winnerName) {
+                        winnerPoints = roundStats.points[i][j];
+                    } else {
+                        if (roundBest == null || roundStats.points[i][j] > roundBest) {
+                            roundBest = roundStats.points[i][j];
+                        }
+
+                        if (points1 == null) {
+                            points1 = roundStats.points[i][j];
+                            curMelter = roundStats.players[i];
+                        } else {
+                            if (roundStats.points[i][j] > points1) {
+                                points2 = points1;
+                                points1 = roundStats.points[i][j];
+                                curMelter = roundStats.players[i];
+                            } else if (points2 == null) {
+                                points2 = roundStats.points[i][j];
+                            } else if (roundStats.points[i][j] > points2) {
+                                points2 = roundStats.points[i][j];
+                            }
+                        }
+                    }
+                }
+                if (points1 > winnerPoints) {
+                    const thisLead = points1 - Math.max(winnerPoints, points2);
+                    if (maxMelt <= thisLead) {
+                        maxMelt = thisLead;
+                        meltFrom = j;
+                        melter = curMelter;
+                    }
+                }
+                
+                const thisSpurt = roundBest - winnerPoints;
+                if (winnerPoints < roundBest && thisSpurt >= maxSpurt) {
+                    maxSpurt = thisSpurt;
+                    spurtFrom = j;
+                }
+            }
+
+            if (spurtFrom > 0) {
+                spurtAndMelt.spurtGap = maxSpurt;
+                spurtAndMelt.spurtFrom = spurtFrom;
+                spurtAndMelt.meltGap = maxMelt;
+                spurtAndMelt.meltFrom = meltFrom;
+                spurtAndMelt.melter = melter;
+            }
+        }
+
         return {
             generated: new Date().getTime(),
             playersStatistics: playersStatistics,
             winnerName: gameIsPlayed ? playersStatistics[0].playerName : '',
+            winnerPoints: gameIsPlayed ? playersStatistics[0].totalPoints : '',
             roundsPlayed: getRoundsPlayed(game.rounds),
             cardsHit: cardsHitInGame(game.rounds),
+            spurtAndMelt: spurtAndMelt,
         }
+    },
+
+    getGameReport: function (game) {
+        var retObj = {
+            players: null,
+            points: null,
+            rounds: null,
+            pointsBig: null, // rounds of 6-10 cards
+            pointsSmall: null, // rounds of 1-5 cards
+            keepsBig: null, // rounds of 6-10 cards
+            keepsSmall: null, // rounds of 1-5 cards
+            smallStart: null,
+            smallEnd: null,
+        };
+
+        var players = [];
+        var startPointsArr = [0];
+        var roundsArr = [0];
+        var pointsBigArr = [];
+        var pointsSmallArr = [];
+        var keepsBigArr = [];
+        var keepsSmallArr = [];
+        var pointsArr = [];
+        for (var i = 0; i < game.playerOrder.length; i++) {
+            const playerName = game.playerOrder[i].name == null ? game.playerOrder[i] : game.playerOrder[i].name;
+            players.push(playerName);
+            startPointsArr.push(0);
+            keepsBigArr.push(0);
+            keepsSmallArr.push(0);
+            var totalPointsByPlayer = [0];
+            var pointsPerPlayer = 0;
+            var bigPointsPerPlayer = 0;
+            var smallPointsPerPlayer = 0;
+            for (var j = 0; j < game.rounds.length; j++) {
+                for (var k = 0; k < game.rounds[j].roundPlayers.length; k++) {
+                    if (game.rounds[j].roundPlayers[k].name == playerName) {
+                        const pointsFromRound = game.rounds[j].roundPlayers[k].points;
+                        pointsPerPlayer+= pointsFromRound;
+                        totalPointsByPlayer.push(pointsPerPlayer);
+                        if (game.rounds[j].cardsInRound > 5) {
+                            bigPointsPerPlayer+= pointsFromRound;
+                        } else {
+                            smallPointsPerPlayer+= pointsFromRound;
+                        }
+                    }
+                }
+            }
+            pointsArr.push(totalPointsByPlayer);
+            pointsBigArr.push(bigPointsPerPlayer);
+            pointsSmallArr.push(smallPointsPerPlayer);
+        }
+        retObj.players = players;
+        
+        for (var i = 0; i < game.rounds.length; i++) {
+            if (game.rounds[i].roundStatus != 2) break;
+            roundsArr.push(i+1);
+            for (var j = 0; j < game.rounds[i].roundPlayers.length; j++) {
+                if (game.rounds[i].roundPlayers[j].promise == game.rounds[i].roundPlayers[j].keeps) {
+                    if (game.rounds[i].cardsInRound > 5) {
+                        if (retObj.smallStart != null && retObj.smallEnd == null) {
+                            retObj.smallEnd = i;
+                        }
+                        keepsBigArr[j]++;
+                    } else {
+                        if (retObj.smallStart == null) {
+                            retObj.smallStart = i;
+                        }
+                        keepsSmallArr[j]++;
+                    }
+                }
+            }
+        }
+
+        retObj.points = pointsArr;
+        retObj.rounds = roundsArr;
+        retObj.pointsBig = pointsBigArr;
+        retObj.pointsSmall = pointsSmallArr;
+        retObj.keepsBig = keepsBigArr;
+        retObj.keepsSmall = keepsSmallArr;
+
+        return retObj;
     }
 }
 
