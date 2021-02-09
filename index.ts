@@ -796,9 +796,13 @@ try {
                 console.log('start to get games');
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
-                const query = { gameStatus: 2 };
-                const cursor = await collection.find(query);
-    
+                const queryAggregation = [{$match: {
+                    gameStatus: {$eq: 2}
+                  }}, {$sort: {
+                   createDateTime : -1
+                  }}
+                ];
+                const cursor = await collection.aggregate(queryAggregation);
                 var games = [];
                 await cursor.forEach(function(val) {
                     games.push({
