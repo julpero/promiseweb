@@ -338,15 +338,13 @@
                                 </div>
                                 <div class="tab-pane fade" id="v-pills-stat" role="tabpanel" aria-labelledby="v-pills-stat-tab">
                                     <div class="row">
-                                        <div class="col-12" id="pointsStats">
-                                            <canvas id="averagesReportCanvas"></canvas>
+                                        <div class="col-12" id="pointsStats" style="height: 140px; width: 100%">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="v-pills-live" role="tabpanel" aria-labelledby="v-pills-live-tab">
                                     <div class="row">
-                                        <div class="col-12" id="pointsLiveStats">
-                                            <canvas id="pointsLiveStatsGraph"></canvas>
+                                        <div class="col-12" id="pointsLiveStats" style="height: 140px; width: 100%">
                                         </div>
                                     </div>
                                 </div>
@@ -540,6 +538,8 @@
             var timerTime = null;
             var usedTime = null;
             var possibleCards = [];
+            var liveGraphChart = null;
+            
             $(function () {
                 var joinedGame = null;
                 if (window.localStorage.getItem('uUID')) {

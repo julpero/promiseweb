@@ -1634,7 +1634,34 @@ async function getPlayerPreviousStats(playerName, equalObj) {
     return stats;
 }
 
-async function getPlayerStats(players) {
+
+function createAvgStatsArr(pStats, statCount) {
+    var statArr = [];
+    for (var i = 0; i < pStats.length; i++) {
+        var keptSum = 0;
+        var pointsSum = 0;
+        var rounds = 0;
+        for (var j = 0; (j < statCount && i+j < pStats.length); j++) {
+            if (pStats[i+j].kept) keptSum++;
+            pointsSum+= pStats[i+j].points;
+            rounds++;
+        }
+        const keptPercentage = (100*keptSum/rounds).toFixed(1);
+        const avgPoints = (pointsSum/rounds).toFixed(1);
+        statArr[statCount-1-i] = {
+            kPerc: keptPercentage,
+            avgPoints: avgPoints,
+        }
+    }
+    return statArr;
+}
+
+async function getPlayerAvgStats(players) {
+    const avgRounds = 50;
+    var retStats = {
+        rounds: avgRounds,
+        stats: null,
+    }
     var stats = [];
 
     const database = mongoUtil.getDb();
@@ -1642,36 +1669,31 @@ async function getPlayerStats(players) {
     const match = {
         "name": {$in: players},
     };
+    for (var i = 0; i < players.length; i++) {
+        var pStats = [];
+        const pName = players[i];
 
-    const aggregationLiveStats = [{$match: match
-      }, {$sort: {
-        played: -1
-      }}, {$limit: 100}, {$group: {
-        _id: '$name',
-        total: {
-          $sum: 1
-        },
-        avgPoint: {
-          $avg: '$points'
-        },
-        keepCount: {
-          $sum: {
-            $cond: {
-              if: {
-                $eq: ['$kept', true]
-              },
-              then: 1,
-              else: 0
-            }
-          }
-        }
-      }}
-    ];
-    var cursor = await collection.aggregate(aggregationLiveStats);
-    await cursor.forEach(function(stat) {
-        stats.push(stat);
-    });
-    return stats;
+        const aggregationLiveStats = [{$match: { "name": {$eq: pName}}
+        }, {$sort: {
+          played: -1
+        }}, {$limit: avgRounds*2
+        }, {$project: {
+            kept: 1,
+            points: 1,
+        }}
+      ];
+      var cursor = await collection.aggregate(aggregationLiveStats);
+      await cursor.forEach(function(pStat) {
+        pStats.push(pStat);
+      });
+
+      stats.push({
+          name: pName,
+          stats: createAvgStatsArr(pStats, avgRounds),
+      });
+    }
+    retStats.stats = stats;
+    return retStats;
 }
 
 function parseEqualObj(gameInDb) {
@@ -1694,13 +1716,14 @@ function parseEqualObj(gameInDb) {
 }
 
 async function getStatistics(gameInDb) {
-    var equalObj = parseEqualObj(gameInDb);
     var players = [];
     for (var i = 0; i < gameInDb.game.playerOrder.length; i++) {
         players.push(gameInDb.game.playerOrder[i].name);
     }
-    const statsObj = await getPlayerStats(players);
-    return statsObj;
+    const statsAvgObj = await getPlayerAvgStats(players);
+    return {
+        statsAvgObj: statsAvgObj,
+    }
 }
 
 async function getGamesStatistics(gameInDb, playerName) {

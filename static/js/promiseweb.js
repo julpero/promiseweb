@@ -888,8 +888,8 @@ function showPlayerKeepStats(playerKeeps) {
 }
 
 function showLiveStats(myRound) {
-    if (myRound.statistics == null) return;
-    liveStatsGraph(myRound.statistics);
+    if (myRound.statistics == null || myRound.statistics.statsAvgObj == null) return;
+    liveStatsGraph(myRound.statistics.statsAvgObj);
 }
 
 function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
@@ -1180,17 +1180,29 @@ function checkSmall(playerCount) {
 }
 
 function printPointStats(players) {
+    if ($('#pointsStats').children().length > 0) return;
+
+    var node = $('#pointsStats');
     const inGameReportCanvasName = 'averagesReportCanvas';
+    var reportCanvas = $('<canvas id="'+inGameReportCanvasName+'"></canvas>');
+    node.append(reportCanvas);
     const inGameReportOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
         scales: {
-            yAxes: [{
+            y: {
                 ticks: {
                     beginAtZero: true,
                 }
-            }]
+            },
         },
-        title: {
-            display: false,
+        plugins: {
+            title: {
+                display: false,
+            },
+            legend: {
+                display: false,
+            },
         },
     };
 

@@ -429,77 +429,112 @@ function scoreGraph(reportData) {
 
 
 function liveStatsGraph(reportData) {
+    const statsRounds = reportData.rounds;
+    const statsData = reportData.stats;
     const canvasIdStr = 'pointsLiveStatsGraph';
-    const graphOptions = {
-        indexAxis: 'x',
-        scales: {
-            x: {
-                ticks: {
-                    beginAtZero: true,
-                }
-            },
-            yPercentages: {
-                type: 'linear',
-                position: 'left',
-            },
-            yAvgs: {
-                type: 'linear',
-                position: 'right',
-            },
-        },
-        plugins: {
-            title: {
-                display: false,
-                text: 'Score points by nickname',
-            },
-            legend: {
-                display: false,
-            },
-        },
-    };
+
+    if (liveGraphChart == null || $('#pointsLiveStats').children().length == 0) {
+        console.log('create live graph canvas');
+        var node = $('#pointsLiveStats');
+        node.empty();
+        var reportCanvas = $('<canvas id="'+canvasIdStr+'"></canvas>');
+        node.append(reportCanvas);
+    }
+
     
     var labelsData = [];
-    var valuesDataKeepPercentages = [];
-    var valuesDataAvgPoints = [];
     var datasetsData = [];
-    var colors = [];
 
-    for (var i = 0; i < reportData.length; i++) {
-        const name = reportData[i]._id;
-        labelsData.push(name);
-        valuesDataKeepPercentages.push((100*reportData[i].keepCount/reportData[i].total).toFixed(1));
-        valuesDataAvgPoints.push((reportData[i].avgPoint).toFixed(1));
-        // colors.push(StringToColor.next(name));
+    for (var i = 0; i < statsRounds; i++) {
+        labelsData.push(i);
     }
-    datasetsData.push({
-        label: 'keep%',
-        data: valuesDataKeepPercentages,
-        borderWidth: 1,
-        backgroundColor: 'lightblue',
-        yAxisID: 'yPercentages',
-    });
-    datasetsData.push({
-        label: 'avgpoints',
-        data: valuesDataAvgPoints,
-        borderWidth: 1,
-        backgroundColor: 'lightgrey',
-        yAxisID: 'yAvgs',
-    });
+
+    for (var i = 0; i < statsData.length; i++) {
+        const name = statsData[i].name;
+        var playerKeepPercentage = [];
+        var playerAvgPoints = [];
+            
+        for (var j = 0; j < statsRounds; j++) {
+            playerKeepPercentage.push(statsData[i] && statsData[i].stats[j] ? statsData[i].stats[j].kPerc : 0);
+            playerAvgPoints.push(statsData[i] && statsData[i].stats[j] ? statsData[i].stats[j].avgPoints : 0);
+        }
+        const color = StringToColor.next(name);
+        const color2 = StringToColor.next(name+'X');
+        datasetsData.push({
+            label: name + ' keep%',
+            data: playerKeepPercentage,
+            radius: 2,
+            borderWidth: 1,
+            borderColor: color,
+            backgroundColor: color,
+            yAxisID: 'yPercentages',
+            tension: 0.2,
+        });
+        datasetsData.push({
+            label: name + ' avgpoints',
+            data: playerAvgPoints,
+            pointStyle: 'cross',
+            borderWidth: 1,
+            borderColor: color,
+            backgroundColor: color,
+            yAxisID: 'yAvgs',
+            tension: 0.2,
+        });
+
+    }
 
     const graphData = {
         labels: labelsData,
         datasets: datasetsData,
     };
 
-    Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.canvas.id == canvasIdStr) instance.destroy();
-    });
+    console.log(graphData);
 
-    var ctx = document.getElementById(canvasIdStr);
-    var graphChart = new Chart(ctx, {
-        type: 'bar',
-        data: graphData,
-        options: graphOptions,
-    });
+    if (liveGraphChart == null) {
+        const graphOptions = {
+            indexAxis: 'x',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    ticks: {
+                        beginAtZero: true,
+                    }
+                },
+                yPercentages: {
+                    type: 'linear',
+                    position: 'left',
+                    ticks: {
+                        beginAtZero: true,
+                    }
+                },
+                yAvgs: {
+                    type: 'linear',
+                    position: 'right',
+                },
+            },
+            plugins: {
+                title: {
+                    display: false,
+                    text: 'Score points by nickname',
+                },
+                legend: {
+                    display: false,
+                },
+            },
+        };
+
+        var ctx = document.getElementById(canvasIdStr);
+        liveGraphChart = new Chart(ctx, {
+            type: 'line',
+            data: graphData,
+            options: graphOptions,
+        });
+    } else {
+        liveGraphChart.options.animation = false
+        liveGraphChart.data = graphData;
+        liveGraphChart.update();
+    }
+
 }
 
