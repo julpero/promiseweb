@@ -266,6 +266,11 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col">
+                    <button type="button" id="showCommonReportsButton" class="btn btn-primary" data-toggle="modal" data-bs-toggle="modal" data-target="#commonReportModal" data-bs-target="#commonReportModal">Show graphs</button>
+                </div>
+            </div>
         </div>
 
         <div class="container-fluid" id="gameContainer" style="display: none;">
@@ -291,7 +296,6 @@
                             <ul id="ruleList"></ul>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -305,11 +309,14 @@
                     <div class="row">
                         <div class="col-2">
                             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                                <a class="nav-link nav-link-sm active" id="v-pills-chat-tab" data-toggle="pill" data-bs-toggle="pill" href="#v-pills-chat" role="tab" aria-controls="v-pills-chat" aria-selected="true">
+                                <a class="nav-link small active" id="v-pills-chat-tab" data-toggle="pill" data-bs-toggle="pill" href="#v-pills-chat" role="tab" aria-controls="v-pills-chat" aria-selected="true">
                                     Chat
                                 </a>
-                                <a class="nav-link nav-link-sm" id="v-pills-stat-tab" data-toggle="pill" data-bs-toggle="pill" href="#v-pills-stat" role="tab" aria-controls="v-pills-stat" aria-selected="false">
+                                <a class="nav-link small" id="v-pills-stat-tab" data-toggle="pill" data-bs-toggle="pill" href="#v-pills-stat" role="tab" aria-controls="v-pills-stat" aria-selected="false">
                                     Stats
+                                </a>
+                                <a class="nav-link small" id="v-pills-live-tab" data-toggle="pill" data-bs-toggle="pill" href="#v-pills-live" role="tab" aria-controls="v-pills-live" aria-selected="false">
+                                    Live
                                 </a>
                             </div>
                         </div>
@@ -329,13 +336,15 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="tab-pane fade show active" id="v-pills-stat" role="tabpanel" aria-labelledby="v-pills-stat-tab">
+                                <div class="tab-pane fade" id="v-pills-stat" role="tabpanel" aria-labelledby="v-pills-stat-tab">
                                     <div class="row">
-                                        <!-- <div class="col-4" id="avgPointsStats">
+                                        <div class="col-12" id="pointsStats" style="height: 140px; width: 100%">
                                         </div>
-                                        <div class="col-4" id="keepPercentStats">
-                                        </div> -->
-                                        <div class="col-12" id="pointsStats">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="v-pills-live" role="tabpanel" aria-labelledby="v-pills-live-tab">
+                                    <div class="row">
+                                        <div class="col-12" id="pointsLiveStats" style="height: 140px; width: 100%">
                                         </div>
                                     </div>
                                 </div>
@@ -417,12 +426,22 @@
             </div>
             <div class="row">
                 <div class="col-6" id="usedRules" style="font-size: smaller;"></div>
-                <div class="col-6" id="playerCount"></div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col-12" id="playersWinPercentage1"></div>
+                        <div class="col-12" id="playersWinPercentage2"></div>
+                        <div class="col-12" id="playersWinPercentage3"></div>
+                        <div class="col-12">&nbsp;</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12" id="playerCount"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Modal -->
-        <div class="modal fade" id="oneGameReportModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="oneGameReportModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -431,10 +450,40 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body" id="oneGameReportBody">
+                    <div class="modal-body">
+                        <canvas id="oneGameReportBody" style="height: 430px"></canvas>
                     </div>
-                    <div class="modal-body" id="oneGameKeepsBody">
+                    <div class="modal-body">
+                        <canvas id="oneGameKeepsBody" style="height: 230px"></canvas>
                     </div>
+                    <div class="modal-body">
+                        <canvas id="oneGamePointsBody" style="height: 210px"></canvas>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="commonReportModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="commonReportModalLabel">Report of the played Promise Games</h5>
+                        <button type="button" class="btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body"><canvas id="playedGamesGraph" style="height: 230px"></canvas></div>
+                    <div class="modal-body"><canvas id="avgKeepPercentageGraph" style="height: 230px"></canvas></div>
+                    <div class="modal-body"><canvas id="avgPointsGraph" style="height: 230px"></canvas></div>
+                    <div class="modal-body"><canvas id="totalPointsGraph" style="height: 230px"></canvas></div>
+                    <div class="modal-body"><canvas id="totalWinsGraph" style="height: 230px"></canvas></div>
+                    <div class="modal-body"><canvas id="winPercentagesGraph" style="height: 230px"></canvas></div>
+                    <div class="modal-body"><canvas id="scoreGraph" style="height: 230px"></canvas></div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Close</button>
                     </div>
@@ -464,20 +513,20 @@
               </div>
             </div>
         </div>
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <script src="/socket.io/socket.io.js"></script>
+        <script src="/dist/chart.min.js"></script>
+        <script src="/dist/chartjs-plugin-annotation.js"></script>
         <script src="/jquery.min.js"></script>
         <script src="/js/bootstrap.bundle.min.js"></script>
         <script src="/js/common.js"></script>
         <script src="/js/tableLayouts.js"></script>
         <script src="/js/beforeGame.js"></script>
         <script src="/js/promiseweb.js"></script>
+        <script src="/js/indexReports.js"></script>
         <script src="/deck.min.js"></script>
         <script src="/jquery.animate-colors-min.js"></script>
 
         <script type="text/javascript">
-            google.charts.load('current', {'packages':['bar', 'line', 'corechart']});
-            google.charts.setOnLoadCallback(startMainEvents);
             const socket = io();
 
             const promiseBonusTickTime = 3000;
@@ -489,8 +538,9 @@
             var timerTime = null;
             var usedTime = null;
             var possibleCards = [];
-            //$(function () {
-            function startMainEvents () {
+            var liveGraphChart = null;
+            
+            $(function () {
                 var joinedGame = null;
                 if (window.localStorage.getItem('uUID')) {
                     console.log(window.localStorage.getItem('uUID'));
@@ -520,7 +570,7 @@
                     $('#gameChooser').hide();
                     $('#gameContainer').show();
                     initRuleList(gameInfo);
-                    var getRound = {
+                    const getRound = {
                         gameStarted: true,
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
@@ -539,9 +589,9 @@
                     $('#currentGameId').val(gameInfo.id);
                     console.log('promise made');
                     console.log(gameInfo);
-                    var doReloadInit = gameInfo.reloaded;
+                    const doReloadInit = gameInfo.reloaded;
                     
-                    var getRound = {
+                    const getRound = {
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
                         round: gameInfo.currentRound,
@@ -580,7 +630,6 @@
                         // animate played card
                         const playedCard = gameInfo.eventInfo.playedCard;
                         const cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
-                        const cardPlayedByIndex = gameInfo.eventInfo.cardPlayedByIndex;
                         const players = gameInfo.humanPlayers;
                         newRound = gameInfo.eventInfo.newRound;
                         gameOver = gameInfo.eventInfo.gameOver;
@@ -594,7 +643,7 @@
                             });
                     }
 
-                    var doReloadInit = gameInfo.reloaded;
+                    const doReloadInit = gameInfo.reloaded;
                     var getRoundIndex = gameInfo.currentRound;
                     if (newRound && !gameOver) {
                         getRoundIndex++;
@@ -652,16 +701,14 @@
 
                 if (joinedGame != null) {
                     console.log('joinedGame - check');
-                    var getRound = {
+                    const getRound = {
                         gameId: -1,
                         myId: window.localStorage.getItem('uUID'),
                         round: -1,
                     };
                     socket.emit('check game', getRound);
                 }
-
-            // });
-            }
+            });
         </script>
     </body>
 </html>

@@ -865,84 +865,6 @@ function findMinMaxPoints(arr) {
     return [min, max];
 }
 
-function showPlayersAvgPointsStats(playerKeeps, playersEqualKeeps) {
-    const reportColName = 'avgPointsStats';
-    var reportDataArr = [['Player', 'Avg points in all previous rounds', {type: "string", role: "tooltip"}, 'Avg points in equal previous rounds', {type: "string", role: "tooltip"}]];
-    for (var i = 0; i < playerKeeps.length; i++) {
-        if (Object.keys(playerKeeps[i]).length <= 1) {
-            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
-        } else {
-            const avgPoints = playerKeeps[i].avgPoints;
-            const avgPointsTooltip = 'average of '+ playerKeeps[i].avgPoints.toFixed(2) +' points\nin all previous '+ playerKeeps[i].total +' rounds';
-            const equalAvgPoints = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? playersEqualKeeps[i].avgPoints : 0;
-            const equalAvgPointsTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'average of '+ (equalAvgPoints).toFixed(2) +' points\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-            reportDataArr.push([playerKeeps[i]._id, avgPoints, avgPointsTooltip, equalAvgPoints, equalAvgPointsTooltip]);
-        }
-    }
-    
-    const avgStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-
-    avgStatsChart = new google.visualization.ColumnChart(document.getElementById(reportColName));
-    avgStatsChart.draw(avgStatsReportData, avgStatsOptions);
-}
-
-function updatePlayersAvgPointsStats(playerKeeps, playersEqualKeeps) {
-    var reportDataArr = [['Player', 'Avg points in all previous rounds', {type: "string", role: "tooltip"}, 'Avg points in equal previous rounds', {type: "string", role: "tooltip"}]];
-    for (var i = 0; i < playerKeeps.length; i++) {
-        if (Object.keys(playerKeeps[i]).length <= 1) {
-            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
-        } else {
-            const avgPoints = playerKeeps[i].avgPoints;
-            const avgPointsTooltip = 'average of '+ playerKeeps[i].avgPoints.toFixed(2) +' points\nin all previous '+ playerKeeps[i].total +' rounds';
-            const equalAvgPoints = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? playersEqualKeeps[i].avgPoints : 0;
-            const equalAvgPointsTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'average of '+ (equalAvgPoints).toFixed(2) +' points\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-            reportDataArr.push([playerKeeps[i]._id, avgPoints, avgPointsTooltip, equalAvgPoints, equalAvgPointsTooltip]);
-        }
-    }
-
-    const avgStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-    avgStatsChart.draw(avgStatsReportData, avgStatsOptions);
-}
-
-function showPlayersKeepPercentStats(playerKeeps, playersEqualKeeps) {
-    const reportColName = 'keepPercentStats';
-    var reportDataArr = [['Player', 'Keep percent in previous rounds', {type: "string", role: "tooltip"}, 'Keep percent in previous equal rounds', {type: "string", role: "tooltip"}]];
-    for (var i = 0; i < playerKeeps.length; i++) {
-        if (Object.keys(playerKeeps[i]).length <= 1) {
-            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
-        } else {
-            const keepPercentage = 100 * (playerKeeps[i].keeps/playerKeeps[i].total);
-            const keepPercentageTooltip = 'keep percentage '+ (keepPercentage).toFixed(1) +'%\nin all previous '+ playerKeeps[i].total +' rounds';
-            const keepEqualPercentage = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 100 * (playersEqualKeeps[i].keeps/playersEqualKeeps[i].total) : 0;
-            const keepEqualPercentageTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'keep percentage '+ (keepEqualPercentage).toFixed(1) +'%\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-            reportDataArr.push([playerKeeps[i]._id, keepPercentage, keepPercentageTooltip, keepEqualPercentage, keepEqualPercentageTooltip]);
-        }
-    }
-    
-    const keepsStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-
-    keepStatsChart = new google.visualization.ColumnChart(document.getElementById(reportColName));
-    keepStatsChart.draw(keepsStatsReportData, keepStatsOptions);
-}
-
-function updatePlayersKeepPercentStats(playerKeeps, playersEqualKeeps) {
-    var reportDataArr = [['Player', 'Keep percent in previous rounds', {type: "string", role: "tooltip"}, 'Keep percent in previous equal rounds', {type: "string", role: "tooltip"}]];
-    for (var i = 0; i < playerKeeps.length; i++) {
-        if (Object.keys(playerKeeps[i]).length <= 1) {
-            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
-        } else {
-            const keepPercentage = 100 * (playerKeeps[i].keeps/playerKeeps[i].total);
-            const keepPercentageTooltip = 'keep percentage '+ (keepPercentage).toFixed(1) +'%\nin all previous '+ playerKeeps[i].total +' rounds';
-            const keepEqualPercentage = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 100 * (playersEqualKeeps[i].keeps/playersEqualKeeps[i].total) : 0;
-            const keepEqualPercentageTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'keep percentage '+ (keepEqualPercentage).toFixed(1) +'%\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-            reportDataArr.push([playerKeeps[i]._id, keepPercentage, keepPercentageTooltip, keepEqualPercentage, keepEqualPercentageTooltip]);
-        }
-    }
-    
-    const keepsStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-    keepStatsChart.draw(keepsStatsReportData, keepStatsOptions);
-}
-
 function showPlayerAvgPoints(playerInd, playerAvgPoints, min, max) {
     const reportColName = 'player'+playerInd+'StatsCol2';
     $('#'+reportColName).text('avg: '+playerAvgPoints.toFixed(2));
@@ -966,20 +888,8 @@ function showPlayerKeepStats(playerKeeps) {
 }
 
 function showLiveStats(myRound) {
-    if (myRound.statistics == null) return;
-    if (myRound.statistics.playersKeeps != null) {
-        //showPlayerKeepStats(myRound.statistics.playersKeeps);
-        if (avgStatsChart == null) {
-            showPlayersAvgPointsStats(myRound.statistics.playersKeeps, myRound.statistics.playersEqualKeeps);
-        } else {
-            updatePlayersAvgPointsStats(myRound.statistics.playersKeeps, myRound.statistics.playersEqualKeeps);
-        }
-        if (keepStatsChart == null) {
-            showPlayersKeepPercentStats(myRound.statistics.playersKeeps, myRound.statistics.playersEqualKeeps);
-        } else {
-            updatePlayersKeepPercentStats(myRound.statistics.playersKeeps, myRound.statistics.playersEqualKeeps);
-        }
-    }
+    if (myRound.statistics == null || myRound.statistics.statsAvgObj == null) return;
+    liveStatsGraph(myRound.statistics.statsAvgObj);
 }
 
 function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
@@ -1024,24 +934,24 @@ function getNextFreeCardWonDiv(playerIndex) {
 async function moveCardFromTableToWinDeck(winnerName, players) {
     var deck = Deck();
 
-    var playerIndex = mapPlayerNameToTable(winnerName);
-    var wonIndex = getNextFreeCardWonDiv(playerIndex);
-    var $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
-    var containerToPosition = $('#player'+playerIndex+'CardsWon'+wonIndex+'Div').offset();
+    const playerIndex = mapPlayerNameToTable(winnerName);
+    const wonIndex = getNextFreeCardWonDiv(playerIndex);
+    const $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
+    const containerToPosition = $('#player'+playerIndex+'CardsWon'+wonIndex+'Div').offset();
 
-    var delay = 400;
-    var duration = 900;
+    const delay = 400;
+    const duration = 900;
     var movingCards = [];
     var cardLooper = 0;
     var cardReadyLooper = 0;
 
     for (var i = 0; i < players.length; i++) {
-        var containerFromPosition = $('#player'+i+'CardPlayedDiv').offset();
-        var cardToCheck = getCardFromDiv('player'+i+'CardPlayedDiv');
+        const containerFromPosition = $('#player'+i+'CardPlayedDiv').offset();
+        const cardToCheck = getCardFromDiv('player'+i+'CardPlayedDiv');
         if (cardToCheck == null) {
             continue;
         }
-        var cardIndex = getCardIndex(deck.cards, cardToCheck);
+        const cardIndex = getCardIndex(deck.cards, cardToCheck);
         movingCards[i] = deck.cards[cardIndex];
         $('#player'+i+'CardPlayedDiv').empty();
         
@@ -1062,7 +972,7 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
                     x: randomNegToPos(2),
                     y: randomNegToPos(2),
                     rot: randomNegToPos(5),
-                    onComplete: async function() {
+                    onComplete: function() {
                         movingCards[cardReadyLooper].setSide('back');
                         cardReadyLooper++;
                     }
@@ -1094,10 +1004,12 @@ function getCurrentCardContainer(card) {
 }
 
 async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hiddenCardsMode) {
+    console.log('moveCardFromHandToTable, card:', card);
     var deck = Deck();
 
     if (cardsInThisPlay != null)
     {
+        console.log('moveCardFromHandToTable, cardsInThisPlay:', cardsInThisPlay);
         for (var i = 0; i < cardsInThisPlay.length; i++) {
             if (playerName == cardsInThisPlay[i].name) continue;
     
@@ -1114,11 +1026,15 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
         }
     }
 
-    const cardIndex = card.suit == "dummy" ? 0 : getCardIndex(deck.cards, card);
+    const cardIndex = card.suit == 'dummy' ? 0 : getCardIndex(deck.cards, card);
+    console.log('moveCardFromHandToTable, cardIndex:', cardIndex);
     const movingCard = deck.cards[cardIndex];
-
+    console.log('moveCardFromHandToTable, movingCard:', movingCard);
+    
     const playerIndex = mapPlayerNameToTable(playerName);
+    console.log('moveCardFromHandToTable, playerIndex:', playerIndex);
     const containerIndex = playerIndex == 0 ? getCurrentCardContainer(card) : getLastCardContainer(playerIndex);
+    console.log('moveCardFromHandToTable, containerIndex:', containerIndex);
     $('#player'+playerIndex+'CardCol'+containerIndex).empty();
 
     // var $containerFrom = document.getElementById('player'+playerIndex+'CardCol'+containerIndex);
@@ -1139,7 +1055,7 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
         y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
         rot: randomNegToPos(5),
         onComplete: async function() {
-            if (card.suit != "dummy") movingCard.setSide('front');
+            if (card.suit != 'dummy') movingCard.setSide('front');
             movingCard.animateTo({
                 delay: delay,
                 duration: duration,
@@ -1266,9 +1182,36 @@ function checkSmall(playerCount) {
 function printPointStats(players) {
     if ($('#pointsStats').children().length > 0) return;
 
-    const reportColName = 'pointsStats';
-    var reportDataArr = [['Player', 'Points in previous games', {type: "string", role: "tooltip"}, 'Points in previous equal games', {type: "string", role: "tooltip"}]];
+    var node = $('#pointsStats');
+    const inGameReportCanvasName = 'averagesReportCanvas';
+    var reportCanvas = $('<canvas id="'+inGameReportCanvasName+'"></canvas>');
+    node.append(reportCanvas);
+    const inGameReportOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                ticks: {
+                    beginAtZero: true,
+                }
+            },
+        },
+        plugins: {
+            title: {
+                display: false,
+            },
+            legend: {
+                display: false,
+            },
+        },
+    };
+
+    var datasetsData = [];
+    var playersArr = [];
+    var allArr = [];
+    var equalArr = [];
     for (var i = 0; i < players.length; i++) {
+        playersArr.push(players[i].name);
         const allGamesSum = players[i].playerStats.playersAllGames.reduce((a, b) => a + b, 0);
         const allGamesCount = players[i].playerStats.playersAllGames.length;
         const allGamesAvg = allGamesSum/allGamesCount;
@@ -1277,29 +1220,39 @@ function printPointStats(players) {
         const equalGamesAvg = equalGamesSum/equalGamesCount;
         const allGamesTooltip = 'avg points  '+ (allGamesAvg).toFixed(1) +'\nin all previous '+ allGamesCount +' games';
         const equalGamesTooltip = 'avg points  '+ (equalGamesAvg).toFixed(1) +'\nin all previous '+ equalGamesCount +' equal games';
-        reportDataArr.push([players[i].name, allGamesAvg, allGamesTooltip, equalGamesAvg, equalGamesTooltip]);
+        allArr.push(allGamesAvg);
+        equalArr.push(equalGamesAvg);
+        // reportDataArr.push([players[i].name, allGamesAvg, allGamesTooltip, equalGamesAvg, equalGamesTooltip]);
     }
-    
-    const pointStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-    const pointStatsOptions = {
-        backgroundColor: '#45a173',
-        height: 145,
-        // theme: 'maximized',
-        chartArea: {width: '99%', height: 145},
-        legend: { position: 'none' },
-        hAxis: {
-            textPosition: 'in',
-        },
-        vAxis: {
-            textPosition: 'in',
-            minValue: 0,
-            // maxValue: 100,
-            title: '',
-        },
+    datasetsData.push({
+        label: 'all games',
+        data: allArr,
+        borderWidth: 1,
+        backgroundColor: 'rgba(66,133,244,1.0)',
+        borderWidth: 3,
+    });
+    datasetsData.push({
+        label: 'equal games',
+        data: equalArr,
+        borderWidth: 1,
+        backgroundColor: 'rgba(233,66,66,1.0)',
+        borderWidth: 3,
+    });
+    const barData = {
+        labels: playersArr,
+        datasets: datasetsData,
     };
-    
-    var pointStatsChart = new google.visualization.ColumnChart(document.getElementById(reportColName));
-    pointStatsChart.draw(pointStatsReportData, pointStatsOptions);
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.chart.canvas.id == inGameReportCanvasName) instance.destroy();
+    });
+
+    var ctx = document.getElementById(inGameReportCanvasName);
+    var inGameReportChart = new Chart(ctx, {
+        type: 'bar',
+        data: barData,
+        options: inGameReportOptions,
+    });
 
 }
 
