@@ -865,84 +865,6 @@ function findMinMaxPoints(arr) {
     return [min, max];
 }
 
-function showPlayersAvgPointsStats(playerKeeps, playersEqualKeeps) {
-    const reportColName = 'avgPointsStats';
-    var reportDataArr = [['Player', 'Avg points in all previous rounds', {type: "string", role: "tooltip"}, 'Avg points in equal previous rounds', {type: "string", role: "tooltip"}]];
-    for (var i = 0; i < playerKeeps.length; i++) {
-        if (Object.keys(playerKeeps[i]).length <= 1) {
-            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
-        } else {
-            const avgPoints = playerKeeps[i].avgPoints;
-            const avgPointsTooltip = 'average of '+ playerKeeps[i].avgPoints.toFixed(2) +' points\nin all previous '+ playerKeeps[i].total +' rounds';
-            const equalAvgPoints = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? playersEqualKeeps[i].avgPoints : 0;
-            const equalAvgPointsTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'average of '+ (equalAvgPoints).toFixed(2) +' points\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-            reportDataArr.push([playerKeeps[i]._id, avgPoints, avgPointsTooltip, equalAvgPoints, equalAvgPointsTooltip]);
-        }
-    }
-    
-    const avgStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-
-    avgStatsChart = new google.visualization.ColumnChart(document.getElementById(reportColName));
-    avgStatsChart.draw(avgStatsReportData, avgStatsOptions);
-}
-
-function updatePlayersAvgPointsStats(playerKeeps, playersEqualKeeps) {
-    var reportDataArr = [['Player', 'Avg points in all previous rounds', {type: "string", role: "tooltip"}, 'Avg points in equal previous rounds', {type: "string", role: "tooltip"}]];
-    for (var i = 0; i < playerKeeps.length; i++) {
-        if (Object.keys(playerKeeps[i]).length <= 1) {
-            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
-        } else {
-            const avgPoints = playerKeeps[i].avgPoints;
-            const avgPointsTooltip = 'average of '+ playerKeeps[i].avgPoints.toFixed(2) +' points\nin all previous '+ playerKeeps[i].total +' rounds';
-            const equalAvgPoints = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? playersEqualKeeps[i].avgPoints : 0;
-            const equalAvgPointsTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'average of '+ (equalAvgPoints).toFixed(2) +' points\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-            reportDataArr.push([playerKeeps[i]._id, avgPoints, avgPointsTooltip, equalAvgPoints, equalAvgPointsTooltip]);
-        }
-    }
-
-    const avgStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-    avgStatsChart.draw(avgStatsReportData, avgStatsOptions);
-}
-
-function showPlayersKeepPercentStats(playerKeeps, playersEqualKeeps) {
-    const reportColName = 'keepPercentStats';
-    var reportDataArr = [['Player', 'Keep percent in previous rounds', {type: "string", role: "tooltip"}, 'Keep percent in previous equal rounds', {type: "string", role: "tooltip"}]];
-    for (var i = 0; i < playerKeeps.length; i++) {
-        if (Object.keys(playerKeeps[i]).length <= 1) {
-            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
-        } else {
-            const keepPercentage = 100 * (playerKeeps[i].keeps/playerKeeps[i].total);
-            const keepPercentageTooltip = 'keep percentage '+ (keepPercentage).toFixed(1) +'%\nin all previous '+ playerKeeps[i].total +' rounds';
-            const keepEqualPercentage = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 100 * (playersEqualKeeps[i].keeps/playersEqualKeeps[i].total) : 0;
-            const keepEqualPercentageTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'keep percentage '+ (keepEqualPercentage).toFixed(1) +'%\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-            reportDataArr.push([playerKeeps[i]._id, keepPercentage, keepPercentageTooltip, keepEqualPercentage, keepEqualPercentageTooltip]);
-        }
-    }
-    
-    const keepsStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-
-    keepStatsChart = new google.visualization.ColumnChart(document.getElementById(reportColName));
-    keepStatsChart.draw(keepsStatsReportData, keepStatsOptions);
-}
-
-function updatePlayersKeepPercentStats(playerKeeps, playersEqualKeeps) {
-    var reportDataArr = [['Player', 'Keep percent in previous rounds', {type: "string", role: "tooltip"}, 'Keep percent in previous equal rounds', {type: "string", role: "tooltip"}]];
-    for (var i = 0; i < playerKeeps.length; i++) {
-        if (Object.keys(playerKeeps[i]).length <= 1) {
-            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
-        } else {
-            const keepPercentage = 100 * (playerKeeps[i].keeps/playerKeeps[i].total);
-            const keepPercentageTooltip = 'keep percentage '+ (keepPercentage).toFixed(1) +'%\nin all previous '+ playerKeeps[i].total +' rounds';
-            const keepEqualPercentage = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 100 * (playersEqualKeeps[i].keeps/playersEqualKeeps[i].total) : 0;
-            const keepEqualPercentageTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'keep percentage '+ (keepEqualPercentage).toFixed(1) +'%\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-            reportDataArr.push([playerKeeps[i]._id, keepPercentage, keepPercentageTooltip, keepEqualPercentage, keepEqualPercentageTooltip]);
-        }
-    }
-    
-    const keepsStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-    keepStatsChart.draw(keepsStatsReportData, keepStatsOptions);
-}
-
 function showPlayerAvgPoints(playerInd, playerAvgPoints, min, max) {
     const reportColName = 'player'+playerInd+'StatsCol2';
     $('#'+reportColName).text('avg: '+playerAvgPoints.toFixed(2));
@@ -966,20 +888,8 @@ function showPlayerKeepStats(playerKeeps) {
 }
 
 function showLiveStats(myRound) {
-    if (myRound.statistics == null) return;
-    if (myRound.statistics.playersKeeps != null) {
-        //showPlayerKeepStats(myRound.statistics.playersKeeps);
-        if (avgStatsChart == null) {
-            showPlayersAvgPointsStats(myRound.statistics.playersKeeps, myRound.statistics.playersEqualKeeps);
-        } else {
-            updatePlayersAvgPointsStats(myRound.statistics.playersKeeps, myRound.statistics.playersEqualKeeps);
-        }
-        if (keepStatsChart == null) {
-            showPlayersKeepPercentStats(myRound.statistics.playersKeeps, myRound.statistics.playersEqualKeeps);
-        } else {
-            updatePlayersKeepPercentStats(myRound.statistics.playersKeeps, myRound.statistics.playersEqualKeeps);
-        }
-    }
+    if (myRound.statistics == null || myRound.statistics.statsAvgObj == null) return;
+    liveStatsGraph(myRound.statistics.statsAvgObj);
 }
 
 function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
@@ -1277,15 +1187,22 @@ function printPointStats(players) {
     var reportCanvas = $('<canvas id="'+inGameReportCanvasName+'"></canvas>');
     node.append(reportCanvas);
     const inGameReportOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
         scales: {
-            yAxes: [{
+            y: {
                 ticks: {
                     beginAtZero: true,
                 }
-            }]
+            },
         },
-        title: {
-            display: false,
+        plugins: {
+            title: {
+                display: false,
+            },
+            legend: {
+                display: false,
+            },
         },
     };
 
@@ -1315,7 +1232,7 @@ function printPointStats(players) {
         borderWidth: 3,
     });
     datasetsData.push({
-        label: 'regular games',
+        label: 'equal games',
         data: equalArr,
         borderWidth: 1,
         backgroundColor: 'rgba(233,66,66,1.0)',

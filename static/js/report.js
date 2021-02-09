@@ -179,7 +179,7 @@ function showAveragePointsPerGames(reportObject) {
         plugins: {
             title: {
                 display: true,
-                text: 'Average points of all and regular games played by nickname',
+                text: 'Average points of all and equal games played by nickname',
             },
         }
     };
@@ -202,7 +202,7 @@ function showAveragePointsPerGames(reportObject) {
         borderWidth: 3,
     });
     datasetsData.push({
-        label: 'regular games',
+        label: 'equal games',
         data: avgRegularArr,
         borderWidth: 1,
         backgroundColor: 'rgba(233,66,66,1.0)',

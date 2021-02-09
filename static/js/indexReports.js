@@ -427,3 +427,114 @@ function scoreGraph(reportData) {
     });
 }
 
+
+function liveStatsGraph(reportData) {
+    const statsRounds = reportData.rounds;
+    const statsData = reportData.stats;
+    const canvasIdStr = 'pointsLiveStatsGraph';
+
+    if (liveGraphChart == null || $('#pointsLiveStats').children().length == 0) {
+        console.log('create live graph canvas');
+        var node = $('#pointsLiveStats');
+        node.empty();
+        var reportCanvas = $('<canvas id="'+canvasIdStr+'"></canvas>');
+        node.append(reportCanvas);
+    }
+
+    
+    var labelsData = [];
+    var datasetsData = [];
+
+    for (var i = 0; i < statsRounds; i++) {
+        labelsData.push(i);
+    }
+
+    for (var i = 0; i < statsData.length; i++) {
+        const name = statsData[i].name;
+        var playerKeepPercentage = [];
+        var playerAvgPoints = [];
+            
+        for (var j = 0; j < statsRounds; j++) {
+            playerKeepPercentage.push(statsData[i] && statsData[i].stats[j] ? statsData[i].stats[j].kPerc : 0);
+            playerAvgPoints.push(statsData[i] && statsData[i].stats[j] ? statsData[i].stats[j].avgPoints : 0);
+        }
+        const color = StringToColor.next(name);
+        const color2 = StringToColor.next(name+'X');
+        datasetsData.push({
+            label: name + ' keep%',
+            data: playerKeepPercentage,
+            radius: 2,
+            borderWidth: 1,
+            borderColor: color,
+            backgroundColor: color,
+            yAxisID: 'yPercentages',
+            tension: 0.2,
+        });
+        datasetsData.push({
+            label: name + ' avgpoints',
+            data: playerAvgPoints,
+            pointStyle: 'cross',
+            borderWidth: 1,
+            borderColor: color,
+            backgroundColor: color,
+            yAxisID: 'yAvgs',
+            tension: 0.2,
+        });
+
+    }
+
+    const graphData = {
+        labels: labelsData,
+        datasets: datasetsData,
+    };
+
+    console.log(graphData);
+
+    if (liveGraphChart == null) {
+        const graphOptions = {
+            indexAxis: 'x',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    ticks: {
+                        beginAtZero: true,
+                    }
+                },
+                yPercentages: {
+                    type: 'linear',
+                    position: 'left',
+                    ticks: {
+                        beginAtZero: true,
+                    }
+                },
+                yAvgs: {
+                    type: 'linear',
+                    position: 'right',
+                },
+            },
+            plugins: {
+                title: {
+                    display: false,
+                    text: 'Score points by nickname',
+                },
+                legend: {
+                    display: false,
+                },
+            },
+        };
+
+        var ctx = document.getElementById(canvasIdStr);
+        liveGraphChart = new Chart(ctx, {
+            type: 'line',
+            data: graphData,
+            options: graphOptions,
+        });
+    } else {
+        liveGraphChart.options.animation = false
+        liveGraphChart.data = graphData;
+        liveGraphChart.update();
+    }
+
+}
+
