@@ -793,12 +793,16 @@ try {
             /* reporting functions */
 
             socket.on('get games for report', async (data, fn) => {
-                console.log('start to get games');
+                console.log('start to get games for report');
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
-                const query = { gameStatus: 2 };
-                const cursor = await collection.find(query);
-    
+                const queryAggregation = [{$match: {
+                    gameStatus: {$eq: 2}
+                  }}, {$sort: {
+                   createDateTime : -1
+                  }}
+                ];
+                const cursor = await collection.aggregate(queryAggregation);
                 var games = [];
                 await cursor.forEach(function(val) {
                     games.push({
@@ -1226,18 +1230,6 @@ try {
             });
             
             socket.on('get game report', async (data, fn) => {
-                console.log('start to get game for report');
-                var retObj = {
-                    players: null,
-                    points: null,
-                    rounds: null,
-                    pointsBig: null, // rounds of 6-10 cards
-                    pointsSmall: null, // rounds of 1-5 cards
-                    keepsBig: null, // rounds of 6-10 cards
-                    keepsSmall: null, // rounds of 1-5 cards
-                    smallStart: null,
-                    smallEnd: null,
-                };
                 var ObjectId = require('mongodb').ObjectId;
                 var searchId = new ObjectId(data.gameId);
                 const database = mongoUtil.getDb();
@@ -1247,77 +1239,45 @@ try {
                     _id: searchId,
                 };
                 const gameInDb = await collection.findOne(query);
-    
-                var players = [];
-                var startPointsArr = [0];
-                var roundsArr = [0];
-                var pointsBigArr = [];
-                var pointsSmallArr = [];
-                var keepsBigArr = [];
-                var keepsSmallArr = [];
-                var pointsArr = [];
-                for (var i = 0; i < gameInDb.game.playerOrder.length; i++) {
-                    const playerName = gameInDb.game.playerOrder[i].name == null ? gameInDb.game.playerOrder[i] : gameInDb.game.playerOrder[i].name;
-                    players.push(playerName);
-                    startPointsArr.push(0);
-                    keepsBigArr.push(0);
-                    keepsSmallArr.push(0);
-                    var totalPointsByPlayer = [0];
-                    var pointsPerPlayer = 0;
-                    var bigPointsPerPlayer = 0;
-                    var smallPointsPerPlayer = 0;
-                    for (var j = 0; j < gameInDb.game.rounds.length; j++) {
-                        for (var k = 0; k < gameInDb.game.rounds[j].roundPlayers.length; k++) {
-                            if (gameInDb.game.rounds[j].roundPlayers[k].name == playerName) {
-                                const pointsFromRound = gameInDb.game.rounds[j].roundPlayers[k].points;
-                                pointsPerPlayer+= pointsFromRound;
-                                totalPointsByPlayer.push(pointsPerPlayer);
-                                if (gameInDb.game.rounds[j].cardsInRound > 5) {
-                                    bigPointsPerPlayer+= pointsFromRound;
-                                } else {
-                                    smallPointsPerPlayer+= pointsFromRound;
-                                }
-                            }
-                        }
-                    }
-                    pointsArr.push(totalPointsByPlayer);
-                    pointsBigArr.push(bigPointsPerPlayer);
-                    pointsSmallArr.push(smallPointsPerPlayer);
-                }
-                retObj.players = players;
-                
-                for (var i = 0; i < gameInDb.game.rounds.length; i++) {
-                    if (gameInDb.game.rounds[i].roundStatus != 2) break;
-                    roundsArr.push(i+1);
-                    for (var j = 0; j < gameInDb.game.rounds[i].roundPlayers.length; j++) {
-                        if (gameInDb.game.rounds[i].roundPlayers[j].promise == gameInDb.game.rounds[i].roundPlayers[j].keeps) {
-                            if (gameInDb.game.rounds[i].cardsInRound > 5) {
-                                if (retObj.smallStart != null && retObj.smallEnd == null) {
-                                    retObj.smallEnd = i;
-                                }
-                                keepsBigArr[j]++;
-                            } else {
-                                if (retObj.smallStart == null) {
-                                    retObj.smallStart = i;
-                                }
-                                keepsSmallArr[j]++;
-                            }
-                        }
-                    }
-                }
-
-                retObj.points = pointsArr;
-                retObj.rounds = roundsArr;
-                retObj.pointsBig = pointsBigArr;
-                retObj.pointsSmall = pointsSmallArr;
-                retObj.keepsBig = keepsBigArr;
-                retObj.keepsSmall = keepsSmallArr;
-    
+   
+                console.log(gameInDb);
+                var retObj = rf.getGameReport(gameInDb.game);
                 fn(retObj);
             });
             
+            socket.on('update all game reports', async (data, fn) => {
+                console.log('start to update all game reports');
+                var updatedIds = [];
+                const database = mongoUtil.getDb();
+                const collection = database.collection('promiseweb');
+                const query = {
+                    gameStatus: 2,
+                };
+                const gamesInDb = await collection.find(query);
+                await gamesInDb.forEach(async function (gameInDb) {
+                    const gameId = gameInDb._id;
+                    console.log(gameId.toString());
+                    const gameStatistics = rf.generateGameStatistics(gameInDb.game, true);
+
+                    const updateQuery = { _id: gameId, gameStatus: 2};
+                    const options = { upsert: true };
+                    const updateDoc = {
+                        $set: {
+                            gameStatistics: gameStatistics,
+                        }
+                    };
+                    const result = await collection.updateOne(updateQuery, updateDoc, options);
+                    if (result.modifiedCount == 1) {
+                        updatedIds.push(gameId.toString());
+                        console.log(' updated');
+                    }
+                });
+
+                fn(updatedIds);
+            });
+            
             socket.on('get average report', async (data, fn) => {
-                console.log('start to get games');
+                console.log('start to get games for average report');
                 var averageReport = {
                     gamesPlayed: null,
                     averagePointsPerGames: null,

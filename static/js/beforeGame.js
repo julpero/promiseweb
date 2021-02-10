@@ -388,7 +388,7 @@ function getReportData() {
         $('#playerTotalWins3').tooltip({title: restPlayersTotalWinsStr, template: tooltipTemplate, placement: 'bottom'});
 
         $("#playersWinPercentage1").html(response.playerWinPercentage[0]._id+' has the best winning percentage of '+(100*response.playerWinPercentage[0].winPercentage).toFixed(1)+'%.');
-        $("#playersWinPercentage2").html(response.playerWinPercentage[1]._id+'\' winning percentage is '+(100*response.playerWinPercentage[1].winPercentage).toFixed(1)+'%');
+        $("#playersWinPercentage2").html(response.playerWinPercentage[1]._id+'\'s winning percentage is '+(100*response.playerWinPercentage[1].winPercentage).toFixed(1)+'%');
         $("#playersWinPercentage3").html('and '+response.playerWinPercentage[2]._id+' comes as third by winning '+(100*response.playerWinPercentage[2].winPercentage).toFixed(1)+'% of games.');
         var restPlayersWinPercentageStr = '';
         for (var i = 3; i < response.playerWinPercentage.length; i++) {

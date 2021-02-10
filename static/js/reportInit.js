@@ -34,10 +34,21 @@ function initNickChangeEvent() {
     });
 }
 
+function initUpdateAllButton() {
+    $('#updateAllGameReportsButton').on('click', function() {
+        if (window.confirm('Are you sure you wan\'t to update ALL game reports?')) {
+            socket.emit('update all game reports', {}, function (response) {
+                console.log(response);
+            });
+        }
+    });
+}
+
 function initEvents() {
     initGameListEvent();
     initAverageEvent();
     initNickChangeEvent();
+    initUpdateAllButton();
 }
 
 function enableButtons() {
