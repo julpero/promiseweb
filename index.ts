@@ -1095,8 +1095,8 @@ try {
                 retObj.avgScorePointsPerPlayer = avgScorePointsPerPlayer;
                 // ********
 
-                // players avegare percentage points
-                console.log('report data - avegare percentage points');
+                // players average percentage points
+                console.log('report data - average percentage points');
                 const aggregationPlayerPercentagePointsTotal = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -1104,28 +1104,29 @@ try {
                   }}, {$unwind: {
                     path: "$gameStatistics.playersStatistics",
                     preserveNullAndEmptyArrays: false
+                  }}, {$addFields: {
+                    "gameStatistics.playersStatistics.pointPercentages": {$divide: ["$gameStatistics.playersStatistics.totalPoints", "$gameStatistics.winnerPoints"]}
                   }}, {$group: {
                     _id: "$gameStatistics.playersStatistics.playerName",
                     playerTotalGames: {$sum: 1},
-                    playerAvgPercentPoints: {$avg: {$divide: ["$gameStatistics.playersStatistics.totalPoints", "$gameStatistics.winnerPoints"]}},
+                    playerAvgPercentPoints: {$avg: "$gameStatistics.playersStatistics.pointPercentages"},
                   }}, {$match: {
                     playerTotalGames: {$gte: minGamesToReport}
                   }}, {$sort: {
                     playerAvgPercentPoints: -1
-                  }},
+                  }}
                 ];
 
+                const cursorPlayerPercentagePointsTotal = await collection.aggregate(aggregationPlayerPercentagePointsTotal);
+                var playersPercentagePointsTotal = [];
                 try {
-                    const cursorPlayerPercentagePointsTotal = await collection.aggregate(aggregationPlayerPercentagePointsTotal);
-                    var playersPercentagePointsTotal = [];
                     await cursorPlayerPercentagePointsTotal.forEach(function(val) {
                         playersPercentagePointsTotal.push(val);
                     });
-                    retObj.avgPercentagePoints = playersPercentagePointsTotal;
                 } catch (err) {
                     console.log(err);
                 }
-
+                retObj.avgPercentagePoints = playersPercentagePointsTotal;
                 // ********
 
                 // players total
@@ -1182,22 +1183,22 @@ try {
                     gameStatus: {$eq: 2}
                   }}, {$sort: {
                     "gameStatistics.spurtAndMelt.meltGap": -1,
-                    "gameStatistics.spurtAndMelt.meltFrom": -1,
+                    // "gameStatistics.spurtAndMelt.meltFrom": -1,
                   }}, {$limit: 1}, {$project: {
                     game: 0
                   }}
                 ];
                 
+                const cursorMeltingGame = await collection.aggregate(aggregationMeltingGame);
+                var meltingGame = null;
                 try {
-                    const cursorMeltingGame = await collection.aggregate(aggregationMeltingGame);
-                    var meltingGame = null;
                     await cursorMeltingGame.forEach(function(val) {
                         meltingGame = val;
                     });
-                    retObj.meltingGame = meltingGame;
                 } catch (err) {
                     console.log(err);
                 }
+                retObj.meltingGame = meltingGame;
                 // ********
 
                 // spurter
@@ -1206,22 +1207,22 @@ try {
                     gameStatus: {$eq: 2}
                   }}, {$sort: {
                     "gameStatistics.spurtAndMelt.spurtGap": -1,
-                    "gameStatistics.spurtAndMelt.spurtFrom": -1,
+                    // "gameStatistics.spurtAndMelt.spurtFrom": -1,
                   }}, {$limit: 1}, {$project: {
                     game: 0
                   }}
                 ];
 
+                const cursorSpurtingGame = await collection.aggregate(aggregationSpurtingGame);
+                var spurtingGame = null;
                 try {
-                    const cursorSpurtingGame = await collection.aggregate(aggregationSpurtingGame);
-                    var spurtingGame = null;
                     await cursorSpurtingGame.forEach(function(val) {
                         spurtingGame = val;
                     });
-                    retObj.spurtingGame = spurtingGame;
                 } catch (err) {
                     console.log(err);
                 }
+                retObj.spurtingGame = spurtingGame;
                 // ********
 
                 // vanilla games

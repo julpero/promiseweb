@@ -407,7 +407,7 @@ function getReportData() {
         }
         $('#playersWinPercentage3').tooltip({title: restPlayersWinPercentageStr, template: tooltipTemplate, placement: 'bottom'});
 
-        if (response.avgPercentagePoints != null) {
+        if (response.avgPercentagePoints != null && response.avgPercentagePoints.length >= 3) {
             $("#playersPercentagePoints1").html(response.avgPercentagePoints[0]._id+' gathers average of '+(100*response.avgPercentagePoints[0].playerAvgPercentPoints).toFixed(1)+'% of games winning points.');
             $("#playersPercentagePoints2").html(response.avgPercentagePoints[1]._id+'\'s points are '+(100*response.avgPercentagePoints[1].playerAvgPercentPoints).toFixed(1)+'% of winner\'s points');
             $("#playersPercentagePoints3").html('and '+response.avgPercentagePoints[2]._id+' comes as third by gathering '+(100*response.avgPercentagePoints[2].playerAvgPercentPoints).toFixed(1)+'% of points needed to win games.');
