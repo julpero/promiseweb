@@ -848,6 +848,9 @@ try {
                     usedRulesCount: null,
                     playerCount: null,
                     playerWinPercentage: null,
+                    meltingGame: null,
+                    spurtingGame: null,
+                    avgPercentagePoints: null,
                 };
 
                 const database = mongoUtil.getDb();
@@ -1092,6 +1095,34 @@ try {
                 retObj.avgScorePointsPerPlayer = avgScorePointsPerPlayer;
                 // ********
 
+                // players avegare percentage points
+                console.log('report data - avegare percentage points');
+                const aggregationPlayerPercentagePointsTotal = [{$match: {
+                    gameStatus: {
+                      $eq: 2
+                    }
+                  }}, {$unwind: {
+                    path: "$gameStatistics.playersStatistics",
+                    preserveNullAndEmptyArrays: false
+                  }}, {$group: {
+                    _id: "$gameStatistics.playersStatistics.playerName",
+                    playerTotalGames: {$sum: 1},
+                    playerAvgPercentPoints: {$avg: {$divide: ["$gameStatistics.playersStatistics.totalPoints", "$gameStatistics.winnerPoints"]}},
+                  }}, {$match: {
+                    playerTotalGames: {$gte: minGamesToReport}
+                  }}, {$sort: {
+                    playerAvgPercentPoints: -1
+                  }},
+                ];
+
+                const cursorPlayerPercentagePointsTotal = await collection.aggregate(aggregationPlayerPercentagePointsTotal);
+                var playersPercentagePointsTotal = [];
+                await cursorPlayerPercentagePointsTotal.forEach(function(val) {
+                    playersPercentagePointsTotal.push(val);
+                });
+                retObj.avgPercentagePoints = playersPercentagePointsTotal;
+                // ********
+
                 // players total
                 console.log('report data - players total');
                 const aggregationPlayersTotal = [{$match: {
@@ -1138,6 +1169,46 @@ try {
                     if (val._id == 6) playerCount.sixPlayers = val.lkm;
                 });
                 retObj.playerCount = playerCount;
+                // ********
+
+                // melter
+                console.log('report data - melter');
+                const aggregationMeltingGame = [{$match: {
+                    gameStatus: {$eq: 2}
+                  }}, {$sort: {
+                    "gameStatistics.spurtAndMelt.meltGap": -1,
+                    "gameStatistics.spurtAndMelt.meltFrom": -1,
+                  }}, {$limit: 1}, {$project: {
+                    game: 0
+                  }}
+                ];
+
+                const cursorMeltingGame = await collection.aggregate(aggregationMeltingGame);
+                var meltingGame = null;
+                await cursorMeltingGame.forEach(function(val) {
+                    meltingGame = val;
+                });
+                retObj.meltingGame = meltingGame;
+                // ********
+
+                // spurter
+                console.log('report data - spurter');
+                const aggregationSpurtingGame = [{$match: {
+                    gameStatus: {$eq: 2}
+                  }}, {$sort: {
+                    "gameStatistics.spurtAndMelt.spurtGap": -1,
+                    "gameStatistics.spurtAndMelt.spurtFrom": -1,
+                  }}, {$limit: 1}, {$project: {
+                    game: 0
+                  }}
+                ];
+
+                const cursorSpurtingGame = await collection.aggregate(aggregationSpurtingGame);
+                var spurtingGame = null;
+                await cursorMeltingGame.forEach(function(val) {
+                    spurtingGame = val;
+                });
+                retObj.spurtingGame = spurtingGame;
                 // ********
 
                 // vanilla games
