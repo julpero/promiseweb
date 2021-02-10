@@ -323,6 +323,16 @@ function playerCountToHtml(playerCount) {
     'and six players played game '+playerCount.sixPlayers+' times.';
 }
 
+function melterToHtml(meltingGame) {
+    if (meltingGame == null || meltingGame.gameStatistics == null || meltingGame.gameStatistics.spurtAndMelt == null || meltingGame.gameStatistics.spurtAndMelt.melter == null) return '';
+    return 'There was a game on '+new Date(meltingGame.createDateTime).toDateString()+' when '+meltingGame.gameStatistics.spurtAndMelt.melter+' lead the game by '+meltingGame.gameStatistics.spurtAndMelt.meltGap+' points. After all, '+meltingGame.gameStatistics.winnerName+' won the game...';
+}
+
+function spurterToHtml(spurtingGame) {
+    if (spurtingGame == null || spurtingGame.gameStatistics == null || spurtingGame.gameStatistics.spurtAndMelt == null || spurtingGame.gameStatistics.spurtAndMelt.spurtGap == null) return '';
+    return 'On '+new Date(spurtingGame.createDateTime).toDateString()+' '+spurtingGame.gameStatistics.winnerName+' was '+spurtingGame.gameStatistics.spurtAndMelt.spurtGap+' points behind the leader. Nevertheless '+spurtingGame.gameStatistics.winnerName+' won the game!';
+}
+
 function getReportData() {
     socket.emit('get report data', null, function(response) {
         console.log(response);
@@ -400,6 +410,24 @@ function getReportData() {
         $('#usedRules').html(usedRulesToHtml(response.usedRulesCount));
         
         $('#playerCount').html(playerCountToHtml(response.playerCount));
+
+        const melterStr = melterToHtml(response.meltingGame);
+        if (melterStr != '') {
+            const meltGameId = response.meltingGame._id;
+            $('#melterInfo').html(melterStr);
+            $('#melterInfo').on('click', function() {
+                getOneGameReport(meltGameId);
+            });
+        }
+
+        const spurterStr = spurterToHtml(response.spurtingGame);
+        if (spurterStr != '') {
+            const spurtGameId = response.spurtingGame._id;
+            $('#spurterInfo').html(spurterStr);
+            $('#spurterInfo').on('click', function() {
+                getOneGameReport(spurtGameId);
+            });
+        }
     });
 }
 

@@ -848,6 +848,8 @@ try {
                     usedRulesCount: null,
                     playerCount: null,
                     playerWinPercentage: null,
+                    meltingGame: null,
+                    spurtingGame: null,
                 };
 
                 const database = mongoUtil.getDb();
@@ -1138,6 +1140,46 @@ try {
                     if (val._id == 6) playerCount.sixPlayers = val.lkm;
                 });
                 retObj.playerCount = playerCount;
+                // ********
+
+                // melter
+                console.log('report data - melter');
+                const aggregationMeltingGame = [{$match: {
+                    gameStatus: {$eq: 2}
+                  }}, {$sort: {
+                    "gameStatistics.spurtAndMelt.meltGap": -1,
+                    "gameStatistics.spurtAndMelt.meltFrom": -1,
+                  }}, {$limit: 1}, {$project: {
+                    game: 0
+                  }}
+                ];
+
+                const cursorMeltingGame = await collection.aggregate(aggregationMeltingGame);
+                var meltingGame = null;
+                await cursorMeltingGame.forEach(function(val) {
+                    meltingGame = val;
+                });
+                retObj.meltingGame = meltingGame;
+                // ********
+
+                // spurter
+                console.log('report data - spurter');
+                const aggregationSpurtingGame = [{$match: {
+                    gameStatus: {$eq: 2}
+                  }}, {$sort: {
+                    "gameStatistics.spurtAndMelt.spurtGap": -1,
+                    "gameStatistics.spurtAndMelt.spurtFrom": -1,
+                  }}, {$limit: 1}, {$project: {
+                    game: 0
+                  }}
+                ];
+
+                const cursorSpurtingGame = await collection.aggregate(aggregationSpurtingGame);
+                var spurtingGame = null;
+                await cursorMeltingGame.forEach(function(val) {
+                    spurtingGame = val;
+                });
+                retObj.spurtingGame = spurtingGame;
                 // ********
 
                 // vanilla games
