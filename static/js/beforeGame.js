@@ -289,6 +289,7 @@ function showFrontPageBars(reportData) {
     totalWinsGraph(reportData.playerTotalWins);
     winPercentagesGraph(reportData.playerWinPercentage);
     scoreGraph(reportData.avgScorePointsPerPlayer);
+    avgPercentagePointsGraph(reportData.avgPercentagePoints);
 }
 
 function initShowFrontPageBarsModal(reportData) {
@@ -405,6 +406,15 @@ function getReportData() {
             restPlayersWinPercentageStr+= response.playerWinPercentage[i]._id+' '+(100*response.playerWinPercentage[i].winPercentage).toFixed(1)+'%, ';
         }
         $('#playersWinPercentage3').tooltip({title: restPlayersWinPercentageStr, template: tooltipTemplate, placement: 'bottom'});
+
+        $("#playersPercentagePoints1").html(response.avgPercentagePoints[0]._id+' gathers average of '+(100*response.avgPercentagePoints[0].playerAvgPercentPoints).toFixed(1)+'% of games winning points.');
+        $("#playersPercentagePoints2").html(response.avgPercentagePoints[1]._id+'\'s points are '+(100*response.avgPercentagePoints[1].playerAvgPercentPoints).toFixed(1)+'% of winner\'s points');
+        $("#playersPercentagePoints3").html('and '+response.avgPercentagePoints[2]._id+' comes as third by gathering '+(100*response.avgPercentagePoints[2].playerAvgPercentPoints).toFixed(1)+'% of points needed to win games.');
+        var restPlayersAvgPercentPointsStr = '';
+        for (var i = 3; i < response.avgPercentagePoints.length; i++) {
+            restPlayersAvgPercentPointsStr+= response.avgPercentagePoints[i]._id+' '+(100*response.avgPercentagePoints[i].playerAvgPercentPoints).toFixed(1)+'%, ';
+        }
+        $('#playersPercentagePoints3').tooltip({title: restPlayersAvgPercentPointsStr, template: tooltipTemplate, placement: 'bottom'});
 
         $('#vanillaGames').html(response.vanillaGamesCount+' games played with original rules, rules were used:');
         $('#usedRules').html(usedRulesToHtml(response.usedRulesCount));

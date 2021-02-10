@@ -850,6 +850,7 @@ try {
                     playerWinPercentage: null,
                     meltingGame: null,
                     spurtingGame: null,
+                    avgPercentagePoints: null,
                 };
 
                 const database = mongoUtil.getDb();
@@ -1092,6 +1093,34 @@ try {
                     avgScorePointsPerPlayer.push(val);
                 });
                 retObj.avgScorePointsPerPlayer = avgScorePointsPerPlayer;
+                // ********
+
+                // players avegare percentage points
+                console.log('report data - avegare percentage points');
+                const aggregationPlayerPercentagePointsTotal = [{$match: {
+                    gameStatus: {
+                      $eq: 2
+                    }
+                  }}, {$unwind: {
+                    path: "$gameStatistics.playersStatistics",
+                    preserveNullAndEmptyArrays: false
+                  }}, {$group: {
+                    _id: "$gameStatistics.playersStatistics.playerName",
+                    playerTotalGames: {$sum: 1},
+                    playerAvgPercentPoints: {$avg: {$divide: ["$gameStatistics.playersStatistics.totalPoints", "$gameStatistics.winnerPoints"]}},
+                  }}, {$match: {
+                    playerTotalGames: {$gte: minGamesToReport}
+                  }}, {$sort: {
+                    playerAvgPercentPoints: -1
+                  }},
+                ];
+
+                const cursorPlayerPercentagePointsTotal = await collection.aggregate(aggregationPlayerPercentagePointsTotal);
+                var playersPercentagePointsTotal = [];
+                await cursorPlayerPercentagePointsTotal.forEach(function(val) {
+                    playersPercentagePointsTotal.push(val);
+                });
+                retObj.avgPercentagePoints = playersPercentagePointsTotal;
                 // ********
 
                 // players total
