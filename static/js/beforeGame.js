@@ -326,7 +326,7 @@ function playerCountToHtml(playerCount) {
 
 function melterToHtml(meltingGame) {
     if (meltingGame == null || meltingGame.gameStatistics == null || meltingGame.gameStatistics.spurtAndMelt == null || meltingGame.gameStatistics.spurtAndMelt.melter == null) return '';
-    return 'There was a game on '+new Date(meltingGame.createDateTime).toDateString()+' when '+meltingGame.gameStatistics.spurtAndMelt.melter+' lead the game by '+meltingGame.gameStatistics.spurtAndMelt.meltGap+' points. After all, '+meltingGame.gameStatistics.winnerName+' won the game...';
+    return 'There was a game on '+new Date(meltingGame.createDateTime).toDateString()+' when '+meltingGame.gameStatistics.spurtAndMelt.melter+' led the game by '+meltingGame.gameStatistics.spurtAndMelt.meltGap+' points. After all, '+meltingGame.gameStatistics.winnerName+' won the game...';
 }
 
 function spurterToHtml(spurtingGame) {
