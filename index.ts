@@ -1115,12 +1115,17 @@ try {
                   }},
                 ];
 
-                const cursorPlayerPercentagePointsTotal = await collection.aggregate(aggregationPlayerPercentagePointsTotal);
-                var playersPercentagePointsTotal = [];
-                await cursorPlayerPercentagePointsTotal.forEach(function(val) {
-                    playersPercentagePointsTotal.push(val);
-                });
-                retObj.avgPercentagePoints = playersPercentagePointsTotal;
+                try {
+                    const cursorPlayerPercentagePointsTotal = await collection.aggregate(aggregationPlayerPercentagePointsTotal);
+                    var playersPercentagePointsTotal = [];
+                    await cursorPlayerPercentagePointsTotal.forEach(function(val) {
+                        playersPercentagePointsTotal.push(val);
+                    });
+                    retObj.avgPercentagePoints = playersPercentagePointsTotal;
+                } catch (err) {
+                    console.log(err);
+                }
+
                 // ********
 
                 // players total
@@ -1182,13 +1187,17 @@ try {
                     game: 0
                   }}
                 ];
-
-                const cursorMeltingGame = await collection.aggregate(aggregationMeltingGame);
-                var meltingGame = null;
-                await cursorMeltingGame.forEach(function(val) {
-                    meltingGame = val;
-                });
-                retObj.meltingGame = meltingGame;
+                
+                try {
+                    const cursorMeltingGame = await collection.aggregate(aggregationMeltingGame);
+                    var meltingGame = null;
+                    await cursorMeltingGame.forEach(function(val) {
+                        meltingGame = val;
+                    });
+                    retObj.meltingGame = meltingGame;
+                } catch (err) {
+                    console.log(err);
+                }
                 // ********
 
                 // spurter
@@ -1203,12 +1212,16 @@ try {
                   }}
                 ];
 
-                const cursorSpurtingGame = await collection.aggregate(aggregationSpurtingGame);
-                var spurtingGame = null;
-                await cursorMeltingGame.forEach(function(val) {
-                    spurtingGame = val;
-                });
-                retObj.spurtingGame = spurtingGame;
+                try {
+                    const cursorSpurtingGame = await collection.aggregate(aggregationSpurtingGame);
+                    var spurtingGame = null;
+                    await cursorSpurtingGame.forEach(function(val) {
+                        spurtingGame = val;
+                    });
+                    retObj.spurtingGame = spurtingGame;
+                } catch (err) {
+                    console.log(err);
+                }
                 // ********
 
                 // vanilla games
