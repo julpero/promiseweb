@@ -49,6 +49,21 @@ function colorizeDatasets(datasets) {
 
 function showOneGameReport(reportObject) {
     const canvasIdStr = 'oneGameReportBody';
+    const annotations = reportObject.smallStart == null && reportObject.smallEnd == null ? [] : [
+        {
+            type: 'box',
+            drawTime: 'beforeDatasetsDraw',
+            display: true,
+            xScaleID: 'x',
+            yScaleID: 'y',
+            xMin: reportObject.smallStart,
+            xMax: reportObject.smallEnd,
+            borderColor: 'lightgreen',
+            borderWidth: 1,
+            backgroundColor: '#E5FFE5',
+        }
+    ];
+    
     const pointsOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -89,20 +104,7 @@ function showOneGameReport(reportObject) {
                 }
             },
             annotation: {
-                annotations: [
-                    {
-                        type: 'box',
-                        drawTime: 'beforeDatasetsDraw',
-                        display: true,
-                        xScaleID: 'x',
-                        yScaleID: 'y',
-                        xMin: reportObject.smallStart,
-                        xMax: reportObject.smallEnd,
-                        borderColor: 'lightgreen',
-                        borderWidth: 1,
-                        backgroundColor: '#E5FFE5',
-                    }
-                ]
+                annotations: annotations,
             }
         }
     };
