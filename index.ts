@@ -60,9 +60,9 @@ try {
             socket.on('disconnect', () => {
                 var gameId = null;
                 var userName = sm.getClientNameFromMap(socket.id);
-                var mapping = sm.userSocketIdMap.get(userName);
+                const mapping = sm.userSocketIdMap.get(userName);
                 if (mapping != null && mapping.games != null) {
-                    var gameIds = Array.from(mapping.games.values());
+                    const gameIds = Array.from(mapping.games.values());
                     gameId = gameIds != null && gameIds.length > 0 ? gameIds[0] : null;
                 }
                 if (userName == null) userName = 'unknown';
@@ -75,7 +75,7 @@ try {
             });
 
             socket.on('write chat', async (chatObj, fn) => {
-                var chatLine = chatObj.myName + ': ' + chatObj.chatLine;
+                const chatLine = chatObj.myName + ': ' + chatObj.chatLine;
                 io.to(chatObj.gameId).emit('new chat line', chatLine);
                 fn();
             });
@@ -128,35 +128,43 @@ try {
             });
 
             socket.on('leave ongoing game', async (leaveGameObj, fn) => {
+                const gameIdStr = leaveGameObj.gameId;
+                const leaverIdStr = leaveGameObj.playerId;
                 var retVal = {
                     leavingResult: 'NOTSET',
-                    gameId: leaveGameObj.gameId,
+                    gameId: gameIdStr,
                 }
                 var ObjectId = require('mongodb').ObjectId;
-                const searchId = new ObjectId(leaveGameObj.gameId);
+                const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = { gameStatus: 1,
                                 _id: searchId,
                                  };
                 const game = await collection.findOne(query);
-                console.log(game);
                 if (game !== null) {
                     for (var i = 0; i < game.humanPlayers.length; i++) {
-                        if (game.humanPlayers[i].playerId == leaveGameObj.playerId && game.humanPlayers[i].active) {
+                        if (game.humanPlayers[i].playerId == leaverIdStr && game.humanPlayers[i].active) {
                             const options = { upsert: true };
                             const updateDoc = {
                                 $set: {
-                                    humanPlayers: pf.deActivatePlayer(game.humanPlayers, leaveGameObj.playerId),
+                                    humanPlayers: pf.deActivatePlayer(game.humanPlayers, leaverIdStr),
                                 }
                             };
                             const result = await collection.updateOne(query, updateDoc, options);
                             if (result.modifiedCount == 1) {
-                                socket.leave(leaveGameObj.gameId);
-                                sm.removeClientFromMap(game.humanPlayers[i].name, socket.id, leaveGameObj.gameId);
-                                var chatLine = 'player ' + game.humanPlayers[i].name + ' has left the game';
-                                io.to(game._id.toString()).emit('new chat line', chatLine);
+                                socket.leave(gameIdStr);
+                                const leaverName = game.humanPlayers[i].name;
+                                sm.removeClientFromMap(leaverName, socket.id, gameIdStr);
+                                var chatLine = 'player ' + leaverName + ' has left the game';
+                                io.to(gameIdStr).emit('new chat line', chatLine);
                                 retVal.leavingResult = 'LEAVED';
+                                chatLine = 'You can invite a new player to continue '+leaverName+'\'s game with these id\'s:'
+                                io.to(gameIdStr).emit('new chat line', chatLine);
+                                chatLine = 'GameId: '+gameIdStr;
+                                io.to(gameIdStr).emit('new chat line', chatLine);
+                                chatLine = 'PlayerId: '+leaverIdStr;
+                                io.to(gameIdStr).emit('new chat line', chatLine);
                                 break;
                             }
                         }
@@ -237,7 +245,7 @@ try {
                     } else {
                         // let's update info to clients
                         const val = await collection.findOne(query);
-                        var resultGameInfo = pf.gameToGameInfo(val);
+                        const resultGameInfo = pf.gameToGameInfo(val);
         
                         io.emit('update gameinfo', resultGameInfo);
                     }
@@ -441,14 +449,14 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 var ObjectId = require('mongodb').ObjectId;
-                var searchId = new ObjectId(speedPromiseObj.gameId);
+                const searchId = new ObjectId(speedPromiseObj.gameId);
                 const query = { gameStatus: 1,
                     _id: searchId,
                     // password: newPlayer.gamePassword,
                      };
                 var gameInDb = await collection.findOne(query);
                 if (gameInDb !== null && gameInDb.speedPromise) {
-                    var playerName = pf.getPlayerNameById(speedPromiseObj.myId, gameInDb.humanPlayers);
+                    const playerName = pf.getPlayerNameById(speedPromiseObj.myId, gameInDb.humanPlayers);
                     for (var i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
                         var chkInd = 1 + i; // start from next to dealer
                         if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-= (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
@@ -504,7 +512,7 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 var ObjectId = require('mongodb').ObjectId;
-                var searchId = new ObjectId(promiseDetails.gameId);
+                const searchId = new ObjectId(promiseDetails.gameId);
                 
                 const query = { gameStatus: 1,
                     _id: searchId,
@@ -512,8 +520,8 @@ try {
                      };
                 var gameInDb = await collection.findOne(query);
                 if (gameInDb !== null) {
-                    var promiseInt = parseInt(promiseDetails.promise, 10);
-                    var playerName = pf.getPlayerNameById(promiseDetails.myId, gameInDb.humanPlayers);
+                    const promiseInt = parseInt(promiseDetails.promise, 10);
+                    const playerName = pf.getPlayerNameById(promiseDetails.myId, gameInDb.humanPlayers);
                     var speedPromisePoints = null;
                     for (var i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
                         var chkInd = 1 + i; // start from next to dealer
@@ -600,9 +608,9 @@ try {
                         var roundInDb = pf.getCurrentRoundIndex(gameInDb);
                         if (roundInDb == playDetails.roundInd) {
                             var round = gameInDb.game.rounds[roundInDb];
-                            var play = pf.getCurrentPlayIndex(round);
+                            const play = pf.getCurrentPlayIndex(round);
                             const playerInd = pf.getPlayerIndexByName(playerName, round.roundPlayers)
-                            var newHandObj = pf.takeCardOut(round.roundPlayers[playerInd].cards, playedCard);
+                            const newHandObj = pf.takeCardOut(round.roundPlayers[playerInd].cards, playedCard);
                             var newHand = newHandObj.newHand;
                             round.cardsPlayed[play].push({ name: playerName, card: playedCard });
     
@@ -622,7 +630,7 @@ try {
                                 // this was the last card of the play
                                 // let's see who wins this play and will be starter of the next play
                                 newPlay = true;
-                                var winnerIndex = pf.getPlayerIndexByName(winnerName, round.roundPlayers);
+                                const winnerIndex = pf.getPlayerIndexByName(winnerName, round.roundPlayers);
     
                                 gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps++;
 
@@ -650,7 +658,7 @@ try {
                                             gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = 0;
                                         }
                                         if (gameInDb.speedPromise) {
-                                            var speedPromiseTotal = pf.speedPromiseSolver(gameAfterPlay.rounds[roundInDb], i);
+                                            const speedPromiseTotal = pf.speedPromiseSolver(gameAfterPlay.rounds[roundInDb], i);
                                             gameAfterPlay.rounds[roundInDb].roundPlayers[i].points+= speedPromiseTotal;
                                             gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromiseTotal = speedPromiseTotal;
                                         }
@@ -738,7 +746,7 @@ try {
                         const thisGame = await collection.findOne(queryUsed);
                         console.log(thisGame);
             
-                        var gameInfo = pf.gameToGameInfo(thisGame);
+                        const gameInfo = pf.gameToGameInfo(thisGame);
                         gameInfo.currentRound = playDetails.roundInd;
                         gameInfo.eventInfo = eventInfo;
 
@@ -1316,7 +1324,7 @@ try {
             
             socket.on('get game report', async (data, fn) => {
                 var ObjectId = require('mongodb').ObjectId;
-                var searchId = new ObjectId(data.gameId);
+                const searchId = new ObjectId(data.gameId);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = {
@@ -1326,7 +1334,7 @@ try {
                 const gameInDb = await collection.findOne(query);
    
                 console.log(gameInDb);
-                var retObj = rf.getGameReport(gameInDb.game);
+                const retObj = rf.getGameReport(gameInDb.game);
                 fn(retObj);
             });
             
@@ -1574,8 +1582,8 @@ try {
 }
 
 async function startGame (gameInfo) {
-    var players = pf.initPlayers(gameInfo);
-    var rounds = pf.initRounds(gameInfo, players);
+    const players = pf.initPlayers(gameInfo);
+    const rounds = pf.initRounds(gameInfo, players);
     var game = {
         playerOrder: players,
         rounds: rounds,
@@ -1584,7 +1592,7 @@ async function startGame (gameInfo) {
     const database = mongoUtil.getDb();
     const collection = database.collection('promiseweb');
     var ObjectId = require('mongodb').ObjectId;
-    var searchId = new ObjectId(gameInfo.id);
+    const searchId = new ObjectId(gameInfo.id);
 
     const query = { _id: searchId };
     const options = { upsert: true };
@@ -1608,7 +1616,7 @@ async function startRound(gameInfo, roundInd) {
     const database = mongoUtil.getDb();
     const collection = database.collection('promiseweb');
     var ObjectId = require('mongodb').ObjectId;
-    var searchId = new ObjectId(gameInfo.id);
+    const searchId = new ObjectId(gameInfo.id);
 
     const query = { _id: searchId };
     var thisGame = await collection.findOne(query);
@@ -1672,7 +1680,7 @@ async function getPlayerPreviousStats(playerName, equalObj) {
         "createDateTime": -1,
       }}, {$limit: 10}
     ];
-    var cursor = await collection.aggregate(aggregationA);
+    const cursor = await collection.aggregate(aggregationA);
     await cursor.forEach(function(gameInDb) {
         stats.push(rf.getGamePoints(gameInDb.game, playerName));
     });
@@ -1727,7 +1735,7 @@ async function getPlayerAvgStats(players) {
             points: 1,
         }}
       ];
-      var cursor = await collection.aggregate(aggregationLiveStats);
+      const cursor = await collection.aggregate(aggregationLiveStats);
       await cursor.forEach(function(pStat) {
         pStats.push(pStat);
       });
@@ -1772,8 +1780,8 @@ async function getStatistics(gameInDb) {
 }
 
 async function getGamesStatistics(gameInDb, playerName) {
-    var equalObj = parseEqualObj(gameInDb);
-    var statsGamesObj = {
+    const equalObj = parseEqualObj(gameInDb);
+    const statsGamesObj = {
         playersAllGames: await getPlayerPreviousStats(playerName, null),
         playersEqualGames: await getPlayerPreviousStats(playerName, equalObj),
     }
