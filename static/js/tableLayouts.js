@@ -263,8 +263,9 @@ function initPlayerTable(index, align, maxCards, colCount) {
     row1.append($('<div id="player'+index+'Keeps"></div>').addClass('col-2 playerInfoCol'));
     row1.append($('<div id="player'+index+'ProgressBar"></div>').addClass('col-4'));
     
+    var row2 = null;
     if (index > 0) {
-        const row2 = $('<div></div>').addClass('row');
+        row2 = $('<div></div>').addClass('row');
         for (var i = 0; i < maxCards; i++) {
             var classStr = 'col cardCol';
             if (i == 0) classStr+= ' firstCardCol';

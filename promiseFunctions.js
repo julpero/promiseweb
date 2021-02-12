@@ -369,7 +369,7 @@ function getCurrentCardInCharge(cardsPlayed) {
 }
 
 function getPlayerCards(name, round, speedPromise) {
-    const cards = [];
+    var cards = [];
     if (!speedPromise || isRoundPromised(round) || isMyPromiseTurn(round, name) || iHavePromised(round, name)) {
         round.roundPlayers.forEach(function (roundPlayer) {
             if (roundPlayer.name == name) cards = roundPlayer.cards;
