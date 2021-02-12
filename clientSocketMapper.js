@@ -28,7 +28,7 @@ module.exports = {
         var name = null;
         userSocketIdMap.forEach(function(value, key) {
             // console.log(value);
-            var sockets = Array.from(value.sockets);
+            const sockets = Array.from(value.sockets);
             for (var i = 0; i < sockets.length; i++) {
                 // console.log(sockets[i]);
                 if (sockets[i] == socketId) {
@@ -37,6 +37,16 @@ module.exports = {
             }
         });
         return name;
+    },
+
+    getSocketFromMap: function (userName) {
+        if (userSocketIdMap.has(userName)) {
+            return userSocketIdMap.get(userName).sockets;
+        }
+    },
+
+    isUserConnected: function (userName) {
+        return userSocketIdMap.has(userName);
     },
 
     userSocketIdMap: userSocketIdMap,

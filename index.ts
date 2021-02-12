@@ -253,50 +253,73 @@ try {
             });
 
             socket.on('join game by id', async (joiningDetails, fn) => {
+                const gameIdStr = joiningDetails.gameId;
+                const newIdStr = joiningDetails.myId;
                 var resultObj = {
                     joiningResult: 'NOTSET',
                     newName: null,
-                    newId: joiningDetails.myId,
+                    newId: newIdStr,
+                    debugStr: 'no game or user found',
                 }
-                console.log('join game by id');
-                console.log(joiningDetails);
+                console.log('join game by id: ', joiningDetails);
                 var ObjectId = require('mongodb').ObjectId;
-                const searchId = new ObjectId(joiningDetails.gameId);
+                const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = { gameStatus: 1,
                                 _id: searchId,
                                  };
                 const game = await collection.findOne(query);
-                console.log(game);
-                var playAsName = null;
                 if (game !== null) {
                     for (var i = 0; i < game.humanPlayers.length; i++) {
-                        if (game.humanPlayers[i].playerId == joiningDetails.myId && !game.humanPlayers[i].active) {
+                        if (game.humanPlayers[i].playerId == newIdStr) {
+                            const playAsName = game.humanPlayers[i].name;
+                            if (game.humanPlayers[i].active) {
+                                // let's check if player is disconnected
+                                if (sm.isUserConnected(playAsName)) {
+                                    // user is still in map if browser just closed
+                                    // let's ping this player
+                                    var ping = false;
+                                    const sockets = sm.getSocketFromMap(playAsName);
+                                    if (sockets != null) {
+                                        for (var it = sockets.values(), val = null; val=it.next().value;) {
+                                            if (val != undefined) {
+                                                const socketId = val;
+                                                ping = io.to(socketId).emit("hey", "Are you there?");
+                                                console.log('pinged socket '+socketId+' and result was: ', ping);
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (ping) {
+                                        console.log('joining failed because user was active');
+                                        resultObj.debugStr = 'user '+playAsName+' is still connected';
+                                        break;
+                                    }
+                                }
+                            }
                             const options = { upsert: true };
                             const updateDoc = {
                                 $set: {
-                                    humanPlayers: pf.activatePlayer(game.humanPlayers, joiningDetails.myId),
+                                    humanPlayers: pf.activatePlayer(game.humanPlayers, newIdStr),
                                 }
                             };
                             const result = await collection.updateOne(query, updateDoc, options);
-                            if (result.modifiedCount == 1) {
-                                playAsName = game.humanPlayers[i].name;
-                                socket.join(joiningDetails.gameId.toString());
-                                sm.addClientToMap(playAsName, socket.id, joiningDetails.gameId);
+                            if (result.matchedCount == 1) {
+                                socket.join(gameIdStr);
+                                sm.addClientToMap(playAsName, socket.id, gameIdStr);
                                 var chatLine = 'player ' + playAsName + ' connected as new player';
-                                io.to(game._id.toString()).emit('new chat line', chatLine);
+                                io.to(gameIdStr).emit('new chat line', chatLine);
                                 resultObj.joiningResult = 'OK';
                                 resultObj.newName = playAsName;
+                                resultObj.debugStr = 'join ok';
                                 break;
                             }
                         }
                     }
                 }
 
-                if (resultObj.joiningResult == 'OK') {
-                    fn(resultObj);
-                }
+                fn(resultObj);
             });
     
             socket.on('join game', async (newPlayer, fn) => {
@@ -311,7 +334,6 @@ try {
                                 password: newPlayer.gamePassword
                                  };
                 const game = await collection.findOne(query);
-                console.log(game);
                 var retVal = {
                     joiningResult: null,
                     gameId: newPlayer.gameId,
