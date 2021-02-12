@@ -255,7 +255,6 @@ function cardsHitInGame(rounds) {
             round.cardsPlayed.forEach(function (cardArr) {
                 cardsHit+= cardArr.length;
             });
-            // cardsHit+= round.cardsInRound * round.roundPlayers.length;
         }
     });
     return cardsHit;

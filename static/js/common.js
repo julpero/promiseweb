@@ -275,7 +275,7 @@ function showOnePointsReport(reportObject) {
 function getOneGameReport(gameId) {
     $('#oneGameReportModal').off('shown.bs.modal');
     $('#oneGameReportModal').on('shown.bs.modal', function() {
-        var getReportObj = { gameId: gameId };
+        const getReportObj = { gameId: gameId };
         socket.emit('get game report', getReportObj, function(gameReportData) {
             console.log(gameReportData);
             showOneGameReport(gameReportData);

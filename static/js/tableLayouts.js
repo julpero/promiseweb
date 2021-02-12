@@ -254,7 +254,6 @@ function initTrumpTable() {
 }
 
 function initPlayerTable(index, align, maxCards, colCount) {
-    //var nodeRow = $('<div></div>').addClass('row');
     var nodeCol = $('<div id="playerTable'+index+'"></div>').addClass('col-'+colCount+' playerTableCol');
 
     var row1 = $('<div id="player'+index+'row"></div>').addClass('row');
@@ -280,7 +279,7 @@ function initPlayerTable(index, align, maxCards, colCount) {
 
     var cardsWonRow = $('<div></div>').addClass('row inner-row');
     for (var i = 0; i < maxCards; i++) {
-        var classStr = (i == 0) ? 'col cardCol firstCardCol' : 'col cardCol cardWonCol';
+        const classStr = (i == 0) ? 'col cardCol firstCardCol' : 'col cardCol cardWonCol';
         cardsWonRow.append($('<div id="player'+index+'CardsWon'+i+'Div"></div>').addClass(classStr));
     }
     var playedCardRow = $('<div></div>').addClass('row inner-row');
@@ -322,9 +321,6 @@ function initPlayerTable(index, align, maxCards, colCount) {
     nodeCol.append(row3);
 
     return nodeCol;
-
-    //nodeRow.append(nodeCol);
-    //return nodeRow;
 }
 
 function myPlayedCardDiv(index) {

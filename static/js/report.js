@@ -19,7 +19,7 @@ function showNickChanger(gameList) {
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(showGameButton));
 
         btnId = 'generateReports' + game.id;
-        var generatedStr = game.gameStatistics != null ? new Date(game.gameStatistics.generated).toLocaleString('fi-fi') : 'NULL';
+        const generatedStr = game.gameStatistics != null ? new Date(game.gameStatistics.generated).toLocaleString('fi-fi') : 'NULL';
         var generateReportsButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary generate-report-button').text('Generate '+generatedStr));
         gameContainerDiv.append(($('<div>').addClass('col-3')).append(generateReportsButton));
 
@@ -77,7 +77,6 @@ function showGames(gameList) {
         var gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
         const gameStarted = new Date(game.created).getTime();
         const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
-        // var dateStr = new Date(game.created).toLocaleDateString(dateformatoptions);
         gameContainerDiv.append($('<div>').addClass('col-2 report-date').text(dateStr));
 
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
