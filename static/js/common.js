@@ -111,7 +111,7 @@ function showOneGameReport(reportObject) {
     
     const labelsData = reportObject.rounds;
 
-    var datasetsData = [];
+    const datasetsData = [];
     for (var i = 0; i < reportObject.players.length; i++) {
         datasetsData.push({
             label: reportObject.players[i],
@@ -134,8 +134,8 @@ function showOneGameReport(reportObject) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var pointsChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const pointsChart = new Chart(ctx, {
         type: 'line',
         data: pointsData,
         options: pointsOptions,
@@ -205,8 +205,8 @@ function showOneKeepsReport(reportObject) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var keepChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const keepChart = new Chart(ctx, {
         type: 'bar',
         data: keepsData,
         options: keepsOptions,
@@ -264,8 +264,8 @@ function showOnePointsReport(reportObject) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var pointsChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const pointsChart = new Chart(ctx, {
         type: 'bar',
         data: pointsData,
         options: pointsOptions,

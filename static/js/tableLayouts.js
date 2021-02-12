@@ -1,34 +1,34 @@
 
 function initTableFor3() {
     console.log('initTableFor3');
-    var nodeRow = $('<div></div>').addClass('row');
-    var nodeCol = $('<div></div>').addClass('col');
+    const nodeRow = $('<div></div>').addClass('row');
+    const nodeCol = $('<div></div>').addClass('col');
 
-    var row1 = $('<div></div>').addClass('row');
-    var col1 = initPlayerTable(1, 'left', 10, 5);
-    var col2 = initTrumpTable();
-    var col3 = initPlayerTable(2, 'right', 10, 5);
+    const row1 = $('<div></div>').addClass('row');
+    const col1 = initPlayerTable(1, 'left', 10, 5);
+    const col2 = initTrumpTable();
+    const col3 = initPlayerTable(2, 'right', 10, 5);
 
     row1.append(col1);
     row1.append(col2);
     row1.append(col3);
 
-    var row2 = $('<div></div>').addClass('row');
-    var col21 = $('<div></div>').addClass('col-6');
-    var col22 = $('<div></div>').addClass('col-2');
+    const row2 = $('<div></div>').addClass('row');
+    const col21 = $('<div></div>').addClass('col-6');
+    const col22 = $('<div></div>').addClass('col-2');
     col22.append(myPlayedCardDiv(0));
-    var col23 = $('<div></div>').addClass('col-4');
+    const col23 = $('<div></div>').addClass('col-4');
     
     row2.append(col21);
     row2.append(col22);
     row2.append(col23);
 
-    var row3 = $('<div></div>').addClass('row');
-    var col31 = initPlayerTable(0, 'left', 10, 3);
+    const row3 = $('<div></div>').addClass('row');
+    const col31 = initPlayerTable(0, 'left', 10, 3);
     
-    var col32 = $('<div></div>').addClass('col-9');
-    var myCardsRow = initMyCardsContainer(10);
-    var myPromiseRow = initMyPromiseRow();
+    const col32 = $('<div></div>').addClass('col-9');
+    const myCardsRow = initMyCardsContainer(10);
+    const myPromiseRow = initMyPromiseRow();
     
     col32.append(myPromiseRow);
     col32.append(myCardsRow);
@@ -46,24 +46,24 @@ function initTableFor3() {
 
 function initTableFor4() {
     console.log('initTableFor4');
-    var nodeRow = $('<div></div>').addClass('row');
-    var nodeCol = $('<div></div>').addClass('col');
+    const nodeRow = $('<div></div>').addClass('row');
+    const nodeCol = $('<div></div>').addClass('col');
 
-    var row1 = $('<div></div>').addClass('row');
-    var col1 = initPlayerTable(2, 'left', 10, 5);
-    var col2 = initTrumpTable();
-    var col3 = initPlayerTable(3, 'right', 10, 5);
+    const row1 = $('<div></div>').addClass('row');
+    const col1 = initPlayerTable(2, 'left', 10, 5);
+    const col2 = initTrumpTable();
+    const col3 = initPlayerTable(3, 'right', 10, 5);
 
-    var row2 = $('<div></div>').addClass('row');
-    var col21 = initPlayerTable(1, 'left', 10, 5);
+    const row2 = $('<div></div>').addClass('row');
+    const col21 = initPlayerTable(1, 'left', 10, 5);
 
-    var col22 = $('<div></div>').addClass('col-7');
+    const col22 = $('<div></div>').addClass('col-7');
 
-    var playerCardRow1 = $('<div></div>').addClass('row');
-    var playerCardCol11 = $('<div></div>').addClass('col-1'); // this is empty column
-    var playerCardCol12 = $('<div></div>').addClass('col-2');
+    const playerCardRow1 = $('<div></div>').addClass('row');
+    const playerCardCol11 = $('<div></div>').addClass('col-1'); // this is empty column
+    const playerCardCol12 = $('<div></div>').addClass('col-2');
     playerCardCol12.append(myPlayedCardDiv(0));
-    var playerCardCol13 = initPlayerTable(0, 'right', 10, 9);
+    const playerCardCol13 = initPlayerTable(0, 'right', 10, 9);
     playerCardRow1.append(playerCardCol11);
     playerCardRow1.append(playerCardCol12);
     playerCardRow1.append(playerCardCol13);
@@ -87,27 +87,27 @@ function initTableFor4() {
 
 function initTableFor5() {
     console.log('initTableFor5');
-    var nodeRow = $('<div></div>').addClass('row');
-    var nodeCol = $('<div></div>').addClass('col');
+    const nodeRow = $('<div></div>').addClass('row');
+    const nodeCol = $('<div></div>').addClass('col');
 
-    var row1 = $('<div></div>').addClass('row');
-    var col1 = initPlayerTable(2, 'left', 10, 5);
-    var col2 = initTrumpTable();
-    var col3 = initPlayerTable(3, 'right', 10, 5);
+    const row1 = $('<div></div>').addClass('row');
+    const col1 = initPlayerTable(2, 'left', 10, 5);
+    const col2 = initTrumpTable();
+    const col3 = initPlayerTable(3, 'right', 10, 5);
 
-    var row2 = $('<div></div>').addClass('row');
-    var col21 = initPlayerTable(1, 'left', 10, 5);
+    const row2 = $('<div></div>').addClass('row');
+    const col21 = initPlayerTable(1, 'left', 10, 5);
 
-    var col22 = $('<div></div>').addClass('col-1');
+    const col22 = $('<div></div>').addClass('col-1');
 
-    var col23 = $('<div></div>').addClass('col-1');
-    var cardRow = $('<div></div>').addClass('row');
-    var carCols = $('<div></div>').addClass('col cardCol');
-    var cardRow0 = $('<div></div>').addClass('row');
-    var carCols0 = $('<div></div>').addClass('col cardCol');
+    const col23 = $('<div></div>').addClass('col-1');
+    const cardRow = $('<div></div>').addClass('row');
+    const carCols = $('<div></div>').addClass('col cardCol');
+    const cardRow0 = $('<div></div>').addClass('row');
+    const carCols0 = $('<div></div>').addClass('col cardCol');
     
-    var cardRow1 = $('<div></div>').addClass('row');
-    var carCols1 = $('<div></div>').addClass('col');
+    const cardRow1 = $('<div></div>').addClass('row');
+    const carCols1 = $('<div></div>').addClass('col');
     carCols1.append(myPlayedCardDiv(0));
     cardRow1.append(carCols1);
     cardRow.append(carCols);
@@ -116,15 +116,15 @@ function initTableFor5() {
     col23.append(cardRow0);
     col23.append(cardRow1);
 
-    var col24 = initPlayerTable(4, 'right', 10, 5);
+    const col24 = initPlayerTable(4, 'right', 10, 5);
 
-    var row3 = $('<div></div>').addClass('row');
-    var col31 = initPlayerTable(0, 'left', 10, 3);
+    const row3 = $('<div></div>').addClass('row');
+    const col31 = initPlayerTable(0, 'left', 10, 3);
     
-    var col32 = $('<div></div>').addClass('col-9');
-    var myCardsRow = initMyCardsContainer(10);
+    const col32 = $('<div></div>').addClass('col-9');
+    const myCardsRow = initMyCardsContainer(10);
     
-    var myPromiseRow = initMyPromiseRow();
+    const myPromiseRow = initMyPromiseRow();
     
     col32.append(myPromiseRow);
     col32.append(myCardsRow);
@@ -150,24 +150,24 @@ function initTableFor5() {
 
 function initTableFor6() {
     console.log('initTableFor6');
-    var nodeRow = $('<div></div>').addClass('row');
-    var nodeCol = $('<div></div>').addClass('col');
+    const nodeRow = $('<div></div>').addClass('row');
+    const nodeCol = $('<div></div>').addClass('col');
 
-    var row1 = $('<div></div>').addClass('row');
-    var col1 = initPlayerTable(2, 'left', 8, 5);
-    var col2 = initTrumpTable();
-    var col3 = initPlayerTable(3, 'right', 8, 5);
+    const row1 = $('<div></div>').addClass('row');
+    const col1 = initPlayerTable(2, 'left', 8, 5);
+    const col2 = initTrumpTable();
+    const col3 = initPlayerTable(3, 'right', 8, 5);
 
-    var row2 = $('<div></div>').addClass('row');
-    var col21 = initPlayerTable(1, 'left', 8, 5);
+    const row2 = $('<div></div>').addClass('row');
+    const col21 = initPlayerTable(1, 'left', 8, 5);
 
-    var col22 = $('<div></div>').addClass('col-1');
-    var cardRow221 = $('<div></div>').addClass('row');
-    var carCols221 = $('<div></div>').addClass('col cardCol');
-    var cardRow222 = $('<div></div>').addClass('row');
-    var carCols222 = $('<div></div>').addClass('col cardCol');
-    var cardRow1 = $('<div></div>').addClass('row');
-    var carCols1 = $('<div></div>').addClass('col');
+    const col22 = $('<div></div>').addClass('col-1');
+    const cardRow221 = $('<div></div>').addClass('row');
+    const carCols221 = $('<div></div>').addClass('col cardCol');
+    const cardRow222 = $('<div></div>').addClass('row');
+    const carCols222 = $('<div></div>').addClass('col cardCol');
+    const cardRow1 = $('<div></div>').addClass('row');
+    const carCols1 = $('<div></div>').addClass('col');
     carCols1.append(myPlayedCardDiv(0));
     cardRow1.append(carCols1);
     cardRow222.append(carCols222);
@@ -176,13 +176,13 @@ function initTableFor6() {
     col22.append(cardRow222);
     col22.append(cardRow1);
 
-    var col23 = $('<div></div>').addClass('col-1');
-    var cardRow = $('<div></div>').addClass('row');
-    var carCols = $('<div></div>').addClass('col cardCol');
-    var cardRow0 = $('<div></div>').addClass('row');
-    var carCols0 = $('<div></div>').addClass('col cardCol');
-    var cardRow23 = $('<div></div>').addClass('row');
-    var carCols23 = $('<div></div>').addClass('col');
+    const col23 = $('<div></div>').addClass('col-1');
+    const cardRow = $('<div></div>').addClass('row');
+    const carCols = $('<div></div>').addClass('col cardCol');
+    const cardRow0 = $('<div></div>').addClass('row');
+    const carCols0 = $('<div></div>').addClass('col cardCol');
+    const cardRow23 = $('<div></div>').addClass('row');
+    const carCols23 = $('<div></div>').addClass('col');
     carCols23.append(myPlayedCardDiv(5));
     cardRow23.append(carCols23);
     cardRow.append(carCols);
@@ -193,20 +193,20 @@ function initTableFor6() {
     col23.append(cardRow23);
     col23.append();
 
-    var col24 = initPlayerTable(4, 'right', 8, 5);
+    const col24 = initPlayerTable(4, 'right', 8, 5);
 
-    var row3 = $('<div></div>').addClass('row');
-    var col31 = initPlayerTable(0, 'left', 8, 2);
+    const row3 = $('<div></div>').addClass('row');
+    const col31 = initPlayerTable(0, 'left', 8, 2);
     
-    var col32 = $('<div></div>').addClass('col-5');
-    var myCardsRow = initMyCardsContainer(8);
+    const col32 = $('<div></div>').addClass('col-5');
+    const myCardsRow = initMyCardsContainer(8);
     
-    var myPromiseRow = initMyPromiseRow();
+    const myPromiseRow = initMyPromiseRow();
     
     col32.append(myPromiseRow);
     col32.append(myCardsRow);
 
-    var col33 = initPlayerTable(5, 'right', 8, 5);
+    const col33 = initPlayerTable(5, 'right', 8, 5);
     col33.append();
 
     row3.append(col31);
@@ -230,16 +230,16 @@ function initTableFor6() {
 }
 
 function initTrumpTable() {
-    var nodeCol = $('<div></div>').addClass('col-2');
+    const nodeCol = $('<div></div>').addClass('col-2');
 
-    var row1= $('<div></div>').addClass('row');
-    var col11 = $('<div>Valtti</div>').addClass('col nameCol trumpNameCol');
-    var row2= $('<div></div>').addClass('row');
-    var col21 = $('<div id="trumpDiv"></div>').addClass('col cardCol trumpCardCol');
-    var row3= $('<div></div>').addClass('row');
-    var col31 = $('<div id="speedPromiseDiv"></div>').addClass('col speedPromiseCol');
-    var row4= $('<div></div>').addClass('row');
-    var col41 = $('<div id="totalPromiseInfo"></div>').addClass('col nameCol promisedTotalCol');
+    const row1= $('<div></div>').addClass('row');
+    const col11 = $('<div>Valtti</div>').addClass('col nameCol trumpNameCol');
+    const row2= $('<div></div>').addClass('row');
+    const col21 = $('<div id="trumpDiv"></div>').addClass('col cardCol trumpCardCol');
+    const row3= $('<div></div>').addClass('row');
+    const col31 = $('<div id="speedPromiseDiv"></div>').addClass('col speedPromiseCol');
+    const row4= $('<div></div>').addClass('row');
+    const col41 = $('<div id="totalPromiseInfo"></div>').addClass('col nameCol promisedTotalCol');
     row1.append(col11);
     row2.append(col21);
     row3.append(col31);
@@ -254,9 +254,9 @@ function initTrumpTable() {
 }
 
 function initPlayerTable(index, align, maxCards, colCount) {
-    var nodeCol = $('<div id="playerTable'+index+'"></div>').addClass('col-'+colCount+' playerTableCol');
+    const nodeCol = $('<div id="playerTable'+index+'"></div>').addClass('col-'+colCount+' playerTableCol');
 
-    var row1 = $('<div id="player'+index+'row"></div>').addClass('row');
+    const row1 = $('<div id="player'+index+'row"></div>').addClass('row');
 
     row1.append($('<div id="player'+index+'NameCol"></div>').addClass('col-3 nameCol playerNameCol'));
     row1.append($('<div id="player'+index+'Promised"></div>').addClass('col-3 playerInfoCol'));
@@ -264,7 +264,7 @@ function initPlayerTable(index, align, maxCards, colCount) {
     row1.append($('<div id="player'+index+'ProgressBar"></div>').addClass('col-4'));
     
     if (index > 0) {
-        var row2 = $('<div></div>').addClass('row');
+        const row2 = $('<div></div>').addClass('row');
         for (var i = 0; i < maxCards; i++) {
             var classStr = 'col cardCol';
             if (i == 0) classStr+= ' firstCardCol';
@@ -273,24 +273,24 @@ function initPlayerTable(index, align, maxCards, colCount) {
         }
     }
 
-    var row3 = $('<div></div>').addClass('row');
+    const row3 = $('<div></div>').addClass('row');
     col31 = $('<div></div>').addClass('col cardCol');
     col32 = $('<div></div>').addClass('col cardCol');
 
-    var cardsWonRow = $('<div></div>').addClass('row inner-row');
+    const cardsWonRow = $('<div></div>').addClass('row inner-row');
     for (var i = 0; i < maxCards; i++) {
         const classStr = (i == 0) ? 'col cardCol firstCardCol' : 'col cardCol cardWonCol';
         cardsWonRow.append($('<div id="player'+index+'CardsWon'+i+'Div"></div>').addClass(classStr));
     }
-    var playedCardRow = $('<div></div>').addClass('row inner-row');
+    const playedCardRow = $('<div></div>').addClass('row inner-row');
     
-    var statsCol = $('<div id="player'+index+'StatsCol"></div>').addClass('col');
-    var statsRow1 = $('<div></div>').addClass('row');
-    var statsCol1 = $('<div id="player'+index+'StatsCol1"></div>').addClass('col hand-value-col');
-    var statsRow2 = $('<div></div>').addClass('row');
-    var statsCol2 = $('<div id="player'+index+'StatsCol2"></div>').addClass('col stats-col');
-    var statsRow3 = $('<div></div>').addClass('row');
-    var statsCol3 = $('<div id="player'+index+'StatsCol3"></div>').addClass('col stats-col');
+    const statsCol = $('<div id="player'+index+'StatsCol"></div>').addClass('col');
+    const statsRow1 = $('<div></div>').addClass('row');
+    const statsCol1 = $('<div id="player'+index+'StatsCol1"></div>').addClass('col hand-value-col');
+    const statsRow2 = $('<div></div>').addClass('row');
+    const statsCol2 = $('<div id="player'+index+'StatsCol2"></div>').addClass('col stats-col');
+    const statsRow3 = $('<div></div>').addClass('row');
+    const statsCol3 = $('<div id="player'+index+'StatsCol3"></div>').addClass('col stats-col');
 
     statsRow1.append(statsCol1);
     statsRow2.append(statsCol2);
@@ -324,16 +324,16 @@ function initPlayerTable(index, align, maxCards, colCount) {
 }
 
 function myPlayedCardDiv(index) {
-    var nodeRow = $('<div></div>').addClass('row');
+    const nodeRow = $('<div></div>').addClass('row');
     var classStr = 'col cardCol';
     if (index == 5) classStr+= ' firstCardCol';
-    var nodeCol = $('<div id="player'+index+'CardPlayedDiv"></div>').addClass(classStr);
+    const nodeCol = $('<div id="player'+index+'CardPlayedDiv"></div>').addClass(classStr);
     nodeRow.append(nodeCol);
     return nodeRow;
 }
 
 function initCardTable(myRound) {
-    var node = $('#otherPlayers');
+    const node = $('#otherPlayers');
     node.empty();
 
     const playerCount = myRound.players.length;
@@ -350,7 +350,7 @@ function initOtherPlayers(myRound) {
 }
 
 function initMyCardsContainer(maxCards) {
-    var node = $('<div></div>').addClass('row myCardsRowClass');
+    const node = $('<div></div>').addClass('row myCardsRowClass');
     
     for (var i = 0; i < maxCards; i++) {
         node.append(drawCardCol(i));
@@ -360,13 +360,13 @@ function initMyCardsContainer(maxCards) {
 }
 
 function drawCardCol(idx) {
-    var cardCol = $('<div id="player0CardCol'+idx+'">&nbsp;</div>').addClass('col cardCol');
+    const cardCol = $('<div id="player0CardCol'+idx+'">&nbsp;</div>').addClass('col cardCol');
     return cardCol;
 }
 
 function initMyPromiseRow() {
-    var node = $('<div id="myPromiseRow"></div>').addClass('row myCardsRowClass');
-    var col2 = $('<div id="myPromiseCol"></div>').addClass('col promiseButtons');
+    const node = $('<div id="myPromiseRow"></div>').addClass('row myCardsRowClass');
+    const col2 = $('<div id="myPromiseCol"></div>').addClass('col promiseButtons');
     
     node.append(col2);
 
@@ -374,25 +374,25 @@ function initMyPromiseRow() {
 }
 
 function createPromiseTable(promiseTable) {
-    var node = $('#promiseTable');
-    var table = $('<table></table>');
-    var tableHeader = $('<thead></thead>');
-    var tableHeaderRow = $('<tr></tr>');
+    const node = $('#promiseTable');
+    const table = $('<table></table>');
+    const tableHeader = $('<thead></thead>');
+    const tableHeaderRow = $('<tr></tr>');
     
     tableHeaderRow.append($('<th scope="col"></th>').addClass('promiseTableHeader'));
     for (var i = 0; i < promiseTable.rounds.length; i++) {
-        var tableHeaderCol = $('<th scope="col" id="promiseTableHeader'+i+'"></th>').addClass('promiseTableHeader').html(promiseTable.rounds[i].cardsInRound);
+        const tableHeaderCol = $('<th scope="col" id="promiseTableHeader'+i+'"></th>').addClass('promiseTableHeader').html(promiseTable.rounds[i].cardsInRound);
         tableHeaderRow.append(tableHeaderCol);
     }
     tableHeader.append(tableHeaderRow);
 
-    var tableBody = $('<tbody></tbody>');
+    const tableBody = $('<tbody></tbody>');
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
-        var tableBodyRow = $('<tr></tr>');
-        var playerNameCol = $('<th id="player'+i+'PromiseName" scope="row"></th>').addClass('promiseTableCol playerPromiseNameCol').html(promiseTable.players[i]);
+        const tableBodyRow = $('<tr></tr>');
+        const playerNameCol = $('<th id="player'+i+'PromiseName" scope="row"></th>').addClass('promiseTableCol playerPromiseNameCol').html(promiseTable.players[i]);
         tableBodyRow.append(playerNameCol);
         for (var j = 0; j < promiseTable.rounds.length; j++) {
-            var promiseCol = $('<td id="player'+i+'Prom'+j+'"></td>').addClass('promiseTableCol playerPromiseCol');
+            const promiseCol = $('<td id="player'+i+'Prom'+j+'"></td>').addClass('promiseTableCol playerPromiseCol');
             tableBodyRow.append(promiseCol);
         }
         
@@ -405,26 +405,26 @@ function createPromiseTable(promiseTable) {
 }
 
 function createScoreboard(promiseTable) {
-    var node = $('#scoreboard');
-    var table = $('<table></table>');
-    var tableHeader = $('<thead></thead>');
-    var tableHeaderRow = $('<tr></tr>');
+    const node = $('#scoreboard');
+    const table = $('<table></table>');
+    const tableHeader = $('<thead></thead>');
+    const tableHeaderRow = $('<tr></tr>');
     
     for (var i = 0; i < promiseTable.players.length; i++) {
-        var playerName = promiseTable.players[i];
+        const playerName = promiseTable.players[i];
         var playerShortName = playerName;
         if (playerShortName.length > 3) playerShortName = playerShortName.substring(0, 3);
-        var tableHeaderCol = $('<th id="tableHeaderName'+i+'" scope="col"></th>').addClass('scoreboardTableHeader').html(playerShortName);
+        const tableHeaderCol = $('<th id="tableHeaderName'+i+'" scope="col"></th>').addClass('scoreboardTableHeader').html(playerShortName);
         $(tableHeaderCol).tooltip({title: playerName});
         tableHeaderRow.append(tableHeaderCol);
     }
     tableHeader.append(tableHeaderRow);
 
-    var tableBody = $('<tbody></tbody>');
+    const tableBody = $('<tbody></tbody>');
     for (var i = 0; i < promiseTable.rounds.length; i++) {
-        var tableBodyRow = $('<tr></tr>');
+        const tableBodyRow = $('<tr></tr>');
         for (var j = 0; j < promiseTable.players.length; j++) {
-            var pointCol = $('<td id="player'+j+'Points'+i+'"></td>').addClass('scoreboardTableCol').html('&nbsp;');
+            const pointCol = $('<td id="player'+j+'Points'+i+'"></td>').addClass('scoreboardTableCol').html('&nbsp;');
             tableBodyRow.append(pointCol);
         }
         
@@ -437,7 +437,7 @@ function createScoreboard(promiseTable) {
 }
 
 function initRuleList(gameInfo) {
-    var node = $('#ruleList');
+    const node = $('#ruleList');
     node.empty();
     if (!gameInfo.evenPromisesAllowed) node.append($('<li></li>').text('no even promises'));
     if (!gameInfo.visiblePromiseRound) node.append($('<li></li>').text('hidden promise round'));
@@ -453,10 +453,10 @@ function initRuleList(gameInfo) {
 }
 
 function initSpeedBar(gameInfo) {
-    var node = $('#speedPromiseDiv');
+    const node = $('#speedPromiseDiv');
     if (gameInfo.privateSpeedGame || gameInfo.speedPromise) {
         if ($('#speedPromiseDiv').children().length == 0) {
-            var progressMain = $('<div id="speedProgressBar"></div>').addClass('progress').css({marginTop: "4px", border: "1px solid black"});
+            const progressMain = $('<div id="speedProgressBar"></div>').addClass('progress').css({marginTop: "4px", border: "1px solid black"});
             node.append(progressMain);
         }
     } else {

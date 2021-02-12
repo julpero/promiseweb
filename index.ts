@@ -97,7 +97,7 @@ try {
                             sm.addClientToMap(player.name, socket.id, game._id.toString());
                             var chatLine = 'player ' + player.name + ' connected';
                             io.to(game._id.toString()).emit('new chat line', chatLine);
-                            var gameInfo = pf.gameToGameInfo(game);
+                            const gameInfo = pf.gameToGameInfo(game);
                             gameInfo.currentRound = pf.getCurrentRoundIndex(game);
                             gameInfo.reloaded = true;
                             socket.emit('card played', gameInfo);
@@ -117,7 +117,7 @@ try {
                                 sm.addClientToMap(player.name, socket.id, game._id.toString());
                                 var chatLine = 'player ' + player.name + ' connected';
                                 io.to(game._id.toString()).emit('new chat line', chatLine);
-                                var gameInfo = pf.gameToGameInfo(game);
+                                const gameInfo = pf.gameToGameInfo(game);
                                 gameInfo.currentRound = 0;
                                 gameInfo.reloaded = true;
                                 socket.emit('promise made', gameInfo);
@@ -130,11 +130,11 @@ try {
             socket.on('leave ongoing game', async (leaveGameObj, fn) => {
                 const gameIdStr = leaveGameObj.gameId;
                 const leaverIdStr = leaveGameObj.playerId;
-                var retVal = {
+                const retVal = {
                     leavingResult: 'NOTSET',
                     gameId: gameIdStr,
                 }
-                var ObjectId = require('mongodb').ObjectId;
+                const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
@@ -191,13 +191,13 @@ try {
             });
     
             socket.on('leave game', async (leaveGame, fn) => {
-                var retVal = {
+                const retVal = {
                     leavingResult: 'NOTSET',
                     gameId: leaveGame.gameId,
                     gameDeleted: false,
                 }
 
-                var ObjectId = require('mongodb').ObjectId;
+                const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(leaveGame.gameId);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
@@ -207,7 +207,7 @@ try {
                 const game = await collection.findOne(query);
                 console.log(game);
                 if (game !== null) {
-                    var newHumanPlayers = [];
+                    const newHumanPlayers = [];
                     var leaverName = "";
                     for (var i = 0; i < game.humanPlayers.length; i++) {
                         if (game.humanPlayers[i].playerId != leaveGame.myId) {
@@ -255,14 +255,14 @@ try {
             socket.on('join game by id', async (joiningDetails, fn) => {
                 const gameIdStr = joiningDetails.gameId;
                 const newIdStr = joiningDetails.myId;
-                var resultObj = {
+                const resultObj = {
                     joiningResult: 'NOTSET',
                     newName: null,
                     newId: newIdStr,
                     debugStr: 'no game or user found',
                 }
                 console.log('join game by id: ', joiningDetails);
-                var ObjectId = require('mongodb').ObjectId;
+                const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
@@ -325,7 +325,7 @@ try {
             socket.on('join game', async (newPlayer, fn) => {
                 var joiningResult = 'NOTSET';
                 console.log(newPlayer);
-                var ObjectId = require('mongodb').ObjectId;
+                const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(newPlayer.gameId);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
@@ -334,7 +334,7 @@ try {
                                 password: newPlayer.gamePassword
                                  };
                 const game = await collection.findOne(query);
-                var retVal = {
+                const retVal = {
                     joiningResult: null,
                     gameId: newPlayer.gameId,
                 }
@@ -386,7 +386,7 @@ try {
                 if (joiningResult == 'OK') {
                     // let's update info to clients
                     const val = await collection.findOne(query);
-                    var resultGameInfo = pf.gameToGameInfo(val);
+                    const resultGameInfo = pf.gameToGameInfo(val);
     
                     io.emit('update gameinfo', resultGameInfo);
     
@@ -436,7 +436,7 @@ try {
     
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
-                var ObjectId = require('mongodb').ObjectId;
+                const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(getRound.gameId);
     
                 const gameStarted = getRound.gameStarted;
@@ -461,7 +461,7 @@ try {
 
             socket.on('speedpromise', async (speedPromiseObj, fn) => {
                 console.log(speedPromiseObj);
-                var resultObj = {
+                const resultObj = {
                     speedOk: false,
                     fullSpeedPromises: false,
                     round: null,
@@ -470,13 +470,13 @@ try {
 
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
-                var ObjectId = require('mongodb').ObjectId;
+                const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(speedPromiseObj.gameId);
                 const query = { gameStatus: 1,
                     _id: searchId,
                     // password: newPlayer.gamePassword,
-                     };
-                var gameInDb = await collection.findOne(query);
+                };
+                const gameInDb = await collection.findOne(query);
                 if (gameInDb !== null && gameInDb.speedPromise) {
                     const playerName = pf.getPlayerNameById(speedPromiseObj.myId, gameInDb.humanPlayers);
                     for (var i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
@@ -533,14 +533,14 @@ try {
     
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
-                var ObjectId = require('mongodb').ObjectId;
+                const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(promiseDetails.gameId);
                 
                 const query = { gameStatus: 1,
                     _id: searchId,
                     // password: newPlayer.gamePassword,
-                     };
-                var gameInDb = await collection.findOne(query);
+                };
+                const gameInDb = await collection.findOne(query);
                 if (gameInDb !== null) {
                     const promiseInt = parseInt(promiseDetails.promise, 10);
                     const playerName = pf.getPlayerNameById(promiseDetails.myId, gameInDb.humanPlayers);
@@ -578,7 +578,7 @@ try {
                     const thisGame = await collection.findOne(query);
                     console.log(thisGame);
         
-                    var gameInfo = pf.gameToGameInfo(thisGame);
+                    const gameInfo = pf.gameToGameInfo(thisGame);
                     gameInfo.currentRound = promiseDetails.roundInd;
 
                     if (promiseMadeOk) {
@@ -614,7 +614,7 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const statsCollection = database.collection('promisewebStats');
-                var ObjectId = require('mongodb').ObjectId;
+                const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(playDetails.gameId);
                 
                 const query = { gameStatus: 1,
@@ -763,7 +763,7 @@ try {
                             queryUsed = { gameStatus: 2,
                                 _id: searchId,
                                 // password: newPlayer.gamePassword,
-                                 };
+                            };
                         }
                         const thisGame = await collection.findOne(queryUsed);
                         console.log(thisGame);
@@ -791,7 +791,7 @@ try {
                 const query = { gameStatus: 0 };
                 const cursor = await collection.find(query);
     
-                var games = [];
+                const games = [];
                 await cursor.forEach(function(val) {
                     games.push({
                         id: val._id.toString(),
@@ -833,7 +833,7 @@ try {
                   }}
                 ];
                 const cursor = await collection.aggregate(queryAggregation);
-                var games = [];
+                const games = [];
                 await cursor.forEach(function(val) {
                     games.push({
                         id: val._id.toString(),
@@ -862,7 +862,7 @@ try {
 
             socket.on('get report data', async (data, fn) => {
                 console.log('start to get report data');
-                var retObj = {
+                const retObj = {
                     gamesPlayed: null,
                     roundsPlayed: null,
                     totalCardsHit: null,
@@ -941,7 +941,7 @@ try {
                 ];
 
                 const cursorGamesPlayed = await collection.aggregate(aggregationGamesPlayed);
-                var gamesPlayed = [];
+                const gamesPlayed = [];
                 await cursorGamesPlayed.forEach(function(val) {
                     gamesPlayed.push(val);
                 });
@@ -969,7 +969,7 @@ try {
                 ];
 
                 const cursorAvgPoints = await collection.aggregate(aggregationAvgPoints);
-                var avgPointsPerPlayer = [];
+                const avgPointsPerPlayer = [];
                 await cursorAvgPoints.forEach(function(val) {
                     avgPointsPerPlayer.push(val);
                 });
@@ -1014,7 +1014,7 @@ try {
                   }}
                 ];
                 const cursorAvgKeepPercentage = await collection.aggregate(aggregationAvgKeepPercentage);
-                var avgKeepPercentagePerPlayer = [];
+                const avgKeepPercentagePerPlayer = [];
                 try {
                     await cursorAvgKeepPercentage.forEach(function(val) {
                         avgKeepPercentagePerPlayer.push(val);
@@ -1048,7 +1048,7 @@ try {
                 ];
 
                 const cursorTotalPointsPerPlayer = await collection.aggregate(aggregationTotalPointsPerPlayer);
-                var totalPointsPerPlayer = [];
+                const totalPointsPerPlayer = [];
                 await cursorTotalPointsPerPlayer.forEach(function(val) {
                     totalPointsPerPlayer.push(val);
                 });
@@ -1072,7 +1072,7 @@ try {
                 ];
 
                 const cursorPlayerTotalWins = await collection.aggregate(aggregationPlayerTotalWins);
-                var playerTotalWins = [];
+                const playerTotalWins = [];
                 await cursorPlayerTotalWins.forEach(function(val) {
                     playerTotalWins.push(val);
                 });
@@ -1080,7 +1080,7 @@ try {
                 // ********
 
                 // win percentage per player
-                var playerWinPercentageTmp = [];
+                const playerWinPercentageTmp = [];
                 for (var i = 0; i < playerTotalWins.length; i++) {
                     const winPercentageName = playerTotalWins[i]._id;
                     const winPercentageWins = playerTotalWins[i].playerTotalWins;
@@ -1118,7 +1118,7 @@ try {
                 ];
 
                 const cursorAvgScorePointsPerPlayer = await collection.aggregate(aggregationAvgScorePointsPerPlayer);
-                var avgScorePointsPerPlayer = [];
+                const avgScorePointsPerPlayer = [];
                 await cursorAvgScorePointsPerPlayer.forEach(function(val) {
                     avgScorePointsPerPlayer.push(val);
                 });
@@ -1148,7 +1148,7 @@ try {
                 ];
 
                 const cursorPlayerPercentagePointsTotal = await collection.aggregate(aggregationPlayerPercentagePointsTotal);
-                var playersPercentagePointsTotal = [];
+                const playersPercentagePointsTotal = [];
                 try {
                     await cursorPlayerPercentagePointsTotal.forEach(function(val) {
                         playersPercentagePointsTotal.push(val);
@@ -1192,7 +1192,7 @@ try {
                 ];
 
                 const cursorPlayerCount = await collection.aggregate(aggregationPlayerCount);
-                var playerCount = {
+                const playerCount = {
                     threePlayers: 0,
                     fourPlayers: 0,
                     fivePlayers: 0,
@@ -1310,7 +1310,7 @@ try {
                 ];
 
                 const cursorUsedRules = await collection.aggregate(aggregationUsedRules);
-                var usedRulesCount = {
+                const usedRulesCount = {
                     evenPromisesDisallowedCount: null,
                     hiddenPromiseRoundCount: null,
                     onlyTotalPromiseCount: null,
@@ -1345,7 +1345,7 @@ try {
             });
             
             socket.on('get game report', async (data, fn) => {
-                var ObjectId = require('mongodb').ObjectId;
+                const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(data.gameId);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
@@ -1362,7 +1362,7 @@ try {
             
             socket.on('update all game reports', async (data, fn) => {
                 console.log('start to update all game reports');
-                var updatedIds = [];
+                const updatedIds = [];
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = {
@@ -1393,7 +1393,7 @@ try {
             
             socket.on('get average report', async (data, fn) => {
                 console.log('start to get games for average report');
-                var averageReport = {
+                const averageReport = {
                     gamesPlayed: null,
                     averagePointsPerGames: null,
                 };
@@ -1401,6 +1401,7 @@ try {
                 const collection = database.collection('promiseweb');
 
                 // games played
+                console.log(' ... games played');
                 const aggregationA = [
                     {$match: {
                         gameStatus: {$eq: 2}
@@ -1417,15 +1418,16 @@ try {
                         _id: 1
                     }}
                 ];
-                var cursor = await collection.aggregate(aggregationA);
+                const cursorA = await collection.aggregate(aggregationA);
     
-                var games = [];
-                await cursor.forEach(function(val) {
-                    games.push(val);
+                const gamesPlayed = [];
+                await cursorA.forEach(function(val) {
+                    gamesPlayed.push(val);
                 });
-                averageReport.gamesPlayed = games;
+                averageReport.gamesPlayed = gamesPlayed;
 
                 // average points, all games
+                console.log(' ... avg points, all games');
                 const aggregationC = [
                     {$match: {
                         gameStatus: {$eq: 2},
@@ -1449,16 +1451,18 @@ try {
                         _id: 1
                     }}
                 ];
-                cursor = await collection.aggregate(aggregationC);
-                games = [];
-                await cursor.forEach(function(val) {
-                    games.push({
+                const cursorC = await collection.aggregate(aggregationC);
+                const averagePointsPerGames = [];
+                await cursorC.forEach(function(val) {
+                    averagePointsPerGames.push({
                         _id: val._id,
                         avgAll: rf.averagePoints(val.games, val._id),
                         avgRegular: null,
                     });
                 });
+
                 // average points, regular games
+                console.log(' ... avg points, regular games');
                 const aggregationB = [
                     {$match: {
                         gameStatus: {$eq: 2},
@@ -1492,17 +1496,16 @@ try {
                         _id: 1
                     }}
                 ];
-                cursor = await collection.aggregate(aggregationB);
-                await cursor.forEach(function(val) {
-                    var avgRegular = rf.averagePoints(val.games, val._id);
-                    for (var i = 0; i < games.length; i++) {
-                        if (games[i]._id == val._id) {
-                            games[i].avgRegular = avgRegular;
+                const cursorB = await collection.aggregate(aggregationB);
+                await cursorB.forEach(function(val) {
+                    for (var i = 0; i < averagePointsPerGames.length; i++) {
+                        if (averagePointsPerGames[i]._id == val._id) {
+                            averagePointsPerGames[i].avgRegular = rf.averagePoints(val.games, val._id);
                             break;
                         }
                     }
                 });
-                averageReport.averagePointsPerGames = games;
+                averageReport.averagePointsPerGames = averagePointsPerGames;
 
                 fn(averageReport);
             });
@@ -1510,7 +1513,7 @@ try {
 
             socket.on('generate game statistics', async (data, fn) => {
                 console.log('start to generate game statistics for '+data.gameId);
-                var ObjectId = require('mongodb').ObjectId;
+                const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(data.gameId);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
@@ -1536,7 +1539,7 @@ try {
 
             socket.on('change nick', async (data, fn) => {
                 console.log('start to change nick');
-                var ObjectId = require('mongodb').ObjectId;
+                const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(data.gameId);
                 const oldName = data.oldName;
                 const newName = data.newName;
@@ -1548,8 +1551,8 @@ try {
                     _id: searchId,
                 };
                 const gameInDb = await collection.findOne(query);
-                var newHumanPlayers = gameInDb.humanPlayers;
-                var newGame = gameInDb.game;
+                const newHumanPlayers = gameInDb.humanPlayers;
+                const newGame = gameInDb.game;
                 if (gameInDb != null) {
                     for (var i = 0; i < newHumanPlayers.length; i++) {
                         if (newHumanPlayers[i].name == oldName) {
@@ -1606,14 +1609,14 @@ try {
 async function startGame (gameInfo) {
     const players = pf.initPlayers(gameInfo);
     const rounds = pf.initRounds(gameInfo, players);
-    var game = {
+    const game = {
         playerOrder: players,
         rounds: rounds,
     };
 
     const database = mongoUtil.getDb();
     const collection = database.collection('promiseweb');
-    var ObjectId = require('mongodb').ObjectId;
+    const ObjectId = require('mongodb').ObjectId;
     const searchId = new ObjectId(gameInfo.id);
 
     const query = { _id: searchId };
@@ -1637,11 +1640,11 @@ async function startGame (gameInfo) {
 async function startRound(gameInfo, roundInd) {
     const database = mongoUtil.getDb();
     const collection = database.collection('promiseweb');
-    var ObjectId = require('mongodb').ObjectId;
+    const ObjectId = require('mongodb').ObjectId;
     const searchId = new ObjectId(gameInfo.id);
 
     const query = { _id: searchId };
-    var thisGame = await collection.findOne(query);
+    const thisGame = await collection.findOne(query);
 
     if (thisGame.game.rounds[roundInd].roundStatus < 1) {
         thisGame.game.rounds[roundInd].roundStatus = 1;
@@ -1659,7 +1662,7 @@ async function startRound(gameInfo, roundInd) {
 }
 
 async function getPlayerPreviousStats(playerName, equalObj) {
-    var stats = [];
+    const stats = [];
 
     const evenPromisesAllowed = equalObj == null || equalObj.evenPromisesAllowed ? [true, null] : [false];
     const visiblePromiseRound = equalObj == null || equalObj.visiblePromiseRound ? [true, null] : [false];
@@ -1711,7 +1714,7 @@ async function getPlayerPreviousStats(playerName, equalObj) {
 
 
 function createAvgStatsArr(pStats, statCount) {
-    var statArr = [];
+    const statArr = [];
     for (var i = 0; i < pStats.length; i++) {
         var keptSum = 0;
         var pointsSum = 0;
@@ -1733,11 +1736,11 @@ function createAvgStatsArr(pStats, statCount) {
 
 async function getPlayerAvgStats(players) {
     const avgRounds = 50;
-    var retStats = {
+    const retStats = {
         rounds: avgRounds,
         stats: null,
     }
-    var stats = [];
+    const stats = [];
 
     const database = mongoUtil.getDb();
     const collection = database.collection('promisewebStats');
@@ -1745,7 +1748,7 @@ async function getPlayerAvgStats(players) {
         "name": {$in: players},
     };
     for (var i = 0; i < players.length; i++) {
-        var pStats = [];
+        const pStats = [];
         const pName = players[i];
 
         const aggregationLiveStats = [{$match: { "name": {$eq: pName}}
@@ -1791,7 +1794,7 @@ function parseEqualObj(gameInDb) {
 }
 
 async function getStatistics(gameInDb) {
-    var players = [];
+    const players = [];
     for (var i = 0; i < gameInDb.game.playerOrder.length; i++) {
         players.push(gameInDb.game.playerOrder[i].name);
     }

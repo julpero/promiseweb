@@ -36,7 +36,7 @@ module.exports = {
     },
 
     takeCardOut: function (hand, cardPlayed) {
-        var newHand = [];
+        const newHand = [];
         var takenOutIndex = null;
         for (var i = 0; i < hand.length; i++) {
             if (hand[i].suit == cardPlayed.suit && hand[i].rank == cardPlayed.rank)
@@ -61,7 +61,7 @@ module.exports = {
     },
     
     parsedHumanPlayers: function (humanPlayers) {
-        var retVal = [];
+        const retVal = [];
         humanPlayers.forEach(function(humanPlayer) {
             retVal.push({
                 name: humanPlayer.name,
@@ -113,7 +113,7 @@ module.exports = {
         var winningCard = cardsPlayedInPlay[0].card;
         for (var i = 1; i < cardsPlayedInPlay.length; i++) {
             var wins = false;
-            var currentCard = cardsPlayedInPlay[i].card;
+            const currentCard = cardsPlayedInPlay[i].card;
             if (winningCard.suit == trumpSuit) {
                 // has to be bigger trump to win
                 wins = currentCard.suit == trumpSuit && currentCard.rank > winningCard.rank;
@@ -161,7 +161,7 @@ module.exports = {
     
     initPlayers: function (gameInfo) {
         // first round is played by this order and the first player is the dealer of the first round
-        var players = [];
+        const players = [];
         knuthShuffle(gameInfo.humanPlayers).forEach(function (player) {
             players.push({
                 name: player.name,
@@ -173,7 +173,7 @@ module.exports = {
     },
     
     initRounds: function (gameInfo, players) {
-        var rounds = [];
+        const rounds = [];
         var roundIndex = 0;
         for (var i = gameInfo.startRound; i >= gameInfo.turnRound; i--) {
             rounds.push(initRound(roundIndex, i, players, gameInfo.speedPromise));
@@ -195,7 +195,7 @@ module.exports = {
     },
 
     activatePlayer: function (humanPlayers, activateId) {
-        var retPlayers = [];
+        const retPlayers = [];
         humanPlayers.forEach(function (player) {
             if (player.playerId == activateId && !player.active) player.active = true;
             retPlayers.push(player);
@@ -205,7 +205,7 @@ module.exports = {
     },
 
     deActivatePlayer: function (humanPlayers, activateId) {
-        var retPlayers = [];
+        const retPlayers = [];
         humanPlayers.forEach(function (player) {
             if (player.playerId == activateId && player.active) player.active = false;
             retPlayers.push(player);
@@ -266,8 +266,8 @@ module.exports = {
     },
 
     checkPlayerNames: function (wholeGame) {
-        var playerNames = [];
-        var wrongNames = [];
+        const playerNames = [];
+        const wrongNames = [];
         wholeGame.humanPlayers.forEach (function (humanPlayer) {
             const name = humanPlayer.name != null ? humanPlayer.name : humanPlayer;
             playerNames.push(name);
@@ -312,12 +312,12 @@ function showTrumpCard(thisGame, roundInd) {
 
 function getCardsPlayed(cardsPlayed, playerCount, play, playerName, hiddenCardsMode, playerGoingToWinThisPlay) {
     if (hiddenCardsMode == null || hiddenCardsMode == 0) return cardsPlayed;
-    var retArr = [];
+    const retArr = [];
     for (var i = 0; i < cardsPlayed.length; i++) {
         if (i != play || cardsPlayed[i].length == playerCount) {
             retArr.push(cardsPlayed[i]);
         } else {
-            var playArr = [];
+            const playArr = [];
             for (var j = 0; j < cardsPlayed[i].length; j++) {
                 if ((j == 0) || (cardsPlayed[i][j].name == playerName) || (hiddenCardsMode == 2 && cardsPlayed[i][j].name == playerGoingToWinThisPlay)) { // show card in charge and winning card
                     playArr.push({
@@ -347,7 +347,7 @@ function getHandValues(thisGame, roundInd) {
     if (thisGame.opponentGameCardValue && isRoundPromised(thisGame.game.rounds[roundInd])) showHandValue = true;
 
     if (showHandValue) {
-        var values = [];
+        const values = [];
         for (var i = 0; i < thisGame.game.rounds[roundInd].roundPlayers.length; i++) {
             var playerValues = 0;
             for (var j = 0; j < thisGame.game.rounds[roundInd].roundPlayers[i].cards.length; j++) {
@@ -369,7 +369,7 @@ function getCurrentCardInCharge(cardsPlayed) {
 }
 
 function getPlayerCards(name, round, speedPromise) {
-    var cards = [];
+    const cards = [];
     if (!speedPromise || isRoundPromised(round) || isMyPromiseTurn(round, name) || iHavePromised(round, name)) {
         round.roundPlayers.forEach(function (roundPlayer) {
             if (roundPlayer.name == name) cards = roundPlayer.cards;
@@ -379,7 +379,7 @@ function getPlayerCards(name, round, speedPromise) {
 }
 
 function getPlayerPlayedCard(playerName, cardsPlayed, returnCard) {
-    var currentPlay = cardsPlayed[cardsPlayed.length-1];
+    const currentPlay = cardsPlayed[cardsPlayed.length-1];
     for (var i = 0; i < currentPlay.length; i++) {
         if (currentPlay[i].name == playerName) return returnCard ? currentPlay[i].card : { suit: 'dummy', rank: 0 };
     }
@@ -405,7 +405,7 @@ function getLastPlayerInThePlay(round, play) {
 }
 
 function getRoundPlayers(myName, round, play, showPromises, playersStats, hiddenCardsMode, playerGoingToWinThisPlay) {
-    var players = [];
+    const players = [];
     const firstPlayerInThePlay = getFirstPlayerInThePlay(round, play);
     const lastPlayerInThePlay = getLastPlayerInThePlay(round, play);
 
@@ -548,7 +548,7 @@ function getPlayerInCharge(roundInd, playInd, thisGame) {
 }
 
 function playersToPromiseTable(playerOrderArr) {
-    var retArr = [];
+    const retArr = [];
     for (i = 0; i < playerOrderArr.length; i++) {
         retArr.push(playerOrderArr[i].name);
     }
@@ -556,10 +556,10 @@ function playersToPromiseTable(playerOrderArr) {
 }
 
 function getPromiseTable(thisGame) {
-    var promisesByPlayers = [];
-    var rounds = [];
+    const promisesByPlayers = [];
+    const rounds = [];
     for (var i = 0; i < thisGame.game.playerOrder.length; i++) {
-        var playerPromises = [];
+        const playerPromises = [];
         for (var j = 0; j < thisGame.game.rounds.length; j++) {
             playerPromises.push({
                 promise: showPromisesNow('player', thisGame, j) ? thisGame.game.rounds[j].roundPlayers[i].promise : null,
@@ -593,11 +593,11 @@ function getdealerPositionIndex(roundIndex, totalPlayers) {
 }
 
 function initRound(roundIndex, cardsInRound, players, speedPromise) {
-    var deck = initDeck();
+    const deck = initDeck();
 
-    var roundPlayers = [];
+    const roundPlayers = [];
     players.forEach(function (player, idx) {
-        var playerCards = [];
+        const playerCards = [];
         if (cardsInRound == 1) {
             const card = deck.draw(1);
             playerCards.push(card);
@@ -622,7 +622,7 @@ function initRound(roundIndex, cardsInRound, players, speedPromise) {
     var starterPositionIndex = dealerPositionIndex + 1;
     if (starterPositionIndex >= players.length) starterPositionIndex-= players.length;
 
-    var cardsPlayed = [];
+    const cardsPlayed = [];
     cardsPlayed.push([]);
 
     return {
@@ -651,7 +651,7 @@ function knuthShuffle(arr) {
 }
 
 function sortCardsDummy(cards) {
-    var sortedCards = [];
+    const sortedCards = [];
     const suits = ['hearts', 'diamonds', 'clubs',  'spades'];
     suits.forEach(function (suit) {
         for (var i = 2; i <= 14; i++) {
@@ -664,7 +664,7 @@ function sortCardsDummy(cards) {
 }
 
 function initDeck() {
-    var cards = [];
+    const cards = [];
     const suits = ['hearts', 'diamonds', 'clubs',  'spades'];
     suits.forEach(function (suit) {
         for (var i = 2; i <= 14; i++) cards.push({
@@ -672,7 +672,7 @@ function initDeck() {
             rank: i
         });
     });
-    var deck = new doc(cards);
+    const deck = new doc(cards);
     deck.shuffle();
     return deck;
 }

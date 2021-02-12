@@ -24,10 +24,10 @@ function playedGamesGraph(reportData) {
         }
     };
     
-    var labelsData = [];
-    var valuesData = [];
-    var datasetsData = [];
-    var colors = [];
+    const labelsData = [];
+    const valuesData = [];
+    const datasetsData = [];
+    const colors = [];
 
     for (var i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
@@ -51,8 +51,8 @@ function playedGamesGraph(reportData) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var graphChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const graphChart = new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
@@ -85,10 +85,10 @@ function avgKeepPercentageGraph(reportData) {
         }
     };
     
-    var labelsData = [];
-    var valuesData = [];
-    var datasetsData = [];
-    var colors = [];
+    const labelsData = [];
+    const valuesData = [];
+    const datasetsData = [];
+    const colors = [];
 
     for (var i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
@@ -112,8 +112,8 @@ function avgKeepPercentageGraph(reportData) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var graphChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const graphChart = new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
@@ -146,10 +146,10 @@ function avgPointsGraph(reportData) {
         },
     };
     
-    var labelsData = [];
-    var valuesData = [];
-    var datasetsData = [];
-    var colors = [];
+    const labelsData = [];
+    const valuesData = [];
+    const datasetsData = [];
+    const colors = [];
 
     for (var i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
@@ -173,8 +173,8 @@ function avgPointsGraph(reportData) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var graphChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const graphChart = new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
@@ -207,10 +207,10 @@ function totalPointsGraph(reportData) {
         },
     };
     
-    var labelsData = [];
-    var valuesData = [];
-    var datasetsData = [];
-    var colors = [];
+    const labelsData = [];
+    const valuesData = [];
+    const datasetsData = [];
+    const colors = [];
 
     for (var i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
@@ -234,8 +234,8 @@ function totalPointsGraph(reportData) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var graphChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const graphChart = new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
@@ -268,10 +268,10 @@ function totalWinsGraph(reportData) {
         },
     };
     
-    var labelsData = [];
-    var valuesData = [];
-    var datasetsData = [];
-    var colors = [];
+    const labelsData = [];
+    const valuesData = [];
+    const datasetsData = [];
+    const colors = [];
 
     for (var i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
@@ -295,8 +295,8 @@ function totalWinsGraph(reportData) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var graphChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const graphChart = new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
@@ -330,10 +330,10 @@ function winPercentagesGraph(reportData) {
         },
     };
     
-    var labelsData = [];
-    var valuesData = [];
-    var datasetsData = [];
-    var colors = [];
+    const labelsData = [];
+    const valuesData = [];
+    const datasetsData = [];
+    const colors = [];
 
     for (var i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
@@ -357,8 +357,8 @@ function winPercentagesGraph(reportData) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var graphChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const graphChart = new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
@@ -392,10 +392,10 @@ function avgPercentagePointsGraph(reportData) {
         },
     };
     
-    var labelsData = [];
-    var valuesData = [];
-    var datasetsData = [];
-    var colors = [];
+    const labelsData = [];
+    const valuesData = [];
+    const datasetsData = [];
+    const colors = [];
 
     for (var i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
@@ -419,8 +419,8 @@ function avgPercentagePointsGraph(reportData) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var graphChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const graphChart = new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
@@ -454,10 +454,10 @@ function scoreGraph(reportData) {
         },
     };
     
-    var labelsData = [];
-    var valuesData = [];
-    var datasetsData = [];
-    var colors = [];
+    const labelsData = [];
+    const valuesData = [];
+    const datasetsData = [];
+    const colors = [];
 
     for (var i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
@@ -481,8 +481,8 @@ function scoreGraph(reportData) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var graphChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const graphChart = new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
@@ -497,15 +497,15 @@ function liveStatsGraph(reportData) {
 
     if (liveGraphChart == null || $('#pointsLiveStats').children().length == 0) {
         console.log('create live graph canvas');
-        var node = $('#pointsLiveStats');
+        const node = $('#pointsLiveStats');
         node.empty();
-        var reportCanvas = $('<canvas id="'+canvasIdStr+'"></canvas>');
+        const reportCanvas = $('<canvas id="'+canvasIdStr+'"></canvas>');
         node.append(reportCanvas);
     }
 
     
-    var labelsData = [];
-    var datasetsData = [];
+    const labelsData = [];
+    const datasetsData = [];
 
     for (var i = 0; i < statsRounds; i++) {
         labelsData.push(i);
@@ -513,8 +513,8 @@ function liveStatsGraph(reportData) {
 
     for (var i = 0; i < statsData.length; i++) {
         const name = statsData[i].name;
-        var playerKeepPercentage = [];
-        var playerAvgPoints = [];
+        const playerKeepPercentage = [];
+        const playerAvgPoints = [];
             
         for (var j = 0; j < statsRounds; j++) {
             playerKeepPercentage.push(statsData[i] && statsData[i].stats[j] ? statsData[i].stats[j].kPerc : 0);
@@ -586,7 +586,7 @@ function liveStatsGraph(reportData) {
             },
         };
 
-        var ctx = document.getElementById(canvasIdStr);
+        const ctx = document.getElementById(canvasIdStr);
         liveGraphChart = new Chart(ctx, {
             type: 'line',
             data: graphData,

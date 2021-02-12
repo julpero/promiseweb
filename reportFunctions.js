@@ -108,7 +108,7 @@ module.exports = {
     },
 
     getGameReport: function (game) {
-        var retObj = {
+        const retObj = {
             players: null,
             points: null,
             rounds: null,
@@ -120,21 +120,21 @@ module.exports = {
             smallEnd: null,
         };
 
-        var players = [];
-        var startPointsArr = [0];
-        var roundsArr = [0];
-        var pointsBigArr = [];
-        var pointsSmallArr = [];
-        var keepsBigArr = [];
-        var keepsSmallArr = [];
-        var pointsArr = [];
+        const players = [];
+        const startPointsArr = [0];
+        const roundsArr = [0];
+        const pointsBigArr = [];
+        const pointsSmallArr = [];
+        const keepsBigArr = [];
+        const keepsSmallArr = [];
+        const pointsArr = [];
         for (var i = 0; i < game.playerOrder.length; i++) {
             const playerName = game.playerOrder[i].name == null ? game.playerOrder[i] : game.playerOrder[i].name;
             players.push(playerName);
             startPointsArr.push(0);
             keepsBigArr.push(0);
             keepsSmallArr.push(0);
-            var totalPointsByPlayer = [0];
+            const totalPointsByPlayer = [0];
             var pointsPerPlayer = 0;
             var bigPointsPerPlayer = 0;
             var smallPointsPerPlayer = 0;
@@ -190,7 +190,7 @@ module.exports = {
 }
 
 function getPlayerStatistics(game) {
-    var players = [];
+    const players = [];
     game.playerOrder.forEach(function (player) {
         const playerName = player.name != null ? player.name : player;
         const totalPoints = module.exports.getGamePoints(game, playerName);

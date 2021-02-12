@@ -125,11 +125,11 @@ function leaveGame(id) {
 }
 
 function showGames(gameList) {
-    var gameListContainer = $('#joinGameCollapse');
+    const gameListContainer = $('#joinGameCollapse');
     var firstId = '';
     gameList.forEach(function (game) {
         if (firstId ==  '') firstId = game.id;
-        var gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
+        const gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
         if (!game.evenPromisesAllowed) ruleStr+= ', no even promises';
         if (!game.visiblePromiseRound) ruleStr+= ', hidden promise round';
@@ -149,9 +149,9 @@ function showGames(gameList) {
         gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input disabled type="text" id="password'+game.id+'">'))));
         const btnId = 'joinGameButton' + game.id;
         const leaveBtnId = 'leaveGameButton' + game.id;
-        var joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton'+joinBtnStatus).text('Join'));
-        var leaveBtnStatus = !game.imInThisGame ? ' disabled' : '';
-        var leaveGameButton = ($('<button id="'+leaveBtnId+'">').addClass('btn btn-primary leaveThisGameButton'+leaveBtnStatus).text('Leave'));
+        const joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton'+joinBtnStatus).text('Join'));
+        const leaveBtnStatus = !game.imInThisGame ? ' disabled' : '';
+        const leaveGameButton = ($('<button id="'+leaveBtnId+'">').addClass('btn btn-primary leaveThisGameButton'+leaveBtnStatus).text('Leave'));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(joinGameButton));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(leaveGameButton));
 
