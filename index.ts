@@ -1451,7 +1451,7 @@ try {
                         _id: 1
                     }}
                 ];
-                const cursorC = await collection.aggregate(aggregationC);
+                const cursorC = await collection.aggregate(aggregationC, { allowDiskUse: true });
                 const averagePointsPerGames = [];
                 await cursorC.forEach(function(val) {
                     averagePointsPerGames.push({
@@ -1496,7 +1496,7 @@ try {
                         _id: 1
                     }}
                 ];
-                const cursorB = await collection.aggregate(aggregationB);
+                const cursorB = await collection.aggregate(aggregationB, { allowDiskUse: true });
                 await cursorB.forEach(function(val) {
                     for (var i = 0; i < averagePointsPerGames.length; i++) {
                         if (averagePointsPerGames[i]._id == val._id) {
