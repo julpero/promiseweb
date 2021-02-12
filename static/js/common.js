@@ -1,7 +1,7 @@
-function gamePlayersToStr(players, totalHumans, totalComputers) {
+function gamePlayersToStr(players, totalHumans, totalComputers, winnerName) {
     var retStr = '';
     players.forEach(function (player) {
-        retStr+= player.name + ', ';
+        retStr+= (player.name == winnerName) ? '<strong>'+player.name + '</strong>, ' : player.name + ', ';
     });
     for (i = players.length; i < totalHumans; i++) retStr+= '{}, ';
     if (retStr.length > 2) retStr = retStr.substring(0, retStr.length-2);

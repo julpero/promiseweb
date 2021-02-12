@@ -3,7 +3,7 @@ function showNickChanger(gameList) {
     console.log(gameList);
     gameList.forEach(function (game) {
         const gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
-        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)+showErrorNames(game.playerNameErrors)));
+        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null)+showErrorNames(game.playerNameErrors)));
 
         const oldNameCol = $('<div></div>').addClass('col-2');
         const oldNameInput = $('<input id="oldName'+game.id+'" type="text">');
@@ -14,13 +14,13 @@ function showNickChanger(gameList) {
         newNameCol.append(newNameInput);
         gameContainerDiv.append(newNameCol);
 
-        const btnId = 'changeNick' + game.id;
-        const showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary change-nick-button').text('Change'));
+        const btnId1 = 'changeNick' + game.id;
+        const showGameButton = ($('<button id="'+btnId1+'" value="'+game.id+'">').addClass('btn btn-primary change-nick-button').text('Change'));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(showGameButton));
 
-        btnId = 'generateReports' + game.id;
+        const btnId2 = 'generateReports' + game.id;
         const generatedStr = game.gameStatistics != null ? new Date(game.gameStatistics.generated).toLocaleString('fi-fi') : 'NULL';
-        const generateReportsButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary generate-report-button').text('Generate '+generatedStr));
+        const generateReportsButton = ($('<button id="'+btnId2+'" value="'+game.id+'">').addClass('btn btn-primary generate-report-button').text('Generate '+generatedStr));
         gameContainerDiv.append(($('<div>').addClass('col-3')).append(generateReportsButton));
 
         gameListContainer.append(gameContainerDiv);
@@ -77,6 +77,8 @@ function showGames(gameList) {
         const gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
         const gameStarted = new Date(game.created).getTime();
         const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
+        const winnerName = game.gameStatistics.winnerName;
+        console.log(winnerName);
         gameContainerDiv.append($('<div>').addClass('col-2 report-date').text(dateStr));
 
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
@@ -92,7 +94,7 @@ function showGames(gameList) {
         if (game.hiddenCardsMode == 1) ruleStr+= ', show only card in charge';
         if (game.hiddenCardsMode == 2) ruleStr+= ', show card in charge and winning card';
         gameContainerDiv.append($('<div>').addClass('col-4 report-rules').text(ruleStr));
-        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
+        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').html(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, winnerName)));
 
         const btnId = 'showGameButton' + game.id;
         const showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary reportGameButton').text('Show report'));

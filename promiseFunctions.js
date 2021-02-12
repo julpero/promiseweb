@@ -597,7 +597,7 @@ function initRound(roundIndex, cardsInRound, players, speedPromise) {
 
     const roundPlayers = [];
     players.forEach(function (player, idx) {
-        const playerCards = [];
+        var playerCards = [];
         if (cardsInRound == 1) {
             const card = deck.draw(1);
             playerCards.push(card);
