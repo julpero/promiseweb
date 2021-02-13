@@ -82,6 +82,7 @@ try {
     
             socket.on('check game', async (gameCheck) => {
                 console.log(gameCheck);
+                const myId = gameCheck.myId;
                 var gameFound = false;
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
@@ -90,7 +91,7 @@ try {
                 const games = collection.find(query);
                 await games.forEach(function (game) {
                     game.humanPlayers.forEach( function(player) {
-                        if (player.playerId == gameCheck.myId) {
+                        if (player.playerId == myId) {
                             console.log('found game 1');
                             gameFound = true;
                             socket.join(game._id.toString());
@@ -111,7 +112,7 @@ try {
                     const games = collection.find(query);
                     await games.forEach(function (game) {
                         game.humanPlayers.forEach(function(player) {
-                            if (player.playerId == gameCheck.myId) {
+                            if (player.playerId == myId) {
                                 console.log('found game 0');
                                 socket.join(game._id.toString());
                                 sm.addClientToMap(player.name, socket.id, game._id.toString());
@@ -191,14 +192,15 @@ try {
             });
     
             socket.on('leave game', async (leaveGame, fn) => {
+                const gameIdStr = leaveGame.gameId;
                 const retVal = {
                     leavingResult: 'NOTSET',
-                    gameId: leaveGame.gameId,
+                    gameId: gameIdStr,
                     gameDeleted: false,
                 }
 
                 const ObjectId = require('mongodb').ObjectId;
-                const searchId = new ObjectId(leaveGame.gameId);
+                const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = { gameStatus: 0,
@@ -230,8 +232,8 @@ try {
                         const result = await collection.updateOne(query, updateDoc, options);
                         if (result.modifiedCount == 1) {
                             console.log(result);
-                            socket.leave(leaveGame.gameId);
-                            sm.removeClientFromMap(leaverName, socket.id, leaveGame.gameId);
+                            socket.leave(gameIdStr);
+                            sm.removeClientFromMap(leaverName, socket.id, gameIdStr);
                             retVal.leavingResult = 'LEAVED';
                         }
                     }
@@ -241,7 +243,7 @@ try {
     
                 if (retVal.leavingResult == 'LEAVED') {
                     if (retVal.gameDeleted) {
-                        io.emit('delete gameinfo', leaveGame.gameId);
+                        io.emit('delete gameinfo', gameIdStr);
                     } else {
                         // let's update info to clients
                         const val = await collection.findOne(query);
@@ -325,8 +327,11 @@ try {
             socket.on('join game', async (newPlayer, fn) => {
                 var joiningResult = 'NOTSET';
                 console.log(newPlayer);
+                const gameIdStr = newPlayer.gameId;
+                const myName = newPlayer.myName;
+                const myId = newPlayer.myId;
                 const ObjectId = require('mongodb').ObjectId;
-                const searchId = new ObjectId(newPlayer.gameId);
+                const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = { gameStatus: 0,
@@ -336,20 +341,20 @@ try {
                 const game = await collection.findOne(query);
                 const retVal = {
                     joiningResult: null,
-                    gameId: newPlayer.gameId,
+                    gameId: gameIdStr,
                 }
                 if (game !== null) {
-                    if (game.humanPlayersCount > game.humanPlayers.length && game.adminName != newPlayer.myName) {
+                    if (game.humanPlayersCount > game.humanPlayers.length && game.adminName != myName) {
                         var nameFree = true;
                         var socketFree = true;
                         game.humanPlayers.forEach(function(player) {
-                            if (player.name == newPlayer.myName) nameFree = false;
-                            if (player.playerId == newPlayer.myId) socketFree = false;
+                            if (player.name == myName) nameFree = false;
+                            if (player.playerId == myId) socketFree = false;
                         });
     
                         if (nameFree && socketFree) {
                             var players = game.humanPlayers;
-                            players.push({name: newPlayer.myName, playerId: newPlayer.myId, type: 'human', active: true, playerStats: await getGamesStatistics(game, newPlayer.myName)});
+                            players.push({name: myName, playerId: myId, type: 'human', active: true, playerStats: await getGamesStatistics(game, myName)});
                             const options = { upsert: true };
                             const updateDoc = {
                                 $set: {
@@ -358,10 +363,10 @@ try {
                             };
                             const result = await collection.updateOne(query, updateDoc, options);
                             if (result.modifiedCount == 1) {
-                                socket.join(newPlayer.gameId.toString());
-                                sm.addClientToMap(newPlayer.myName, socket.id, newPlayer.gameId);
-                                var chatLine = 'player ' + newPlayer.myName + ' connected';
-                                io.to(newPlayer.gameId).emit('new chat line', chatLine);
+                                socket.join(gameIdStr);
+                                sm.addClientToMap(myName, socket.id, gameIdStr);
+                                var chatLine = 'player ' + myName + ' connected';
+                                io.to(gameIdStr).emit('new chat line', chatLine);
                                 joiningResult = 'OK';
                             }
                         } else if (!nameFree) {
@@ -433,11 +438,14 @@ try {
     
             socket.on('get round', async (getRound, fn) => {
                 console.log(getRound);
+                const gameIdStr = getRound.gameId;
+                const myId = getRound.myId;
+                const roundInd = getRound.round;
     
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const ObjectId = require('mongodb').ObjectId;
-                const searchId = new ObjectId(getRound.gameId);
+                const searchId = new ObjectId(gameIdStr);
     
                 const gameStarted = getRound.gameStarted;
                 const doReload = getRound.doReload;
@@ -452,7 +460,7 @@ try {
                 const game = await collection.findOne(query);
                 if (game != null) {
                     const stats = (gameStarted || doReload || newRound || gameOver) ? await getStatistics(game) : null;
-                    const playerRound = pf.roundToPlayer(getRound.myId, getRound.round, game, stats, doReload, newRound, gameOver);
+                    const playerRound = pf.roundToPlayer(myId, roundInd, game, stats, doReload, newRound, gameOver);
                     console.log(playerRound);
         
                     fn(playerRound);
@@ -461,6 +469,10 @@ try {
 
             socket.on('speedpromise', async (speedPromiseObj, fn) => {
                 console.log(speedPromiseObj);
+                const gameIdStr = speedPromiseObj.gameId;
+                const myId = speedPromiseObj.myId;
+                const roundInd = speedPromiseObj.roundInd;
+
                 const resultObj = {
                     speedOk: false,
                     fullSpeedPromises: false,
@@ -471,23 +483,23 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const ObjectId = require('mongodb').ObjectId;
-                const searchId = new ObjectId(speedPromiseObj.gameId);
+                const searchId = new ObjectId(gameIdStr);
                 const query = { gameStatus: 1,
                     _id: searchId,
                     // password: newPlayer.gamePassword,
                 };
                 const gameInDb = await collection.findOne(query);
                 if (gameInDb !== null && gameInDb.speedPromise) {
-                    const playerName = pf.getPlayerNameById(speedPromiseObj.myId, gameInDb.humanPlayers);
+                    const playerName = pf.getPlayerNameById(myId, gameInDb.humanPlayers);
                     for (var i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
                         var chkInd = 1 + i; // start from next to dealer
                         if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-= (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
-                        if (gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].promise == null) {
+                        if (gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promise == null) {
                             // this should be same as playerName
-                            if (gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].name == playerName) {
+                            if (gameInDb.game.rounds[roundInd].roundPlayers[chkInd].name == playerName) {
                                 // make speedpromise substraction
-                                if (gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints >= -9) {
-                                    gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints--;
+                                if (gameInDb.game.rounds[roundInd].roundPlayers[chkInd].speedPromisePoints >= -9) {
+                                    gameInDb.game.rounds[roundInd].roundPlayers[chkInd].speedPromisePoints--;
                                     const options = { upsert: true };
                                     const updateDoc = {
                                         $set: {
@@ -497,12 +509,12 @@ try {
                                     const result = await collection.updateOne(query, updateDoc, options);
                                     if (result.modifiedCount == 1) {
                                         resultObj.speedOk = true;
-                                        resultObj.fullSpeedPromises = gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints == -10;
+                                        resultObj.fullSpeedPromises = gameInDb.game.rounds[roundInd].roundPlayers[chkInd].speedPromisePoints == -10;
 
-                                        var chatLine = playerName+' still thinking, speed promise: ' + gameInDb.game.rounds[speedPromiseObj.roundInd].roundPlayers[chkInd].speedPromisePoints;
-                                        io.to(speedPromiseObj.gameId).emit('new chat line', chatLine);
+                                        var chatLine = playerName+' still thinking, speed promise: ' + gameInDb.game.rounds[roundInd].roundPlayers[chkInd].speedPromisePoints;
+                                        io.to(gameIdStr).emit('new chat line', chatLine);
 
-                                        const playerRound = pf.roundToPlayer(speedPromiseObj.myId, speedPromiseObj.roundInd, gameInDb, null, false, false, false);
+                                        const playerRound = pf.roundToPlayer(myId, roundInd, gameInDb, null, false, false, false);
                                         resultObj.round = playerRound;
                                         resultObj.debug = null;
                                         break;
@@ -528,13 +540,17 @@ try {
     
             socket.on('make promise', async (promiseDetails, fn) => {
                 console.log(promiseDetails);
+                const gameIdStr = promiseDetails.gameId;
+                const myId = promiseDetails.myId;
+                const roundInd = promiseDetails.roundInd;
+                const promise = promiseDetails.promise;
 
                 var promiseMadeOk = false;
     
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const ObjectId = require('mongodb').ObjectId;
-                const searchId = new ObjectId(promiseDetails.gameId);
+                const searchId = new ObjectId(gameIdStr);
                 
                 const query = { gameStatus: 1,
                     _id: searchId,
@@ -542,21 +558,21 @@ try {
                 };
                 const gameInDb = await collection.findOne(query);
                 if (gameInDb !== null) {
-                    const promiseInt = parseInt(promiseDetails.promise, 10);
-                    const playerName = pf.getPlayerNameById(promiseDetails.myId, gameInDb.humanPlayers);
+                    const promiseInt = parseInt(promise, 10);
+                    const playerName = pf.getPlayerNameById(myId, gameInDb.humanPlayers);
                     var speedPromisePoints = null;
                     for (var i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
                         var chkInd = 1 + i; // start from next to dealer
                         if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-= (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
-                        if (gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise == null) {
+                        if (gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promise == null) {
                             // this should be same as playerName
-                            if (gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].name == playerName) {
+                            if (gameInDb.game.rounds[roundInd].roundPlayers[chkInd].name == playerName) {
                                 // update promise
-                                if (gameInDb.evenPromisesAllowed || !pf.isLastPromiser(gameInDb.game.rounds[promiseDetails.roundInd]) || gameInDb.game.rounds[promiseDetails.roundInd].totalPromise + promiseInt != gameInDb.game.rounds[promiseDetails.roundInd].cardsInRound) {
-                                    gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].promise = promiseInt;
-                                    speedPromisePoints = gameInDb.game.rounds[promiseDetails.roundInd].roundPlayers[chkInd].speedPromisePoints;
-                                    if (gameInDb.game.rounds[promiseDetails.roundInd].totalPromise == null) gameInDb.game.rounds[promiseDetails.roundInd].totalPromise = 0;
-                                    gameInDb.game.rounds[promiseDetails.roundInd].totalPromise += promiseInt;
+                                if (gameInDb.evenPromisesAllowed || !pf.isLastPromiser(gameInDb.game.rounds[roundInd]) || gameInDb.game.rounds[roundInd].totalPromise + promiseInt != gameInDb.game.rounds[roundInd].cardsInRound) {
+                                    gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promise = promiseInt;
+                                    speedPromisePoints = gameInDb.game.rounds[roundInd].roundPlayers[chkInd].speedPromisePoints;
+                                    if (gameInDb.game.rounds[roundInd].totalPromise == null) gameInDb.game.rounds[roundInd].totalPromise = 0;
+                                    gameInDb.game.rounds[roundInd].totalPromise += promiseInt;
                                     const options = { upsert: true };
                                     const updateDoc = {
                                         $set: {
@@ -579,7 +595,7 @@ try {
                     console.log(thisGame);
         
                     const gameInfo = pf.gameToGameInfo(thisGame);
-                    gameInfo.currentRound = promiseDetails.roundInd;
+                    gameInfo.currentRound = roundInd;
 
                     if (promiseMadeOk) {
                         io.to(gameInfo.id).emit('promise made', gameInfo);
@@ -605,6 +621,10 @@ try {
     
             socket.on('play card', async (playDetails, fn) => {
                 console.log(playDetails);
+                const gameIdStr = playDetails.gameId;
+                const myId = playDetails.myId;
+                const roundInd = playDetails.roundInd;
+                const playedCard = playDetails.playedCard;
 
                 var cardPlayedOk = false;
     
@@ -615,7 +635,7 @@ try {
                 const collection = database.collection('promiseweb');
                 const statsCollection = database.collection('promisewebStats');
                 const ObjectId = require('mongodb').ObjectId;
-                const searchId = new ObjectId(playDetails.gameId);
+                const searchId = new ObjectId(gameIdStr);
                 
                 const query = { gameStatus: 1,
                     _id: searchId,
@@ -623,12 +643,11 @@ try {
                      };
                 const gameInDb = await collection.findOne(query);
                 if (gameInDb !== null) {
-                    const playedCard = playDetails.playedCard;
-                    const playerName = pf.getPlayerNameById(playDetails.myId, gameInDb.humanPlayers);
+                    const playerName = pf.getPlayerNameById(myId, gameInDb.humanPlayers);
                     var gameOver = false;
                     if (pf.okToPlayCard(playedCard, playerName, gameInDb)) {
-                        var roundInDb = pf.getCurrentRoundIndex(gameInDb);
-                        if (roundInDb == playDetails.roundInd) {
+                        const roundInDb = pf.getCurrentRoundIndex(gameInDb);
+                        if (roundInDb == roundInd) {
                             var round = gameInDb.game.rounds[roundInDb];
                             const play = pf.getCurrentPlayIndex(round);
                             const playerInd = pf.getPlayerIndexByName(playerName, round.roundPlayers)
@@ -658,10 +677,10 @@ try {
 
                                 cardsInThisPlay = gameAfterPlay.rounds[roundInDb].cardsPlayed[play];
 
-                                io.to(playDetails.gameId).emit('new chat line', winnerName+' won this play');
+                                io.to(gameIdStr).emit('new chat line', winnerName+' won this play');
                                 
                                 if (gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps == gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].promise + 1) {
-                                    if (!gameInDb.onlyTotalPromise) io.to(playDetails.gameId).emit('new chat line', winnerName+' Pitkäksi Oy:stä PÄIVÄÄ!');
+                                    if (!gameInDb.onlyTotalPromise) io.to(gameIdStr).emit('new chat line', winnerName+' Pitkäksi Oy:stä PÄIVÄÄ!');
                                 }
     
                                 if (gameAfterPlay.rounds[roundInDb].cardsPlayed.length == gameAfterPlay.rounds[roundInDb].cardsInRound) {
@@ -686,7 +705,7 @@ try {
                                         }
 
                                         const statsPlayer = {
-                                            game: playDetails.gameId,
+                                            game: gameIdStr,
                                             played: new Date().getTime(),
                                             round: roundInDb,
                                             name: gameAfterPlay.rounds[roundInDb].roundPlayers[i].name,
@@ -705,12 +724,12 @@ try {
                                         // this was the last round of the game
                                         gameOver = true;
                                         gameStatus = 2;
-                                        io.to(playDetails.gameId).emit('new chat line', 'GAME OVER!');
+                                        io.to(gameIdStr).emit('new chat line', 'GAME OVER!');
                                     } else {
                                         // start next round
                                         gameAfterPlay.rounds[roundInDb+1].roundStatus = 1;
-                                        io.to(playDetails.gameId).emit('new chat line', 'New round starts...');
-                                        io.to(playDetails.gameId).emit('new chat line', '... with '+ gameAfterPlay.playerOrder[gameAfterPlay.rounds[roundInDb+1].dealerPositionIndex].name +' as a dealer!');
+                                        io.to(gameIdStr).emit('new chat line', 'New round starts...');
+                                        io.to(gameIdStr).emit('new chat line', '... with '+ gameAfterPlay.playerOrder[gameAfterPlay.rounds[roundInDb+1].dealerPositionIndex].name +' as a dealer!');
                                     }
                                 } else {
                                     // start next play
@@ -769,7 +788,7 @@ try {
                         console.log(thisGame);
             
                         const gameInfo = pf.gameToGameInfo(thisGame);
-                        gameInfo.currentRound = playDetails.roundInd;
+                        gameInfo.currentRound = roundInd;
                         gameInfo.eventInfo = eventInfo;
 
                         // this gameInfo to all other players than the one who just played card
@@ -786,6 +805,7 @@ try {
     
             socket.on('get games', async (data, fn) => {
                 console.log('start to get games');
+                const myId = data.myId;
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = { gameStatus: 0 };
@@ -812,7 +832,7 @@ try {
                         opponentPromiseCardValue: val.opponentPromiseCardValue,
                         opponentGameCardValue: val.opponentGameCardValue,
                         hiddenCardsMode: val.hiddenCardsMode,
-                        imInThisGame: pf.imInThisGame(val.humanPlayers, data.myId)
+                        imInThisGame: pf.imInThisGame(val.humanPlayers, myId)
                     });
                 });
     
@@ -1379,8 +1399,9 @@ try {
             });
             
             socket.on('get game report', async (data, fn) => {
+                const gameIdStr = data.gameId;
                 const ObjectId = require('mongodb').ObjectId;
-                const searchId = new ObjectId(data.gameId);
+                const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = {
@@ -1546,9 +1567,10 @@ try {
 
 
             socket.on('generate game statistics', async (data, fn) => {
-                console.log('start to generate game statistics for '+data.gameId);
+                const gameIdStr = data.gameId;
+                console.log('start to generate game statistics for '+gameIdStr);
                 const ObjectId = require('mongodb').ObjectId;
-                const searchId = new ObjectId(data.gameId);
+                const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = {
@@ -1656,6 +1678,7 @@ try {
 }
 
 async function startGame (gameInfo) {
+    const gameIdStr = gameInfo.id;
     const players = pf.initPlayers(gameInfo);
     const rounds = pf.initRounds(gameInfo, players);
     const game = {
@@ -1666,7 +1689,7 @@ async function startGame (gameInfo) {
     const database = mongoUtil.getDb();
     const collection = database.collection('promiseweb');
     const ObjectId = require('mongodb').ObjectId;
-    const searchId = new ObjectId(gameInfo.id);
+    const searchId = new ObjectId(gameIdStr);
 
     const query = { _id: searchId };
     const options = { upsert: true };
@@ -1681,16 +1704,17 @@ async function startGame (gameInfo) {
 
     await startRound(gameInfo, 0);
 
-    io.to(gameInfo.id).emit('start game', gameInfo);
-    io.to(gameInfo.id).emit('new chat line', 'New game begins!');
+    io.to(gameIdStr).emit('start game', gameInfo);
+    io.to(gameIdStr).emit('new chat line', 'New game begins!');
 
 }
 
 async function startRound(gameInfo, roundInd) {
+    const gameIdStr = gameInfo.id;
     const database = mongoUtil.getDb();
     const collection = database.collection('promiseweb');
     const ObjectId = require('mongodb').ObjectId;
-    const searchId = new ObjectId(gameInfo.id);
+    const searchId = new ObjectId(gameIdStr);
 
     const query = { _id: searchId };
     const thisGame = await collection.findOne(query);
