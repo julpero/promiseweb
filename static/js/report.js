@@ -3,7 +3,7 @@ function showNickChanger(gameList) {
     console.log(gameList);
     gameList.forEach(function (game) {
         const gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
-        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null)+showErrorNames(game.playerNameErrors)));
+        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').html(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null)+showErrorNames(game.playerNameErrors)));
 
         const oldNameCol = $('<div></div>').addClass('col-2');
         const oldNameInput = $('<input id="oldName'+game.id+'" type="text">');
@@ -236,7 +236,7 @@ function showAverages(gameObject) {
 function showErrorNames(errorNames) {
     if (errorNames.length == 0) return '';
     console.log(errorNames);
-    return ' E: '+ errorNames.join(', ');
+    return ' <strong>E: '+ errorNames.join(', ')+'</strong>';
 }
 
 function oldNameToNewName(oldName) {

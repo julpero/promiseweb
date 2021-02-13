@@ -265,7 +265,7 @@ module.exports = {
         return false;
     },
 
-    checkPlayerNames: function (wholeGame) {
+    checkPlayerNames: function (wholeGame, statNames) {
         const playerNames = [];
         const wrongNames = [];
         wholeGame.humanPlayers.forEach (function (humanPlayer) {
@@ -288,6 +288,13 @@ module.exports = {
                 });
             });
         });
+
+        if (statNames != null && statNames.length > 0) {
+            statNames.forEach(function (name) {
+                if (!playerNames.includes(name) && !wrongNames.includes(name)) wrongNames.push(name);
+            });
+        }
+        if (wrongNames.length > 0) console.log(wrongNames);
 
         return wrongNames;
     }

@@ -825,6 +825,37 @@ try {
             socket.on('get games for report', async (data, fn) => {
                 console.log('start to get games for report');
                 const database = mongoUtil.getDb();
+
+                const games = [];
+                const gameIds = [];
+                const queryStatsGamesAggregation = [{$group: {
+                    _id: "$game",
+                  }}
+                ];
+                const statsCollection = database.collection('promisewebStats');
+                const cursorStatGames = await statsCollection.aggregate(queryStatsGamesAggregation);
+                await cursorStatGames.forEach(function (game) {
+                    const gameIdStr = game._id.toString();
+                    games[gameIdStr] = [];
+                    gameIds.push(gameIdStr);
+                });
+
+                for (var i = 0; i < gameIds.length; i++) {
+                    const gameIdStr = gameIds[i];
+                    // console.log(gameIdStr);
+                    const queryStatsGamesPlayersAggregation = [{$match: {
+                        game: gameIdStr,
+                    }},{$group: {
+                        _id: "$name",
+                      }}
+                    ];
+                    const cursorStatGamePlayers = await statsCollection.aggregate(queryStatsGamesPlayersAggregation);
+                    await cursorStatGamePlayers.forEach(function (player) {
+                        games[gameIdStr].push(player._id);
+                    });
+                    // console.log(games[gameIdStr]);
+                }
+
                 const collection = database.collection('promiseweb');
                 const queryAggregation = [{$match: {
                     gameStatus: {$eq: 2}
@@ -833,10 +864,13 @@ try {
                   }}
                 ];
                 const cursor = await collection.aggregate(queryAggregation);
-                const games = [];
+                const retArr = [];
                 await cursor.forEach(function(val) {
-                    games.push({
-                        id: val._id.toString(),
+                    const gameIdStr = val._id.toString();
+                    const statNames = games[gameIdStr] != null ? games[gameIdStr] : [];
+    
+                    retArr.push({
+                        id: gameIdStr,
                         gameStatistics: val.gameStatistics,
                         created: val.createDateTime,
                         startRound: val.startRound,
@@ -853,11 +887,11 @@ try {
                         opponentPromiseCardValue: val.opponentPromiseCardValue,
                         opponentGameCardValue: val.opponentGameCardValue,
                         hiddenCardsMode: val.hiddenCardsMode,
-                        playerNameErrors: pf.checkPlayerNames(val),
+                        playerNameErrors: pf.checkPlayerNames(val, statNames),
                     });
                 });
     
-                fn(games);
+                fn(retArr);
             });
 
             socket.on('get report data', async (data, fn) => {
@@ -1539,11 +1573,13 @@ try {
 
             socket.on('change nick', async (data, fn) => {
                 console.log('start to change nick');
+                const gameIdStr = data.gameId;
                 const ObjectId = require('mongodb').ObjectId;
-                const searchId = new ObjectId(data.gameId);
                 const oldName = data.oldName;
                 const newName = data.newName;
-                console.log(' '+oldName+' to '+newName);
+
+                console.log(' game database '+oldName+' to '+newName);
+                const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = {
@@ -1596,6 +1632,19 @@ try {
                 };
                 const result = await collection.updateOne(query, updateDoc, options);
                 
+                console.log(' stats database '+oldName+' to '+newName);
+                const updateStatsDocQuery = {
+                        name: oldName,
+                        game: gameIdStr,
+                }
+                const updateStatsDocSet = {
+                    $set: {
+                        name: newName,
+                    }
+                };
+                const collectionStats = database.collection('promisewebStats');
+                const resultStats = await collectionStats.updateMany(updateStatsDocQuery, updateStatsDocSet);
+
                 fn();
             });
             
