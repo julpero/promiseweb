@@ -1,7 +1,7 @@
-function gamePlayersToStr(players, totalHumans, totalComputers) {
+function gamePlayersToStr(players, totalHumans, totalComputers, winnerName) {
     var retStr = '';
     players.forEach(function (player) {
-        retStr+= player.name + ', ';
+        retStr+= (player.name == winnerName) ? '<strong>'+player.name + '</strong>, ' : player.name + ', ';
     });
     for (i = players.length; i < totalHumans; i++) retStr+= '{}, ';
     if (retStr.length > 2) retStr = retStr.substring(0, retStr.length-2);
@@ -111,7 +111,7 @@ function showOneGameReport(reportObject) {
     
     const labelsData = reportObject.rounds;
 
-    var datasetsData = [];
+    const datasetsData = [];
     for (var i = 0; i < reportObject.players.length; i++) {
         datasetsData.push({
             label: reportObject.players[i],
@@ -134,8 +134,8 @@ function showOneGameReport(reportObject) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var pointsChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const pointsChart = new Chart(ctx, {
         type: 'line',
         data: pointsData,
         options: pointsOptions,
@@ -205,8 +205,8 @@ function showOneKeepsReport(reportObject) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var keepChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const keepChart = new Chart(ctx, {
         type: 'bar',
         data: keepsData,
         options: keepsOptions,
@@ -264,8 +264,8 @@ function showOnePointsReport(reportObject) {
         if (instance.canvas.id == canvasIdStr) instance.destroy();
     });
 
-    var ctx = document.getElementById(canvasIdStr);
-    var pointsChart = new Chart(ctx, {
+    const ctx = document.getElementById(canvasIdStr);
+    const pointsChart = new Chart(ctx, {
         type: 'bar',
         data: pointsData,
         options: pointsOptions,
@@ -275,7 +275,7 @@ function showOnePointsReport(reportObject) {
 function getOneGameReport(gameId) {
     $('#oneGameReportModal').off('shown.bs.modal');
     $('#oneGameReportModal').on('shown.bs.modal', function() {
-        var getReportObj = { gameId: gameId };
+        const getReportObj = { gameId: gameId };
         socket.emit('get game report', getReportObj, function(gameReportData) {
             console.log(gameReportData);
             showOneGameReport(gameReportData);

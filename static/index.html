@@ -514,7 +514,7 @@
                   </button>
                 </div>
                 <div class="modal-body">
-                    <p>If you want to leave game and someone else is continuing it, give this game id to him/her:</p>
+                    <p>If you want to leave game and someone else is continuing it, give this game id to him/her (other players in the game will also have these):</p>
                     <input type="text" id="myName" hidden>
                     <input type="text" id="currentGameId" class="form-control" readonly>
                     <p>... and also your id:</p>
@@ -569,7 +569,7 @@
                 });
 
                 socket.on('update gameinfo', function(gameInfo) {
-                    $('#gamePlayers'+gameInfo.id).text(gamePlayersToStr(gameInfo.humanPlayers, gameInfo.humanPlayersCount, gameInfo.computerPlayersCount));
+                    $('#gamePlayers'+gameInfo.id).text(gamePlayersToStr(gameInfo.humanPlayers, gameInfo.humanPlayersCount, gameInfo.computerPlayersCount, null));
                 });
 
                 socket.on('new chat line', function(chatLine) {

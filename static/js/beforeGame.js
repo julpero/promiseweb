@@ -39,7 +39,7 @@ function createNewGame(gameOptions) {
 
 function initcreateNewGameButton() {
     $('#createNewGameButton').on('click', function() {
-        var gameOptions = {
+        const gameOptions = {
             humanPlayersCount: parseInt($('#newGameHumanPlayersCount option:selected')[0].value, 10),
             botPlayersCount: parseInt($('#newGameBotPlayersCount option:selected')[0].value, 10),
             startRound: parseInt($('#newGameStartRound option:selected')[0].value, 10),
@@ -95,7 +95,7 @@ function joinGame(id) {
             $('#myName'+id).val('-lasse-');
         }
     }
-    var gameDetails = { gameId: id,
+    const gameDetails = { gameId: id,
         myName: $('#myName'+id).val(),
         myId: window.localStorage.getItem('uUID'),
         gamePassword: $('#password'+id).val(),
@@ -112,7 +112,7 @@ function joinGame(id) {
 }
 
 function leaveGame(id) {
-    var gameDetails = { gameId: id,
+    const gameDetails = { gameId: id,
         myId: window.localStorage.getItem('uUID'),
     };
     socket.emit('leave game', gameDetails, function (response) {
@@ -125,11 +125,11 @@ function leaveGame(id) {
 }
 
 function showGames(gameList) {
-    var gameListContainer = $('#joinGameCollapse');
+    const gameListContainer = $('#joinGameCollapse');
     var firstId = '';
     gameList.forEach(function (game) {
         if (firstId ==  '') firstId = game.id;
-        var gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
+        const gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
         if (!game.evenPromisesAllowed) ruleStr+= ', no even promises';
         if (!game.visiblePromiseRound) ruleStr+= ', hidden promise round';
@@ -143,15 +143,15 @@ function showGames(gameList) {
         if (game.hiddenCardsMode == 1) ruleStr+= ', show only card in charge';
         if (game.hiddenCardsMode == 2) ruleStr+= ', show card in charge and winning card';
         gameContainerDiv.append($('<div>').addClass('col-2').text(ruleStr));
-        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
-        var joinBtnStatus = game.imInThisGame ? ' disabled' : '';
+        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null)));
+        const joinBtnStatus = game.imInThisGame ? ' disabled' : '';
         gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input type="text" id="myName'+game.id+'"'+joinBtnStatus+'>').addClass('newGameMyNameInput'))));
         gameContainerDiv.append(($('<div>').addClass('col-2').append($('<input disabled type="text" id="password'+game.id+'">'))));
-        var btnId = 'joinGameButton' + game.id;
-        var leaveBtnId = 'leaveGameButton' + game.id;
-        var joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton'+joinBtnStatus).text('Join'));
-        var leaveBtnStatus = !game.imInThisGame ? ' disabled' : '';
-        var leaveGameButton = ($('<button id="'+leaveBtnId+'">').addClass('btn btn-primary leaveThisGameButton'+leaveBtnStatus).text('Leave'));
+        const btnId = 'joinGameButton' + game.id;
+        const leaveBtnId = 'leaveGameButton' + game.id;
+        const joinGameButton = ($('<button id="'+btnId+'">').addClass('btn btn-primary joinThisGameButton'+joinBtnStatus).text('Join'));
+        const leaveBtnStatus = !game.imInThisGame ? ' disabled' : '';
+        const leaveGameButton = ($('<button id="'+leaveBtnId+'">').addClass('btn btn-primary leaveThisGameButton'+leaveBtnStatus).text('Leave'));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(joinGameButton));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(leaveGameButton));
 
@@ -186,10 +186,11 @@ function initGameListEvent() {
 
 function initJoinByIdButton() {
     $('#joinByIdButton').on('click', function() {
-        var uuid = $('#joinById').val();
-        var gameId = $('#joinGameId').val();
+        const uuid = $('#joinById').val();
+        const gameId = $('#joinGameId').val();
         if (uuid.length == 36 && gameId.length > 5) {
-            var joiningDetails = { gameId: gameId,
+            const joiningDetails = {
+                gameId: gameId,
                 myId: uuid,
             };
             socket.emit('join game by id', joiningDetails, function (response) {
@@ -212,11 +213,14 @@ function initLeavingButtons() {
         $('#leavingUId').val(window.localStorage.getItem('uUID'));
     });
     $('#leavingGameModal').on('hidden.bs.modal', function() {
-        var uuid = uuidv4();
+        const uuid = uuidv4();
         console.log('new uUID set: ' + uuid);
         window.localStorage.setItem('uUID', uuid);
         deleteIntervaller();
-        var leaveGameObj = { gameId: $('#currentGameId').val(), playerId: $('#leavingUId').val()};
+        const leaveGameObj = {
+            gameId: $('#currentGameId').val(),
+            playerId: $('#leavingUId').val()
+        };
         socket.emit('leave ongoing game', leaveGameObj, function(retVal) {
             if (retVal.leavingResult == 'LEAVED') {
                 deleteIntervaller();
@@ -233,10 +237,10 @@ function initLeavingButtons() {
 
 function initChatButton() {
     $('#sendChatButton').on('click', function() {
-        var newLine = $('#newChatLine').val().trim();
-        var myName = $('#myName').val().trim();
+        const newLine = $('#newChatLine').val().trim();
+        const myName = $('#myName').val().trim();
         if (newLine.length > 0) {
-            var chatObj = {
+            const chatObj = {
                 gameId: $('#currentGameId').val(),
                 chatLine: newLine,
                 myName: myName,
@@ -248,10 +252,10 @@ function initChatButton() {
     });
     $('#newChatLine').on('keypress', function(e) {
         if (e.which == 13) {
-            var newLine = $('#newChatLine').val().trim();
-            var myName = $('#myName').val().trim();
+            const newLine = $('#newChatLine').val().trim();
+            const myName = $('#myName').val().trim();
             if (newLine.length > 0) {
-                var chatObj = {
+                const chatObj = {
                     gameId: $('#currentGameId').val(),
                     chatLine: newLine,
                     myName: myName,
@@ -266,7 +270,7 @@ function initChatButton() {
 
 function initShowReportButton() {
     $('#showGameReportButton').on('click', function() {
-        var gameId = $('#currentGameId').val();
+        const gameId = $('#currentGameId').val();
         getOneGameReport(gameId);
     });
 }
