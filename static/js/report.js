@@ -78,7 +78,6 @@ function showGames(gameList) {
         const gameStarted = new Date(game.created).getTime();
         const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
         const winnerName = game.gameStatistics.winnerName;
-        console.log(winnerName);
         gameContainerDiv.append($('<div>').addClass('col-2 report-date').text(dateStr));
 
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;

@@ -975,17 +975,18 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
     console.log('moveCardFromHandToTable, card:', card);
     const deck = Deck();
 
-    if (cardsInThisPlay != null)
-    {
+    // this is used when last card of play is hit, reveal all played cards
+    if (cardsInThisPlay != null) {
         console.log('moveCardFromHandToTable, cardsInThisPlay:', cardsInThisPlay);
         for (var i = 0; i < cardsInThisPlay.length; i++) {
-            if (playerName == cardsInThisPlay[i].name) continue;
+            if (playerName == cardsInThisPlay[i].name) continue; // animate this player card
     
             const thisPlayerIndex = mapPlayerNameToTable(cardsInThisPlay[i].name);
-            const $thisContainerTo = document.getElementById('player'+thisPlayerIndex+'CardPlayedDiv');
             const cardToCheck = getCardFromDiv('player'+thisPlayerIndex+'CardPlayedDiv');
             if (cardToCheck == null || cardToCheck.suit != cardsInThisPlay[i].card.suit || cardToCheck.rank != cardsInThisPlay[i].card.rank) {
-                $('#player'+thisPlayerIndex+'CardPlayedDiv').empty();
+                console.log('moveCardFromHandToTable, empty div, cardToCheck: ', cardToCheck);
+                const $thisContainerTo = document.getElementById('player'+thisPlayerIndex+'CardPlayedDiv');
+                $thisContainerTo.empty();
                 const thisCardIndex = getCardIndex(deck.cards, cardsInThisPlay[i].card);
                 const thisCard = deck.cards[thisCardIndex];
                 thisCard.mount($thisContainerTo);
