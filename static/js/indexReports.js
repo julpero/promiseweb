@@ -490,14 +490,14 @@ function scoreGraph(reportData) {
 }
 
 
-function liveStatsGraph(reportData) {
+function liveStats1Graph(reportData) {
     const statsRounds = reportData.rounds;
     const statsData = reportData.stats;
-    const canvasIdStr = 'pointsLiveStatsGraph';
+    const canvasIdStr = 'pointsLiveStats1Graph';
 
-    if (liveGraphChart == null || $('#pointsLiveStats').children().length == 0) {
-        console.log('create live graph canvas');
-        const node = $('#pointsLiveStats');
+    if (live1GraphChart == null || $('#pointsLive1Stats').children().length == 0) {
+        console.log('create live 1 graph canvas');
+        const node = $('#pointsLive1Stats');
         node.empty();
         const reportCanvas = $('<canvas id="'+canvasIdStr+'"></canvas>');
         node.append(reportCanvas);
@@ -514,11 +514,9 @@ function liveStatsGraph(reportData) {
     for (var i = 0; i < statsData.length; i++) {
         const name = statsData[i].name;
         const playerKeepPercentage = [];
-        const playerAvgPoints = [];
             
         for (var j = 0; j < statsRounds; j++) {
             playerKeepPercentage.push(statsData[i] && statsData[i].stats[j] ? statsData[i].stats[j].kPerc : 0);
-            playerAvgPoints.push(statsData[i] && statsData[i].stats[j] ? statsData[i].stats[j].avgPoints : 0);
         }
         const color = StringToColor.next(name);
         const color2 = StringToColor.next(name+'X');
@@ -532,6 +530,89 @@ function liveStatsGraph(reportData) {
             yAxisID: 'yPercentages',
             tension: 0.2,
         });
+    }
+
+    const graphData = {
+        labels: labelsData,
+        datasets: datasetsData,
+    };
+
+    console.log(graphData);
+
+    if (live1GraphChart == null) {
+        const graphOptions = {
+            indexAxis: 'x',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    ticks: {
+                        beginAtZero: true,
+                    }
+                },
+                yPercentages: {
+                    type: 'linear',
+                    position: 'left',
+                    ticks: {
+                        beginAtZero: true,
+                    }
+                },
+            },
+            plugins: {
+                title: {
+                    display: false,
+                    text: 'Score points by nickname',
+                },
+                legend: {
+                    display: false,
+                },
+            },
+        };
+
+        const ctx = document.getElementById(canvasIdStr);
+        live1GraphChart = new Chart(ctx, {
+            type: 'line',
+            data: graphData,
+            options: graphOptions,
+        });
+    } else {
+        live1GraphChart.options.animation = false
+        live1GraphChart.data = graphData;
+        live1GraphChart.update();
+    }
+
+}
+
+function liveStats2Graph(reportData) {
+    const statsRounds = reportData.rounds;
+    const statsData = reportData.stats;
+    const canvasIdStr = 'pointsLiveStats2Graph';
+
+    if (live2GraphChart == null || $('#pointsLive2Stats').children().length == 0) {
+        console.log('create live 2 graph canvas');
+        const node = $('#pointsLive2Stats');
+        node.empty();
+        const reportCanvas = $('<canvas id="'+canvasIdStr+'"></canvas>');
+        node.append(reportCanvas);
+    }
+
+    
+    const labelsData = [];
+    const datasetsData = [];
+
+    for (var i = 0; i < statsRounds; i++) {
+        labelsData.push(i);
+    }
+
+    for (var i = 0; i < statsData.length; i++) {
+        const name = statsData[i].name;
+        const playerAvgPoints = [];
+            
+        for (var j = 0; j < statsRounds; j++) {
+            playerAvgPoints.push(statsData[i] && statsData[i].stats[j] ? statsData[i].stats[j].avgPoints : 0);
+        }
+        const color = StringToColor.next(name);
+        const color2 = StringToColor.next(name+'X');
         datasetsData.push({
             label: name + ' avgpoints',
             data: playerAvgPoints,
@@ -552,20 +633,13 @@ function liveStatsGraph(reportData) {
 
     console.log(graphData);
 
-    if (liveGraphChart == null) {
+    if (live2GraphChart == null) {
         const graphOptions = {
             indexAxis: 'x',
             responsive: true,
             maintainAspectRatio: false,
             scales: {
                 x: {
-                    ticks: {
-                        beginAtZero: true,
-                    }
-                },
-                yPercentages: {
-                    type: 'linear',
-                    position: 'left',
                     ticks: {
                         beginAtZero: true,
                     }
@@ -587,15 +661,15 @@ function liveStatsGraph(reportData) {
         };
 
         const ctx = document.getElementById(canvasIdStr);
-        liveGraphChart = new Chart(ctx, {
+        live2GraphChart = new Chart(ctx, {
             type: 'line',
             data: graphData,
             options: graphOptions,
         });
     } else {
-        liveGraphChart.options.animation = false
-        liveGraphChart.data = graphData;
-        liveGraphChart.update();
+        live2GraphChart.options.animation = false
+        live2GraphChart.data = graphData;
+        live2GraphChart.update();
     }
 
 }
