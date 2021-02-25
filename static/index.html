@@ -633,13 +633,13 @@
 
                 socket.on('card played', async function(gameInfo) {
                     $('#currentGameId').val(gameInfo.id);
-                    console.log('card played');
-                    console.log(gameInfo);
+                    console.log('card played', gameInfo);
                     hideThinkings();
                     var newRound = false;
                     var gameOver = false;
 
                     if (gameInfo.eventInfo != null) {
+                        console.log('card played, eventInfoType: '+gameInfo.eventInfo.eventInfoType);
                         // animate played card
                         const playedCard = gameInfo.eventInfo.playedCard;
                         const cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;

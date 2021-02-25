@@ -761,6 +761,7 @@ try {
                                     newRound: newRound,
                                     gameOver: gameOver,
                                     cardsInThisPlay: cardsInThisPlay,
+                                    eventInfoType: 'common',
                                 };
 
                                 eventInfoToCardPlayer = {
@@ -771,6 +772,7 @@ try {
                                     newRound: newRound,
                                     gameOver: gameOver,
                                     cardsInThisPlay: cardsInThisPlay,
+                                    eventInfoType: 'cardplayer',
                                 };
                             }
                         }
