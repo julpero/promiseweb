@@ -761,6 +761,7 @@ try {
                                     newRound: newRound,
                                     gameOver: gameOver,
                                     cardsInThisPlay: cardsInThisPlay,
+                                    eventInfoType: 'common',
                                 };
 
                                 eventInfoToCardPlayer = {
@@ -771,6 +772,7 @@ try {
                                     newRound: newRound,
                                     gameOver: gameOver,
                                     cardsInThisPlay: cardsInThisPlay,
+                                    eventInfoType: 'cardplayer',
                                 };
                             }
                         }
@@ -796,9 +798,9 @@ try {
 
                         // this gameInfo to the player who just played card
                         gameInfo.eventInfo = eventInfoToCardPlayer;
-                        socket.emit('card played', gameInfo);
+                        //socket.emit('card played', gameInfo);
+                        fn(gameInfo);
             
-                        // fn(gameInfo); // just DEBUG
                     }
                 }
             });
