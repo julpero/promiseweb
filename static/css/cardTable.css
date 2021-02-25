@@ -31,6 +31,10 @@ html {
         /* border: 1px solid black; */
     }
 }
+.nav>a {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
 .trumpCardCol {
     text-align: center;
 }

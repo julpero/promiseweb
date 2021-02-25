@@ -849,7 +849,8 @@ function showPlayerKeepStats(playerKeeps) {
 
 function showLiveStats(myRound) {
     if (myRound.statistics == null || myRound.statistics.statsAvgObj == null) return;
-    liveStatsGraph(myRound.statistics.statsAvgObj);
+    liveStats1Graph(myRound.statistics.statsAvgObj);
+    liveStats2Graph(myRound.statistics.statsAvgObj);
 }
 
 function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
