@@ -798,9 +798,9 @@ try {
 
                         // this gameInfo to the player who just played card
                         gameInfo.eventInfo = eventInfoToCardPlayer;
-                        socket.emit('card played', gameInfo);
+                        //socket.emit('card played', gameInfo);
+                        fn(gameInfo);
             
-                        // fn(gameInfo); // just DEBUG
                     }
                 }
             });

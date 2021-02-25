@@ -567,11 +567,7 @@ function initCardEvents(myRound, onlySuit) {
                     myId: window.localStorage.getItem('uUID'),
                     playedCard: card,
                 };
-                socket.emit('play card', playDetails, function (playReturn) {
-                    // this is now disabled on server side
-                    console.log('playReturn:');
-                    console.log(playReturn);
-                });
+                socket.emit('play card', playDetails, cardPlayedCallback);
             });
         } else {
             // fade this card
@@ -772,11 +768,7 @@ function playSpeedGamerCard(myRound) {
             myId: window.localStorage.getItem('uUID'),
             playedCard: card,
         };
-        socket.emit('play card', playDetails, function (playReturn) {
-            // this is now disabled on server side
-            console.log('playReturn:');
-            console.log(playReturn);
-        });
+        socket.emit('play card', playDetails, cardPlayedCallback);
     } else {
         possibleCards = [];
     }
@@ -1222,6 +1214,79 @@ function printPointStats(players) {
         options: inGameReportOptions,
     });
 
+}
+
+async function cardPlayedCallback(gameInfo) {
+    $('#currentGameId').val(gameInfo.id);
+    console.log('card played', gameInfo);
+    hideThinkings();
+    var newRound = false;
+    var gameOver = false;
+
+    if (gameInfo.eventInfo != null) {
+        console.log('card played, eventInfoType: '+gameInfo.eventInfo.eventInfoType);
+        // animate played card
+        const playedCard = gameInfo.eventInfo.playedCard;
+        const cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
+        const players = gameInfo.humanPlayers;
+        newRound = gameInfo.eventInfo.newRound;
+        gameOver = gameInfo.eventInfo.gameOver;
+        
+        await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay, gameInfo.hiddenCardsMode);
+        if (gameInfo.eventInfo.newPlay) {
+            const winnerName = gameInfo.eventInfo.winnerName;
+            await moveCardFromTableToWinDeck(winnerName, players);
+        }
+    }
+
+    const doReloadInit = gameInfo.reloaded;
+    var getRoundIndex = gameInfo.currentRound;
+    if (newRound && !gameOver) {
+        getRoundIndex++;
+    }
+
+    var getRound = {
+        gameId: gameInfo.id,
+        myId: window.localStorage.getItem('uUID'),
+        round: getRoundIndex,
+        doReload: doReloadInit,
+        newRound: newRound,
+        gameOver: gameOver,
+    };
+    socket.emit('get round', getRound, function(myRound) {
+        console.log(myRound);
+        $('#myName').val(myRound.myName);
+        if (myRound.gameOver) {
+            showPlayerPromises(myRound, true, gameInfo.speedPromise);
+            initPromiseTable(myRound.promiseTable);
+            initScoreBoard(myRound.promiseTable, myRound.gameOver);
+            $('#showGameReportCollapse').collapse('show');
+            getOneGameReport(gameInfo.id);
+            return;
+        }
+        if (myRound.doReloadInit) {
+            console.log('reloading...');
+            $('#gameReportContainer').hide();
+            $('#gameChooser').hide();
+            $('#gameContainer').show();
+            browserReload(myRound, gameInfo.speedPromise);
+            initRuleList(gameInfo);
+            initSpeedBar(gameInfo);
+        }
+        showPlayerPromises(myRound, showPromisesNow(gameInfo, myRound), gameInfo.speedPromise);
+        if (myRound.newRound) {
+            console.log('newRound');
+            clearWonCards();
+            browserReload(myRound, gameInfo.speedPromise);
+        }
+        if (roundPromised(myRound)) {
+            showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[myRound.roundInd], gameInfo.onlyTotalPromise, myRound.players);
+            playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame, gameInfo.opponentGameCardValue);
+        } else {
+            initSpeedBar(gameInfo);
+            getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
+        }
+    });
 }
 
 function browserReload(myRound, speedPromise) {
