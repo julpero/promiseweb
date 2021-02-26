@@ -191,7 +191,7 @@ function showAveragePointsPerGames(reportObject) {
     for (var i = 0; i < reportObject.length; i++) {
         playersArr.push(reportObject[i]._id);
         avgAllArr.push(reportObject[i].avgAll.toFixed(1));
-        avgRegularArr.push(reportObject[i].avgRegular.toFixed(1));
+        avgRegularArr.push(reportObject[i].avgRegular == null ? 0 : reportObject[i].avgRegular.toFixed(1));
     }
     datasetsData.push({
         label: 'all games',
