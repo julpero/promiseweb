@@ -294,7 +294,7 @@ module.exports = {
                 if (!playerNames.includes(name) && !wrongNames.includes(name)) wrongNames.push(name);
             });
         }
-        if (wrongNames.length > 0) console.log(wrongNames);
+        // if (wrongNames.length > 0) console.log(wrongNames);
 
         return wrongNames;
     }
