@@ -333,8 +333,9 @@ function initPromise(myRound, evenPromisesAllowed, speedPromise) {
         if (evenPromisesAllowed || !isEvenPromise(myRound, i)) {
             promiseButton.addClass(' validPromiseButton');
             promiseButton.prop('disabled', false);
-            $('#makePromiseButton'+i).on('click', function() {
+            $('#makePromiseButton'+i).one('click', function() {
                 deleteIntervaller();
+                $(this).off('click');
                 $('.makePromiseButton').off('click');
                 $('.validPromiseButton').prop('disabled', true);
                 const promiseDetails = { gameId: myRound.gameId,
@@ -557,8 +558,11 @@ function initCardEvents(myRound, onlySuit) {
             // console.log('activate this card / div: ' + myRound.myCards[i].suit + ' ' + myRound.myCards[i].rank);
             // console.log(' mapped to: ' + cardMapperStr);
             $(cardMapperStr+' ').animate({backgroundColor: "#ffffff"}, 300);
-            $(cardMapperStr).on('click touchstart', function () {
-                $('.card').off('click touchstart');
+            $(cardMapperStr).one('click touchstart', function () {
+                $(this).off('click');
+                $(this).off('touchstart');
+                $('.card').off('click');
+                $('.card').off('touchstart');
                 deleteIntervaller();
 
                 var card = classToCardMapper(this.className);
