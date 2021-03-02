@@ -9,7 +9,7 @@ server.listen(port, () => {
 });
 
 const NodeCache = require( "node-cache" );
-const myCache = new NodeCache();
+const myCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 var hash = require('object-hash');
 
 app.use(express.static('static'))
@@ -626,14 +626,13 @@ try {
             socket.on('play card', async (playDetails, fn) => {
                 const playDetailsHash = hash(playDetails);
                 const gameIdStr = playDetails.gameId;
-                // await doLog('play card', playDetailsHash, playDetails, gameIdStr, null);
-                await doLog('play card', null, playDetails, gameIdStr, null);
-                if (myCache.has(playDetailsHash)) {
+                await doLog('play card', playDetailsHash, playDetails, gameIdStr, null);
+                if (await myCache.has(playDetailsHash)) {
                     await doLog('play card', 'hash already exists: '+playDetailsHash, playDetails, gameIdStr, null);
                     return;
                 } else {
                     await doLog('play card', 'insert hash to cache: '+playDetailsHash, playDetails, gameIdStr, null);
-                    myCache.set(playDetailsHash, 1, 3600);
+                    await myCache.set(playDetailsHash, 1);
                 }
                 const myId = playDetails.myId;
                 const roundInd = playDetails.roundInd;
