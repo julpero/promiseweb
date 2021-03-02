@@ -551,31 +551,33 @@ function initCardEvents(myRound, onlySuit) {
     possibleCards = [];
     for (var i = 0; i < myRound.myCards.length; i++) {
         const cardMapperStr = cardToClassMapper(myRound.myCards[i]);
+        const cardMapperStrDiv = 'div'+cardMapperStr;
         if (onlySuit == null || myRound.myCards[i].suit == onlySuit) {
             // activate this card / div
             cardsAbleToPlay++;
             possibleCards.push(cardMapperStr);
             // console.log('activate this card / div: ' + myRound.myCards[i].suit + ' ' + myRound.myCards[i].rank);
-            // console.log(' mapped to: ' + cardMapperStr);
-            $(cardMapperStr+' ').animate({backgroundColor: "#ffffff"}, 300);
-            $(cardMapperStr).one('click touchstart', function () {
+            console.log(' mapped to: ' + cardMapperStrDiv);
+            $(cardMapperStrDiv).animate({backgroundColor: "#ffffff"}, 300);
+            $(cardMapperStrDiv).one('click touchstart', async function (event) {
+                console.log(event);
                 $(this).off('click');
                 $(this).off('touchstart');
                 $('.card').off('click');
                 $('.card').off('touchstart');
                 deleteIntervaller();
 
-                var card = classToCardMapper(this.className);
+                const card = classToCardMapper(this.className);
                 const playDetails = { gameId: myRound.gameId,
                     roundInd: myRound.roundInd,
                     myId: window.localStorage.getItem('uUID'),
                     playedCard: card,
                 };
-                socket.emit('play card', playDetails, cardPlayedCallback);
+                await socket.emit('play card', playDetails, cardPlayedCallback);
             });
         } else {
             // fade this card
-            $(cardMapperStr+' ').animate({backgroundColor: "#bbbbbb"}, 300);
+            $(cardMapperStrDiv).animate({backgroundColor: "#bbbbbb"}, 300);
         }
     }
     return cardsAbleToPlay;
@@ -591,8 +593,8 @@ function dimMyCards(myRound, visibility) {
         default: break;
     }
     for (var i = 0; i < myRound.myCards.length; i++) {
-        const cardMapperStr = cardToClassMapper(myRound.myCards[i]);
-        $(cardMapperStr+' ').animate({backgroundColor: "#"+bgColor}, 400);
+        const cardMapperStr = 'div'+cardToClassMapper(myRound.myCards[i]);
+        $(cardMapperStr).animate({backgroundColor: "#"+bgColor}, 400);
     }
 }
 
