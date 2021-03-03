@@ -1265,6 +1265,7 @@ async function cardPlayedCallback(gameInfo) {
         doReload: doReloadInit,
         newRound: newRound,
         gameOver: gameOver,
+        callTimeStamp: new Date(),
     };
 
     socket.emit('get round', getRound, function(myRound) {
