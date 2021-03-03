@@ -596,10 +596,11 @@
                     $('#gameContainer').show();
                     initRuleList(gameInfo);
                     const getRound = {
-                        gameStarted: true,
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
                         round: 0,
+                        gameStarted: true,
+                        callTimeStamp: new Date(),
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
@@ -621,6 +622,7 @@
                         myId: window.localStorage.getItem('uUID'),
                         round: gameInfo.currentRound,
                         doReload: doReloadInit,
+                        callTimeStamp: new Date(),
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);

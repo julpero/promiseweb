@@ -90,8 +90,9 @@ try {
                 var gameFound = false;
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
-                const query = { gameStatus: 1, // check first ongoing game
-                                 };
+                const query = {
+                    gameStatus: 1, // check first ongoing game
+                };
                 const games = collection.find(query);
                 await games.forEach(function (game) {
                     game.humanPlayers.forEach(function(player) {
@@ -111,8 +112,9 @@ try {
                 });
     
                 if (!gameFound) {
-                    const query = { gameStatus: 0, // check promised ongoing game
-                                    };
+                    const query = {
+                        gameStatus: 0, // check promised ongoing game
+                    };
                     const games = collection.find(query);
                     await games.forEach(function (game) {
                         game.humanPlayers.forEach(function(player) {
@@ -143,9 +145,10 @@ try {
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
-                const query = { gameStatus: 1,
-                                _id: searchId,
-                                 };
+                const query = {
+                    _id: searchId,
+                    gameStatus: 1,
+                };
                 const game = await collection.findOne(query);
                 if (game !== null) {
                     for (var i = 0; i < game.humanPlayers.length; i++) {
@@ -207,9 +210,10 @@ try {
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
-                const query = { gameStatus: 0,
-                                _id: searchId,
-                                 };
+                const query = {
+                    _id: searchId,
+                    gameStatus: 0,
+                };
                 const game = await collection.findOne(query);
                 await doLog('leave game', null, game, gameIdStr, null);
                 if (game !== null) {
@@ -272,9 +276,10 @@ try {
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
-                const query = { gameStatus: 1,
-                                _id: searchId,
-                                 };
+                const query = {
+                    _id: searchId,
+                    gameStatus: 1,
+                };
                 const game = await collection.findOne(query);
                 if (game !== null) {
                     for (var i = 0; i < game.humanPlayers.length; i++) {
@@ -338,10 +343,11 @@ try {
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
-                const query = { gameStatus: 0,
-                                _id: searchId,
-                                password: newPlayer.gamePassword
-                                 };
+                const query = {
+                    _id: searchId,
+                    gameStatus: 0,
+                    password: newPlayer.gamePassword
+                };
                 const game = await collection.findOne(query);
                 const retVal = {
                     joiningResult: null,
@@ -417,7 +423,10 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
     
-                const query = { gameStatus: { $lte: 1 }, 'humanPlayers.playerId': {$eq: gameOptions.humanPlayers[0].playerId } };
+                const query = {
+                    gameStatus: { $lte: 1 },
+                    'humanPlayers.playerId': {$eq: gameOptions.humanPlayers[0].playerId }
+                };
                 const cursor = await collection.find(query);
                 await cursor.forEach(function(val) {
                     for (var i = 0; i < val.humanPlayers.length; i++) {
@@ -441,9 +450,17 @@ try {
             });
     
             socket.on('get round', async (getRound, fn) => {
+                const getRoundHash = hash(getRound);
                 const gameIdStr = getRound.gameId;
-                await doLog('get round', null, getRound, gameIdStr, null);
                 const myId = getRound.myId;
+                await doLog('get round', getRoundHash, getRound, gameIdStr, myId);
+                if (await myCache.has(getRoundHash)) {
+                    await doLog('get round', 'getRoundHash already exists', getRoundHash, gameIdStr, myId);
+                    return;
+                } else {
+                    await doLog('get round', 'insert getRoundHash to cache', getRoundHash, gameIdStr, myId);
+                    await myCache.set(getRoundHash, 1);
+                }
                 const roundInd = getRound.round;
     
                 const database = mongoUtil.getDb();
@@ -457,8 +474,9 @@ try {
                 const gameOver = getRound.gameOver;
                 const gameStatus = gameOver ? 2 : 1;
                 
-                const query = { gameStatus: gameStatus,
+                const query = {
                     _id: searchId,
+                    gameStatus: gameStatus,
                     // password: newPlayer.gamePassword,
                      };
                 const game = await collection.findOne(query);
@@ -488,8 +506,9 @@ try {
                 const collection = database.collection('promiseweb');
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
-                const query = { gameStatus: 1,
+                const query = {
                     _id: searchId,
+                    gameStatus: 1,
                     // password: newPlayer.gamePassword,
                 };
                 const gameInDb = await collection.findOne(query);
@@ -556,8 +575,9 @@ try {
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 
-                const query = { gameStatus: 1,
+                const query = {
                     _id: searchId,
+                    gameStatus: 1,
                     // password: newPlayer.gamePassword,
                 };
                 const gameInDb = await collection.findOne(query);
@@ -626,15 +646,15 @@ try {
             socket.on('play card', async (playDetails, fn) => {
                 const playDetailsHash = hash(playDetails);
                 const gameIdStr = playDetails.gameId;
-                await doLog('play card', playDetailsHash, playDetails, gameIdStr, null);
+                const myId = playDetails.myId;
+                await doLog('play card', playDetailsHash, playDetails, gameIdStr, myId);
                 if (await myCache.has(playDetailsHash)) {
-                    await doLog('play card', 'hash already exists: '+playDetailsHash, playDetails, gameIdStr, null);
+                    await doLog('play card', 'playDetailsHash already exists', playDetails, gameIdStr, myId);
                     return;
                 } else {
-                    await doLog('play card', 'insert hash to cache: '+playDetailsHash, playDetails, gameIdStr, null);
+                    await doLog('play card', 'insert playDetailsHash to cache', playDetails, gameIdStr, myId);
                     await myCache.set(playDetailsHash, 1);
                 }
-                const myId = playDetails.myId;
                 const roundInd = playDetails.roundInd;
                 const playedCard = playDetails.playedCard;
 
@@ -649,8 +669,9 @@ try {
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 
-                const query = { gameStatus: 1,
+                const query = {
                     _id: searchId,
+                    gameStatus: 1,
                     // password: newPlayer.gamePassword,
                      };
                 const gameInDb = await collection.findOne(query);
@@ -829,7 +850,9 @@ try {
                 const myId = data.myId;
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
-                const query = { gameStatus: 0 };
+                const query = {
+                    gameStatus: 0,
+                };
                 const cursor = await collection.find(query);
     
                 const games = [];
@@ -1596,8 +1619,8 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = {
-                    gameStatus: 2,
                     _id: searchId,
+                    gameStatus: 2,
                 };
                 const gameInDb = await collection.findOne(query);
                 const gameStatistics = rf.generateGameStatistics(gameInDb.game, true);
@@ -1627,8 +1650,8 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
                 const query = {
-                    gameStatus: 2,
                     _id: searchId,
+                    gameStatus: 2,
                 };
                 const gameInDb = await collection.findOne(query);
                 const newHumanPlayers = gameInDb.humanPlayers;
@@ -1713,9 +1736,11 @@ async function doLog(logTypeStr, logStr, logObj, gameId, playerName) {
         const database = mongoUtil.getDb();
         const collection = database.collection('promisewebLogs');
         const result = await collection.insertOne(logObject);
+        return result.insertedCount == 1;
     } catch (err) {
         console.log(err);
     }
+    return false;
 }
 
 function doLog2(logTypeStr, logStr, logObj, gameId, playerName) {
