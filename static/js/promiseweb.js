@@ -546,7 +546,14 @@ function deleteIntervaller() {
     $('#speedProgressBar').empty();
 }
 
+function removeCardEvents() {
+    console.log('removeCardEvents');
+    $('.card').off('click');
+    $('.card').off('touchstart');
+}
+
 function initCardEvents(myRound, onlySuit) {
+    removeCardEvents();
     var cardsAbleToPlay = 0;
     possibleCards = [];
     for (var i = 0; i < myRound.myCards.length; i++) {
@@ -563,8 +570,7 @@ function initCardEvents(myRound, onlySuit) {
                 console.log(event);
                 $(this).off('click');
                 $(this).off('touchstart');
-                $('.card').off('click');
-                $('.card').off('touchstart');
+                removeCardEvents();
                 deleteIntervaller();
 
                 const card = classToCardMapper(this.className);
@@ -573,7 +579,7 @@ function initCardEvents(myRound, onlySuit) {
                     myId: window.localStorage.getItem('uUID'),
                     playedCard: card,
                 };
-                await socket.emit('play card', playDetails, cardPlayedCallback);
+                socket.emit('play card', playDetails, cardPlayedCallback);
             });
         } else {
             // fade this card
@@ -950,7 +956,7 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
     }
 
     return new Promise(resolve => {
-        setTimeout(resolve, (delay+duration+500));
+        setTimeout(resolve, (delay+duration+safeMs));
     });
 
 }
@@ -1035,7 +1041,7 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
     });
 
     return new Promise(resolve => {
-        setTimeout(resolve, (delay+duration+500));
+        setTimeout(resolve, (delay+duration+safeMs));
     });
 }
 
@@ -1260,6 +1266,7 @@ async function cardPlayedCallback(gameInfo) {
         newRound: newRound,
         gameOver: gameOver,
     };
+
     socket.emit('get round', getRound, function(myRound) {
         console.log(myRound);
         $('#myName').val(myRound.myName);
