@@ -97,12 +97,13 @@ try {
                 await games.forEach(function (game) {
                     game.humanPlayers.forEach(function(player) {
                         if (player.playerId == myId) {
-                            doLog('check game', 'found game 1', null, null, null);
+                            const gameIdStr = game._id.toString();
+                            doLog('check game', 'found game 1', null, gameIdStr, null);
                             gameFound = true;
-                            socket.join(game._id.toString());
-                            sm.addClientToMap(player.name, socket.id, game._id.toString());
+                            socket.join(gameIdStr);
+                            sm.addClientToMap(player.name, socket.id, gameIdStr);
                             var chatLine = 'player ' + player.name + ' connected';
-                            io.to(game._id.toString()).emit('new chat line', chatLine);
+                            io.to(gameIdStr).emit('new chat line', chatLine);
                             const gameInfo = pf.gameToGameInfo(game);
                             gameInfo.currentRound = pf.getCurrentRoundIndex(game);
                             gameInfo.reloaded = true;
@@ -119,11 +120,12 @@ try {
                     await games.forEach(function (game) {
                         game.humanPlayers.forEach(function(player) {
                             if (player.playerId == myId) {
-                                doLog('check game', 'found game 0', null, null, null);
-                                socket.join(game._id.toString());
-                                sm.addClientToMap(player.name, socket.id, game._id.toString());
+                                const gameIdStr = game._id.toString();
+                                doLog('check game', 'found game 0', null, gameIdStr, null);
+                                socket.join(gameIdStr);
+                                sm.addClientToMap(player.name, socket.id, gameIdStr);
                                 var chatLine = 'player ' + player.name + ' connected';
-                                io.to(game._id.toString()).emit('new chat line', chatLine);
+                                io.to(gameIdStr).emit('new chat line', chatLine);
                                 const gameInfo = pf.gameToGameInfo(game);
                                 gameInfo.currentRound = 0;
                                 gameInfo.reloaded = true;
