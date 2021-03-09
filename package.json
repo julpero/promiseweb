@@ -16,7 +16,7 @@
         "chartjs-plugin-annotation": "^1.0.0-beta.3",
         "deck-of-cards": "^0.1.8",
         "express": "^4.17.1",
-        "jquery": "^3.5.1",
+        "jquery": "^3.6.0",
         "jquery-color-animation": "^1.5.1",
         "mongodb": "^3.6.4",
         "node-cache": "^5.1.2",
