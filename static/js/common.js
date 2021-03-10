@@ -166,9 +166,8 @@ function showOneKeepsReport(reportObject) {
         scales: {
             x: {
                 stacked: true,
-                ticks: {
-                    beginAtZero: true
-                }
+                max: reportObject.rounds.length-1,
+                min: 0,
             },
             y: {
                 stacked: true,
@@ -178,6 +177,17 @@ function showOneKeepsReport(reportObject) {
             title: {
                 display: true,
                 text: 'Keeps in game by nickname'
+            },
+            tooltip: {
+                callbacks: {
+                    afterTitle: function(context) {
+                        var totalKeeps = 0;
+                        context.forEach(function (row) {
+                            totalKeeps+= row.raw;
+                        });
+                        return 'Total: '+totalKeeps;
+                    }
+                }
             }
         }
     };
@@ -238,6 +248,17 @@ function showOnePointsReport(reportObject) {
             legend: {
                 display: false,
             },
+            tooltip: {
+                callbacks: {
+                    afterTitle: function(context) {
+                        var totalPoints = 0;
+                        context.forEach(function (row) {
+                            totalPoints+= row.raw;
+                        });
+                        return 'Total: '+totalPoints;
+                    }
+                }
+            }
         }
     };
     

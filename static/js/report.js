@@ -202,7 +202,7 @@ function showAveragePointsPerGames(reportObject) {
         borderWidth: 3,
     });
     datasetsData.push({
-        label: 'equal games',
+        label: 'regular games',
         data: avgRegularArr,
         borderWidth: 1,
         backgroundColor: 'rgba(233,66,66,1.0)',
