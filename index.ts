@@ -6,6 +6,7 @@ const io = require('socket.io')(server);
 const port = process.env.PORT || 3000;
 server.listen(port, () => {
     doLog2('server', 'listening on *:' + port, null, null, null);
+    console.log('server listening on *:' + port);
 });
 
 const NodeCache = require( "node-cache" );
@@ -47,6 +48,7 @@ try {
     mongoUtil.connectToServer(async function(err, client ) {
 
         if (err) await doLog('server', null, err, null, null);
+        if (err) console.log('server', err);
         app.get('/', (req, res) => {
             res.sendFile('index.html');
         });
@@ -61,6 +63,7 @@ try {
     
         io.on('connection', (socket) => {
             doLog('connection', 'a user connected', null, null, null);
+            console.log('connection - a user connected');
             socket.on('disconnect', () => {
                 var gameId = null;
                 var userName = sm.getClientNameFromMap(socket.id);
@@ -72,6 +75,7 @@ try {
                 if (userName == null) userName = 'unknown';
                 var chatLine = 'player ' + userName + ' disconnected';
                 doLog('chat', chatLine, null, null, null);
+                console.log('chat', chatLine);
                 if (gameId != null) {
                     io.to(gameId).emit('new chat line', chatLine);
                 }
@@ -86,6 +90,7 @@ try {
     
             socket.on('check game', async (gameCheck) => {
                 await doLog('check game', null, gameCheck, null, null);
+                console.log('check game', gameCheck);
                 const myId = gameCheck.myId;
                 var gameFound = false;
                 const database = mongoUtil.getDb();
@@ -99,6 +104,7 @@ try {
                         if (player.playerId == myId) {
                             const gameIdStr = game._id.toString();
                             doLog('check game', 'found game 1', null, gameIdStr, null);
+                            console.log('check game - found game 1', gameIdStr);
                             gameFound = true;
                             socket.join(gameIdStr);
                             sm.addClientToMap(player.name, socket.id, gameIdStr);
@@ -122,6 +128,7 @@ try {
                             if (player.playerId == myId) {
                                 const gameIdStr = game._id.toString();
                                 doLog('check game', 'found game 0', null, gameIdStr, null);
+                                console.log('check game - found game 0', gameIdStr);
                                 socket.join(gameIdStr);
                                 sm.addClientToMap(player.name, socket.id, gameIdStr);
                                 var chatLine = 'player ' + player.name + ' connected';
@@ -218,6 +225,7 @@ try {
                 };
                 const game = await collection.findOne(query);
                 await doLog('leave game', null, game, gameIdStr, null);
+                console.log('leave game', game, gameIdStr);
                 if (game !== null) {
                     const newHumanPlayers = [];
                     var leaverName = "";
@@ -242,6 +250,7 @@ try {
                         const result = await collection.updateOne(query, updateDoc, options);
                         if (result.modifiedCount == 1) {
                             await doLog('leave game', null, result, gameIdStr, leaverName);
+                            console.log('leave game', result, gameIdStr, leaverName);
                             socket.leave(gameIdStr);
                             sm.removeClientFromMap(leaverName, socket.id, gameIdStr);
                             retVal.leavingResult = 'LEAVED';
@@ -274,6 +283,7 @@ try {
                     debugStr: 'no game or user found',
                 }
                 await doLog('join game by id', 'join game by id: ', joiningDetails, gameIdStr, null);
+                console.log('join game by id - join game by id: ', joiningDetails, gameIdStr);
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
@@ -300,12 +310,14 @@ try {
                                                 const socketId = val;
                                                 ping = io.to(socketId).emit('hey', 'Are you there?');
                                                 await doLog('join game by id', 'pinged socket '+socketId+' and result was: ', ping, gameIdStr, playAsName);
+                                                console.log('join game by id - pinged socket '+socketId+' and result was: ', ping, gameIdStr, playAsName);
                                             }
                                         }
                                     }
                                     
                                     if (ping) {
                                         await doLog('join game by id', 'joining failed because user was active', null, gameIdStr, playAsName);
+                                        console.log('join game by id - joining failed because user was active', gameIdStr, playAsName);
                                         resultObj.debugStr = 'user '+playAsName+' is still connected';
                                         break;
                                     }
@@ -340,6 +352,7 @@ try {
                 const gameIdStr = newPlayer.gameId;
                 const myName = newPlayer.myName;
                 await doLog('join game', null, newPlayer, gameIdStr, myName);
+                console.log('join game', newPlayer, gameIdStr, myName);
                 const myId = newPlayer.myId;
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
@@ -400,6 +413,7 @@ try {
                 fn(retVal);
     
                 await doLog('join game', null, joiningResult, gameIdStr, myName);
+                console.log('join game', joiningResult, gameIdStr, myName);
                 if (joiningResult == 'OK') {
                     // let's update info to clients
                     const val = await collection.findOne(query);
@@ -422,6 +436,7 @@ try {
                 var okToCreate = true;
     
                 await doLog('create game', null, gameOptions, null, null);
+                console.log('create game', gameOptions);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
     
@@ -443,6 +458,7 @@ try {
                     gameOptions.humanPlayers[0].playerStats = await getGamesStatistics(gameOptions, gameOptions.adminName);
                     const result = await collection.insertOne(gameOptions);
                     await doLog('create game', 'gameOptions inserted ' + result.insertedCount + ' with _id: ' + result.insertedId, null, null, null);
+                    console.log('create game - gameOptions inserted ' + result.insertedCount + ' with _id: ' + result.insertedId);
                     socket.join(result.insertedId.toString());
                     sm.addClientToMap(gameOptions.adminName, socket.id, result.insertedId);
                     fn(result.insertedId);
@@ -456,11 +472,14 @@ try {
                 const gameIdStr = getRound.gameId;
                 const myId = getRound.myId;
                 await doLog('get round', getRoundHash, getRound, gameIdStr, myId);
+                console.log('get round', getRoundHash, getRound, gameIdStr, myId);
                 if (await myCache.has(getRoundHash)) {
                     await doLog('get round', 'getRoundHash already exists', getRoundHash, gameIdStr, myId);
+                    console.log('get round - getRoundHash already exists', getRoundHash, gameIdStr, myId);
                     return;
                 } else {
                     await doLog('get round', 'insert getRoundHash to cache', getRoundHash, gameIdStr, myId);
+                    console.log('get round - insert getRoundHash to cache', getRoundHash, gameIdStr, myId);
                     await myCache.set(getRoundHash, 1);
                 }
                 const roundInd = getRound.round;
@@ -486,6 +505,7 @@ try {
                     const stats = (gameStarted || doReload || newRound || gameOver) ? await getStatistics(game) : null;
                     const playerRound = pf.roundToPlayer(myId, roundInd, game, stats, doReload, newRound, gameOver);
                     await doLog('get round', null, playerRound, gameIdStr, null);
+                    console.log('get round', playerRound, gameIdStr);
         
                     fn(playerRound);
                 }
@@ -494,6 +514,7 @@ try {
             socket.on('speedpromise', async (speedPromiseObj, fn) => {
                 const gameIdStr = speedPromiseObj.gameId;
                 await doLog('speedpromise', null, speedPromiseObj, gameIdStr, null);
+                console.log('speedpromise', speedPromiseObj, gameIdStr);
                 const myId = speedPromiseObj.myId;
                 const roundInd = speedPromiseObj.roundInd;
 
@@ -566,6 +587,7 @@ try {
             socket.on('make promise', async (promiseDetails, fn) => {
                 const gameIdStr = promiseDetails.gameId;
                 await doLog('make promise', null, promiseDetails, gameIdStr, null);
+                console.log('make promise', promiseDetails, gameIdStr);
                 const myId = promiseDetails.myId;
                 const roundInd = promiseDetails.roundInd;
                 const promise = promiseDetails.promise;
@@ -650,11 +672,14 @@ try {
                 const gameIdStr = playDetails.gameId;
                 const myId = playDetails.myId;
                 await doLog('play card', playDetailsHash, playDetails, gameIdStr, myId);
+                console.log('play card', playDetailsHash, playDetails, gameIdStr, myId);
                 if (await myCache.has(playDetailsHash)) {
                     await doLog('play card', 'playDetailsHash already exists', playDetails, gameIdStr, myId);
+                    console.log('play card - playDetailsHash already exists', playDetails, gameIdStr, myId);
                     return;
                 } else {
                     await doLog('play card', 'insert playDetailsHash to cache', playDetails, gameIdStr, myId);
+                    console.log('play card - insert playDetailsHash to cache', playDetails, gameIdStr, myId);
                     await myCache.set(playDetailsHash, 1);
                 }
                 const roundInd = playDetails.roundInd;
@@ -755,6 +780,7 @@ try {
                                         }
                                         const statsResult = await statsCollection.insertOne(statsPlayer);
                                         await doLog('play card', 'statsResult inserted ' + statsResult.insertedCount + ' with _id: ' + statsResult.insertedId, null, gameIdStr, playerName);
+                                        console.log('play card - statsResult inserted ' + statsResult.insertedCount + ' with _id: ' + statsResult.insertedId, gameIdStr, playerName);
                                     }
     
                                     if (gameAfterPlay.rounds.length == roundInDb + 1) {
@@ -835,11 +861,13 @@ try {
 
                         // this gameInfo to all other players than the one who just played card
                         await doLog('play card', logStr1, gameInfo, gameIdStr, playerName);
+                        console.log('play card', logStr1, gameInfo, gameIdStr, playerName);
                         socket.to(gameInfo.id).emit('card played', gameInfo);
                         
                         // this gameInfo to the player who just played card
                         gameInfo.eventInfo = eventInfoToCardPlayer;
                         await doLog('play card', logStr2, gameInfo, gameIdStr, playerName);
+                        console.log('play card', logStr2, gameInfo, gameIdStr, playerName);
                         fn(gameInfo);
                         //socket.emit('card played', gameInfo);
             
@@ -849,6 +877,7 @@ try {
     
             socket.on('get games', async (data, fn) => {
                 await doLog('get games', 'start to get games', null, null, null);
+                console.log('get games - start to get games');
                 const myId = data.myId;
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
@@ -890,6 +919,7 @@ try {
 
             socket.on('get games for report', async (data, fn) => {
                 await doLog('get games for report', 'start to get games for report', null, null, null);
+                console.log('get games for report - start to get games for report');
                 const database = mongoUtil.getDb();
 
                 const games = [];
@@ -962,6 +992,7 @@ try {
 
             socket.on('get report data', async (data, fn) => {
                 await doLog('get report data', 'start to get report data', null, null, null);
+                console.log('get report data - start to get report data');
                 const retObj = {
                     gamesPlayed: null,
                     roundsPlayed: null,
@@ -988,6 +1019,7 @@ try {
 
                 // game count
                 await doLog('get report data', 'report data - game count', null, null, null);
+                console.log('get report data - report data - game count');
                 const queryGameCount = { gameStatus: 2 };
                 const gameCount = await collection.countDocuments(queryGameCount);
                 retObj.gamesPlayed = gameCount;
@@ -995,6 +1027,7 @@ try {
 
                 // rounds played
                 await doLog('get report data', 'report data - rounds played', null, null, null);
+                console.log('get report data - report data - rounds played');
                 const aggregationRoundsPlayed = [{$match: {
                     gameStatus: {$eq: 2}
                   }}, {$group: {
@@ -1021,6 +1054,7 @@ try {
 
                 // games played per player
                 await doLog('get report data', 'report data - games played per player', null, null, null);
+                console.log('get report data - report data - games played per player');
                 const aggregationGamesPlayed = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -1050,6 +1084,7 @@ try {
 
                 // average points per player
                 await doLog('get report data', 'report data - average points per player', null, null, null);
+                console.log('get report data - report data - average points per player');
                 const aggregationAvgPoints = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -1078,6 +1113,7 @@ try {
 
                 // average keep percentage per player
                 await doLog('get report data', 'report data - average keep percentage per player', null, null, null);
+                console.log('get report data - report data - average keep percentage per player');
                 const aggregationAvgKeepPercentage = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -1121,12 +1157,14 @@ try {
                     });
                 } catch (e) {
                     await doLog('get report data', null, e, null, null);
+                    console.log('get report data', e);
                 }
                 retObj.avgKeepPercentagePerPlayer = avgKeepPercentagePerPlayer;
                 // ********
 
                 // total points per player
                 await doLog('get report data', 'report data - total points per player', null, null, null);
+                console.log('get report data - report data - total points per player');
                 const aggregationTotalPointsPerPlayer = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -1157,6 +1195,7 @@ try {
 
                 // total wins per player
                 await doLog('get report data', 'report data - total wins per player', null, null, null);
+                console.log('get report data - report data - total wins per player');
                 const aggregationPlayerTotalWins = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -1199,6 +1238,7 @@ try {
 
                 // average score points per player
                 await doLog('get report data', 'report data - average score points per player', null, null, null);
+                console.log('get report data - report data - average score points per player');
                 const aggregationAvgScorePointsPerPlayer = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -1227,6 +1267,7 @@ try {
 
                 // players average percentage points
                 await doLog('get report data', 'report data - average percentage points', null, null, null);
+                console.log('get report data - report data - average percentage points');
                 const aggregationPlayerPercentagePointsTotal = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -1255,12 +1296,14 @@ try {
                     });
                 } catch (err) {
                     await doLog('get report data', null, err, null, null);
+                    console.log('get report data', err);
                 }
                 retObj.avgPercentagePoints = playersPercentagePointsTotal;
                 // ********
 
                 // players total
                 await doLog('get report data', 'report data - players total', null, null, null);
+                console.log('get report data - report data - players total');
                 const aggregationPlayersTotal = [{$match: {
                     gameStatus: {
                       $eq: 2
@@ -1283,6 +1326,7 @@ try {
 
                 // players count
                 await doLog('get report data', 'report data - players count', null, null, null);
+                console.log('get report data - report data - players count');
                 const aggregationPlayerCount = [{$match: {
                     gameStatus: {$eq: 2},
                   }}, {$group: {
@@ -1309,6 +1353,7 @@ try {
 
                 // melter
                 await doLog('get report data', 'report data - melter', null, null, null);
+                console.log('get report data - report data - melter');
                 const aggregationMeltingGame = [{$match: {
                     gameStatus: {$eq: 2}
                   }}, {$sort: {
@@ -1327,12 +1372,14 @@ try {
                     });
                 } catch (err) {
                     await doLog('get report data', null, err, null, null);
+                    console.log('get report data', err);
                 }
                 retObj.meltingGame = meltingGame;
                 // ********
 
                 // spurter
                 await doLog('get report data', 'report data - spurter', null, null, null);
+                console.log('get report data - report data - spurter');
                 const aggregationSpurtingGame = [{$match: {
                     gameStatus: {$eq: 2}
                   }}, {$sort: {
@@ -1351,12 +1398,14 @@ try {
                     });
                 } catch (err) {
                     await doLog('get report data', null, err, null, null);
+                    console.log('get report data', err);
                 }
                 retObj.spurtingGame = spurtingGame;
                 // ********
 
                 // vanilla games
                 await doLog('get report data', 'report data - vanilla games', null, null, null);
+                console.log('get report data - report data - vanilla games');
                 const aggregationVanillaGames = [{$match: {
                     gameStatus: {$eq: 2},
                   }}, {$match: vanillaGameRules
@@ -1378,6 +1427,7 @@ try {
 
                 // used rules
                 await doLog('get report data', 'report data - used rules', null, null, null);
+                console.log('get report data - report data - used rules');
                 const aggregationUsedRules = [{$match: {
                     gameStatus: {$eq: 2},
                   }}, {$project: {
@@ -1440,6 +1490,7 @@ try {
                 // ********
 
                 await doLog('get report data', null, retObj, null, null);
+                console.log('get report data', retObj);
 
                 fn(retObj);
             });
@@ -1447,6 +1498,7 @@ try {
             socket.on('get game report', async (data, fn) => {
                 const gameIdStr = data.gameId;
                 await doLog('get game report', 'get game report', null, gameIdStr, null);
+                console.log('get game report - get game report', gameIdStr);
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
@@ -1458,12 +1510,14 @@ try {
                 const gameInDb = await collection.findOne(query);
    
                 await doLog('get game report', null, gameInDb, null, null);
+                console.log('get game report', gameInDb);
                 const retObj = rf.getGameReport(gameInDb.game);
                 fn(retObj);
             });
             
             socket.on('update all game reports', async (data, fn) => {
                 await doLog('update all game reports', 'start to update all game reports', null, null, null);
+                console.log('update all game reports - start to update all game reports');
                 const updatedIds = [];
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
@@ -1495,6 +1549,7 @@ try {
             
             socket.on('get average report', async (data, fn) => {
                 await doLog('get average report', 'start to get games for average report', null, null, null);
+                console.log('get average report - start to get games for average report');
                 const averageReport = {
                     gamesPlayed: null,
                     averagePointsPerGames: null,
@@ -1504,6 +1559,7 @@ try {
 
                 // games played
                 await doLog('get average report', ' ... games played', null, null, null);
+                console.log('get average report ... games played');
                 const aggregationA = [
                     {$match: {
                         gameStatus: {$eq: 2}
@@ -1530,6 +1586,7 @@ try {
 
                 // average points, all games
                 await doLog('get average report', ' ... avg points, all games', null, null, null);
+                console.log('get average report ... avg points, all games');
                 const aggregationC = [
                     {$match: {
                         gameStatus: {$eq: 2},
@@ -1565,6 +1622,7 @@ try {
 
                 // average points, regular games
                 await doLog('get average report', ' ... avg points, regular games', null, null, null);
+                console.log('get average report ... avg points, regular games');
                 const aggregationB = [
                     {$match: {
                         gameStatus: {$eq: 2},
@@ -1616,6 +1674,7 @@ try {
             socket.on('generate game statistics', async (data, fn) => {
                 const gameIdStr = data.gameId;
                 await doLog('generate game statistics', 'start to generate game statistics for '+gameIdStr, null, gameIdStr, null);
+                console.log('generate game statistics - start to generate game statistics for '+gameIdStr, gameIdStr);
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
@@ -1643,11 +1702,13 @@ try {
             socket.on('change nick', async (data, fn) => {
                 const gameIdStr = data.gameId;
                 await doLog('change nick', 'start to change nick', null, gameIdStr, null);
+                console.log('change nick - start to change nick', gameIdStr);
                 const ObjectId = require('mongodb').ObjectId;
                 const oldName = data.oldName;
                 const newName = data.newName;
 
                 await doLog('change nick', ' game database '+oldName+' to '+newName, null, gameIdStr, null);
+                console.log('change nick - game database '+oldName+' to '+newName, gameIdStr);
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection('promiseweb');
@@ -1702,6 +1763,7 @@ try {
                 const result = await collection.updateOne(query, updateDoc, options);
                 
                 await doLog('change nick', ' stats database '+oldName+' to '+newName, null, gameIdStr, null);
+                console.log('change nick - stats database '+oldName+' to '+newName, gameIdStr);
                 const updateStatsDocQuery = {
                         name: oldName,
                         game: gameIdStr,
@@ -1722,9 +1784,11 @@ try {
 } catch (error) {
     const err = JSON.stringify(error);
     doLog2('server', 'Error while connecting to MongoDB: ' + err, error, null, null);
+    console.log('server - Error while connecting to MongoDB: ' + err, error);
 }
 
 async function doLog(logTypeStr, logStr, logObj, gameId, playerName) {
+    return true;
     if (logStr != null) console.log(logStr);
     const logObject = {
         gameId: gameId,
@@ -1746,6 +1810,7 @@ async function doLog(logTypeStr, logStr, logObj, gameId, playerName) {
 }
 
 function doLog2(logTypeStr, logStr, logObj, gameId, playerName) {
+    return;
     const logObject = {
         gameId: gameId,
         playerName: playerName,
@@ -1781,6 +1846,7 @@ async function startGame (gameInfo) {
     };
     const result = await collection.updateOne(query, updateDoc, options);
     await doLog('startGame', 'game started', null, null, null);
+    console.log('startGame - game started');
 
     await startRound(gameInfo, 0);
 
@@ -1811,7 +1877,8 @@ async function startRound(gameInfo, roundInd) {
         const result = await collection.updateOne(query, updateDoc, options);
     }
 
-    await doLog('startRound', 'round '+roundInd+' started', null, gameIdStr, null)
+    await doLog('startRound', 'round '+roundInd+' started', null, gameIdStr, null);
+    console.log('startRound - round '+roundInd+' started', gameIdStr);
 }
 
 async function getPlayerPreviousStats(playerName, equalObj) {
