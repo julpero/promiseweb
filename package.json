@@ -1,7 +1,17 @@
 {
     "name": "promiseweb",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "multiplayer promise web card game, uses socket.io",
+    "license": "UNLICENSED",
+    "author": {
+        "name": "Juha Korhonen",
+        "email": "julpero@gmail.com",
+        "url": "https://promiseweb.azurewebsites.net/"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/julpero/promiseweb"
+    },
     "scripts": {
         "build": "",
         "dev": "",
