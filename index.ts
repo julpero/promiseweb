@@ -65,26 +65,27 @@ try {
             doLog('connection', 'a user connected', null, null, null);
             console.log('connection - a user connected');
             socket.on('disconnect', () => {
-                var gameId = null;
+                var gameIdStr = null;
                 var userName = sm.getClientNameFromMap(socket.id);
                 const mapping = sm.userSocketIdMap.get(userName);
                 if (mapping != null && mapping.games != null) {
                     const gameIds = Array.from(mapping.games.values());
-                    gameId = gameIds != null && gameIds.length > 0 ? gameIds[0] : null;
+                    gameIdStr = gameIds != null && gameIds.length > 0 ? gameIds[0] : null;
                 }
                 if (userName == null) userName = 'unknown';
-                var chatLine = 'player ' + userName + ' disconnected';
+                const chatLine = 'player ' + userName + ' disconnected';
                 doLog('chat', chatLine, null, null, null);
                 console.log('chat', chatLine);
-                if (gameId != null) {
-                    io.to(gameId).emit('new chat line', chatLine);
+                if (gameIdStr != null) {
+                    io.to(gameIdStr).emit('new chat line', chatLine);
                 }
-                sm.removeClientFromMap(userName, socket.id, gameId);
+                sm.removeClientFromMap(userName, socket.id, gameIdStr);
             });
 
             socket.on('write chat', async (chatObj, fn) => {
+                const gameIdStr = chatObj.gameId;
                 const chatLine = chatObj.myName + ': ' + chatObj.chatLine;
-                io.to(chatObj.gameId).emit('new chat line', chatLine);
+                io.to(gameIdStr).emit('new chat line', chatLine);
                 fn();
             });
     
@@ -646,7 +647,7 @@ try {
                     gameInfo.currentRound = roundInd;
 
                     if (promiseMadeOk) {
-                        io.to(gameInfo.id).emit('promise made', gameInfo);
+                        io.to(gameIdStr).emit('promise made', gameInfo);
                         
                         var chatLine = playerName+' promised';
                         if (thisGame.visiblePromiseRound) chatLine+= ' '+promiseInt;
@@ -659,7 +660,7 @@ try {
                                 chatLine+= ' with '+speedPromisePoints+' penalty points';
                             }
                         }
-                        io.to(gameInfo.id).emit('new chat line', chatLine);
+                        io.to(gameIdStr).emit('new chat line', chatLine);
                         // fn(gameInfo); // just DEBUG
                     } else {
                         socket.emit('promise made', gameInfo);
