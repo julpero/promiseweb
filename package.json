@@ -30,7 +30,7 @@
         "express": "^4.17.1",
         "jquery": "^3.6.0",
         "jquery-color-animation": "^1.5.1",
-        "mongodb": "^3.6.6",
+        "mongodb": "^3.6.7",
         "node-cache": "^5.1.2",
         "object-hash": "^2.1.1",
         "socket.io": "^4.1.1"
