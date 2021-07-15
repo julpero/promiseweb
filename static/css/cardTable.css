@@ -31,6 +31,10 @@ html {
         /* border: 1px solid black; */
     }
 }
+.nav>a {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
 .trumpCardCol {
     text-align: center;
 }
@@ -151,6 +155,10 @@ html {
     margin-top: 20px;
     margin-left: 10px;
     font-size: small;
+}
+.tooltip-inner.tooltip-wide {
+    width: 800px !important;
+    min-width: 800px !important;
 }
 .thinkingred {
     background: rgba(255, 82, 82, 1);

@@ -1,26 +1,26 @@
 function showNickChanger(gameList) {
-    var gameListContainer = $('#chooseNickGameCollapse');
+    const gameListContainer = $('#chooseNickGameCollapse');
     console.log(gameList);
     gameList.forEach(function (game) {
-        var gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
-        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)+showErrorNames(game.playerNameErrors)));
+        const gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
+        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').html(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null)+showErrorNames(game.playerNameErrors)));
 
-        var oldNameCol = $('<div></div>').addClass('col-2');
-        var oldNameInput = $('<input id="oldName'+game.id+'" type="text">');
-        var newNameCol = $('<div></div>').addClass('col-2');
-        var newNameInput = $('<input id="newName'+game.id+'" type="text">');
+        const oldNameCol = $('<div></div>').addClass('col-2');
+        const oldNameInput = $('<input id="oldName'+game.id+'" type="text">');
+        const newNameCol = $('<div></div>').addClass('col-2');
+        const newNameInput = $('<input id="newName'+game.id+'" type="text">');
         oldNameCol.append(oldNameInput);
         gameContainerDiv.append(oldNameCol);
         newNameCol.append(newNameInput);
         gameContainerDiv.append(newNameCol);
 
-        var btnId = 'changeNick' + game.id;
-        var showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary change-nick-button').text('Change'));
+        const btnId1 = 'changeNick' + game.id;
+        const showGameButton = ($('<button id="'+btnId1+'" value="'+game.id+'">').addClass('btn btn-primary change-nick-button').text('Change'));
         gameContainerDiv.append(($('<div>').addClass('col-1')).append(showGameButton));
 
-        btnId = 'generateReports' + game.id;
-        var generatedStr = game.gameStatistics != null ? new Date(game.gameStatistics.generated).toLocaleString('fi-fi') : 'NULL';
-        var generateReportsButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary generate-report-button').text('Generate '+generatedStr));
+        const btnId2 = 'generateReports' + game.id;
+        const generatedStr = game.gameStatistics != null ? new Date(game.gameStatistics.generated).toLocaleString('fi-fi') : 'NULL';
+        const generateReportsButton = ($('<button id="'+btnId2+'" value="'+game.id+'">').addClass('btn btn-primary generate-report-button').text('Generate '+generatedStr));
         gameContainerDiv.append(($('<div>').addClass('col-3')).append(generateReportsButton));
 
         gameListContainer.append(gameContainerDiv);
@@ -29,7 +29,7 @@ function showNickChanger(gameList) {
 
     $('.change-nick-button').on('click', function() {
         console.log(this.value);
-        const oldName = $('#oldName'+this.value).val().trim();
+        const oldName = $('#oldName'+this.value).val();
         const defNewName = oldNameToNewName(oldName);
         const newName = defNewName != null ? defNewName : $('#newName'+this.value).val().trim();
 
@@ -68,11 +68,16 @@ function showNickChanger(gameList) {
 }
 
 function showGames(gameList) {
-    var gameListContainer = $('#chooseGameCollapse');
+    const gameListContainer = $('#chooseGameCollapse');
     console.log(gameList);
+    const dateformatoptions = {
+        year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false,
+    };
     gameList.forEach(function (game) {
-        var gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
-        var dateStr = game.created;
+        const gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
+        const gameStarted = new Date(game.created).getTime();
+        const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
+        const winnerName = game.gameStatistics.winnerName;
         gameContainerDiv.append($('<div>').addClass('col-2 report-date').text(dateStr));
 
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
@@ -88,10 +93,10 @@ function showGames(gameList) {
         if (game.hiddenCardsMode == 1) ruleStr+= ', show only card in charge';
         if (game.hiddenCardsMode == 2) ruleStr+= ', show card in charge and winning card';
         gameContainerDiv.append($('<div>').addClass('col-4 report-rules').text(ruleStr));
-        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount)));
+        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').html(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, winnerName)));
 
-        var btnId = 'showGameButton' + game.id;
-        var showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary reportGameButton').text('Show report'));
+        const btnId = 'showGameButton' + game.id;
+        const showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary reportGameButton').text('Show report'));
         gameContainerDiv.append(($('<div>').addClass('col-2')).append(showGameButton));
 
         gameListContainer.append(gameContainerDiv);
@@ -103,65 +108,122 @@ function showGames(gameList) {
 }
 
 function showGamesPlayed(reportObject) {
-    var reportIdName = 'gamesPlayedReport';
-    var node = $('#averageReportCollapse');
-    var reportRow = $('<div></div').addClass('row');
-    var reportCol = $('<div id="'+reportIdName+'"></div').addClass('col');
-    reportRow.append(reportCol);
-    node.append(reportRow);
+    const node = $('#averageReportCollapse');
 
-    var reportDataArr = [['Name', 'Played']];
-    reportObject.forEach(function (playerGames) {
-        reportDataArr.push([playerGames._id, playerGames.count]);
-    });
-    var reportData = new google.visualization.arrayToDataTable(reportDataArr);
-    var options = {
-        height: 400,
-        legend: { position: 'none' },
-        chart: {
-            title: 'Games played',
-            subtitle: 'number of all games played by nickname',
-        },
-        axes: {
-            x: {
-                0: { side: 'bottom', label: 'Player'} // Top x-axis.
+    const gamesPlayedReportCanvasName = 'gamesPlayedReportCanvas';
+    const reportCanvas = $('<canvas id="'+gamesPlayedReportCanvasName+'"></canvas>');
+    node.append(reportCanvas);
+    const gamesPlayedReportOptions = {
+        scales: {
+            y: {
+                ticks: {
+                    beginAtZero: true,
+                }
             }
         },
-        bar: { groupWidth: "90%" }
+        plugins: {
+            title: {
+                display: true,
+                text: 'Number of all games played by nickname',
+            },
+        }
     };
-    var chart = new google.charts.Bar(document.getElementById(reportIdName));
-    chart.draw(reportData, google.charts.Bar.convertOptions(options));
+    
+    const datasetsData = [];
+    const playersArr = [];
+    const playedGamesArr = [];
+    for (var i = 0; i < reportObject.length; i++) {
+        playersArr.push(reportObject[i]._id);
+        playedGamesArr.push(reportObject[i].count);
+    }
+    datasetsData.push({
+        label: 'played games',
+        data: playedGamesArr,
+        borderWidth: 1,
+        backgroundColor: 'rgba(66,133,244,1.0)',
+        borderColor: 'blue',
+        borderWidth: 3,
+    });
+    const barData = {
+        labels: playersArr,
+        datasets: datasetsData,
+    };
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.canvas.id == gamesPlayedReportCanvasName) instance.destroy();
+    });
+
+    const ctx = document.getElementById(gamesPlayedReportCanvasName);
+    const gamesPlayedChart = new Chart(ctx, {
+        type: 'bar',
+        data: barData,
+        options: gamesPlayedReportOptions,
+    });
+
 }
 
 function showAveragePointsPerGames(reportObject) {
-    var reportIdName = 'averagePointsPerGamesReport';
-    var node = $('#averageReportCollapse');
-    var reportRow = $('<div></div').addClass('row');
-    var reportCol = $('<div id="'+reportIdName+'"></div').addClass('col');
-    reportRow.append(reportCol);
-    node.append(reportRow);
+    const node = $('#averageReportCollapse');
 
-    var reportDataArr = [['Name', 'all games', 'regular games']];
-    reportObject.forEach(function (playerGames) {
-        reportDataArr.push([playerGames._id, Math.round(playerGames.avgAll), Math.round(playerGames.avgRegular)]);
-    });
-    var reportData = new google.visualization.arrayToDataTable(reportDataArr);
-    var options = {
-        height: 400,
-        legend: { position: 'none' },
-        chart: {
-            title: 'Average points',
-            subtitle: 'average points of all and regular games played by nickname',
-        },
-        axes: {
-            x: {
-                0: { side: 'bottom', label: 'Player'} // Top x-axis.
+    const averagesReportCanvasName = 'averagesReportCanvas';
+    const reportCanvas = $('<canvas id="'+averagesReportCanvasName+'"></canvas>');
+    node.append(reportCanvas);
+    const averagesReportOptions = {
+        scales: {
+            y: {
+                ticks: {
+                    beginAtZero: true,
+                }
             }
         },
-        bar: { groupWidth: "90%" }
+        plugins: {
+            title: {
+                display: true,
+                text: 'Average points of all and equal games played by nickname',
+            },
+        }
     };
-    var chart = new google.charts.Bar(document.getElementById(reportIdName));
-    chart.draw(reportData, google.charts.Bar.convertOptions(options));
+    
+    const datasetsData = [];
+    const playersArr = [];
+    const avgAllArr = [];
+    const avgRegularArr = [];
+    for (var i = 0; i < reportObject.length; i++) {
+        playersArr.push(reportObject[i]._id);
+        avgAllArr.push(reportObject[i].avgAll.toFixed(1));
+        avgRegularArr.push(reportObject[i].avgRegular == null ? 0 : reportObject[i].avgRegular.toFixed(1));
+    }
+    datasetsData.push({
+        label: 'all games',
+        data: avgAllArr,
+        borderWidth: 1,
+        backgroundColor: 'rgba(66,133,244,1.0)',
+        borderColor: 'blue',
+        borderWidth: 3,
+    });
+    datasetsData.push({
+        label: 'regular games',
+        data: avgRegularArr,
+        borderWidth: 1,
+        backgroundColor: 'rgba(233,66,66,1.0)',
+        borderColor: 'darkred',
+        borderWidth: 3,
+    });
+    const barData = {
+        labels: playersArr,
+        datasets: datasetsData,
+    };
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.canvas.id == averagesReportCanvasName) instance.destroy();
+    });
+
+    const ctx = document.getElementById(averagesReportCanvasName);
+    const gamesPlayedChart = new Chart(ctx, {
+        type: 'bar',
+        data: barData,
+        options: averagesReportOptions,
+    });
 }
 
 function showAverages(gameObject) {
@@ -173,7 +235,7 @@ function showAverages(gameObject) {
 function showErrorNames(errorNames) {
     if (errorNames.length == 0) return '';
     console.log(errorNames);
-    return ' E: '+ errorNames.join(', ');
+    return ' <strong>E: '+ errorNames.join(', ')+'</strong>';
 }
 
 function oldNameToNewName(oldName) {

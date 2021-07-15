@@ -1,20 +1,38 @@
 {
     "name": "promiseweb",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "multiplayer promise web card game, uses socket.io",
+    "license": "UNLICENSED",
+    "author": {
+        "name": "Juha Korhonen",
+        "email": "julpero@gmail.com",
+        "url": "https://promiseweb.azurewebsites.net/"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/julpero/promiseweb"
+    },
     "scripts": {
         "build": "",
         "dev": "",
         "start": "node index.ts"
     },
+    "devDependencies": {
+        "@types/jquery": "^3.5.6",
+        "@types/node": "^16.3.2"
+    },
     "dependencies": {
-        "@types/jquery": "^3.5.5",
-        "@types/node": "^14.14.20",
+        "bootstrap": "^4.6.0",
         "card-deck": "^1.0.1",
+        "chart.js": "^3.4.1",
+        "chartjs-plugin-annotation": "^1.0.2",
         "deck-of-cards": "^0.1.8",
         "express": "^4.17.1",
+        "jquery": "^3.6.0",
         "jquery-color-animation": "^1.5.1",
-        "mongodb": "^3.6.3",
-        "socket.io": "^3.0.5"
+        "mongodb": "^4.0.0",
+        "node-cache": "^5.1.2",
+        "object-hash": "^2.2.0",
+        "socket.io": "^4.1.3"
     }
 }

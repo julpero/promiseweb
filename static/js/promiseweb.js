@@ -1,36 +1,3 @@
-var avgStatsChart = null;
-const avgStatsOptions = {
-    backgroundColor: '#45a173',
-    height: 145,
-    chartArea: {width: '99%', height: 145},
-    legend: { position: 'none' },
-    hAxis: {
-        textPosition: 'in',
-    },
-    vAxis: {
-        textPosition: 'in',
-        minValue: 0,
-        title: '',
-    },
-};
-
-var keepStatsChart = null;
-const keepStatsOptions = {
-    backgroundColor: '#45a173',
-    height: 145,
-    chartArea: {width: '99%', height: 145},
-    legend: { position: 'none' },
-    hAxis: {
-        textPosition: 'in',
-    },
-    vAxis: {
-        textPosition: 'in',
-        minValue: 0,
-        maxValue: 100,
-        title: '',
-    },
-};
-
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -75,13 +42,13 @@ function playerHasPlayedCards(playerName, cardsPlayed) {
 
 function drawOtherPlayerCards(players, cardsInRound, cardsPlayed) {
     for (var i = 0; i < players.length; i++) {
-        var deck = Deck();
+        const deck = Deck();
         if (!players[i].thisIsMe) {
-            var playerName = players[i].name;
-            var tableIndex = otherPlayerMapper(i, players);
+            const playerName = players[i].name;
+            const tableIndex = otherPlayerMapper(i, players);
             for (j = 0; j < cardsInRound - playerHasPlayedCards(playerName, cardsPlayed); j++) {
-                var $deckDiv = document.getElementById('player'+tableIndex+'CardCol'+j);
-                var card = deck.cards[j];
+                const $deckDiv = document.getElementById('player'+tableIndex+'CardCol'+j);
+                const card = deck.cards[j];
                 card.mount($deckDiv);
                 card.setSide('back');
                 card.animateTo({
@@ -99,10 +66,10 @@ function drawOtherPlayerCards(players, cardsInRound, cardsPlayed) {
 function revealTrumpCard(trumpCard) {
     $('#trumpDiv')[0].children[$('#trumpDiv')[0].children.length-1].remove();
     
-    var $deckDiv = document.getElementById('trumpDiv');
-    var deck = Deck();
-    var cardIndex = getCardIndex(deck.cards, trumpCard);
-    var card = deck.cards[cardIndex];
+    const $deckDiv = document.getElementById('trumpDiv');
+    const deck = Deck();
+    const cardIndex = getCardIndex(deck.cards, trumpCard);
+    const card = deck.cards[cardIndex];
     card.mount($deckDiv);
     card.setSide('front');
     card.animateTo({
@@ -115,13 +82,13 @@ function revealTrumpCard(trumpCard) {
 }
 
 function drawTrumpCard(myRound) {
-    var trumpCard = myRound.trumpCard;
-    var cardsToPlayers = myRound.players.length * myRound.cardsInRound;
-    var $deckDiv = document.getElementById('trumpDiv');
+    const trumpCard = myRound.trumpCard;
+    const cardsToPlayers = myRound.players.length * myRound.cardsInRound;
+    const $deckDiv = document.getElementById('trumpDiv');
 
-    var dummyDeck = Deck();
+    const dummyDeck = Deck();
     for (var i = 52; i > cardsToPlayers; i--) {
-        var dummyCard = dummyDeck.cards[i-1];
+        const dummyCard = dummyDeck.cards[i-1];
         dummyCard.mount($deckDiv);
         dummyCard.animateTo({
             x: randomNegToPos(5),
@@ -138,11 +105,11 @@ function drawTrumpCard(myRound) {
 }
 
 function drawMyCards(myRound, speedPromise) {
-    var deck = Deck();
+    const deck = Deck();
     if (speedPromise && myRound.myCards.length == 0) {
         for (var i = 0; i < myRound.cardsInRound; i++) {
-            var $container = document.getElementById('player0CardCol'+i);
-            var card = deck.cards[i];
+            const $container = document.getElementById('player0CardCol'+i);
+            const card = deck.cards[i];
             card.mount($container);
             card.setSide('back');
             card.animateTo({
@@ -156,9 +123,9 @@ function drawMyCards(myRound, speedPromise) {
     } else {
         myRound.myCards.forEach(function (myCard, idx) {
             if (speedPromise) $('#player0CardCol'+idx).empty();
-            var $container = document.getElementById('player0CardCol'+idx);
-            var cardIndex = getCardIndex(deck.cards, myCard);
-            var card = deck.cards[cardIndex];
+            const $container = document.getElementById('player0CardCol'+idx);
+            const cardIndex = getCardIndex(deck.cards, myCard);
+            const card = deck.cards[cardIndex];
             card.mount($container);
             card.setSide('front');
             card.animateTo({
@@ -173,13 +140,13 @@ function drawMyCards(myRound, speedPromise) {
 }
 
 function mapPlayerNameToTable(name) {
-    var divs = $('.playerNameCol').filter(function() {
+    const divs = $('.playerNameCol').filter(function() {
         return $(this).text() === name;
     });
     if (divs.length == 1) {
-        var divId = divs[0].id;
+        const divId = divs[0].id;
         if (divId.length > 6) {
-            var divIdNbrStr = divId.substring(6, 7);
+            const divIdNbrStr = divId.substring(6, 7);
             return parseInt(divIdNbrStr, 10);
         }
     }
@@ -285,7 +252,7 @@ function roundPromised(myRound) {
 function isEvenPromise(myRound, promise) {
     var totalPromise = 0;
     for (var i = 0; i < myRound.players.length; i++) {
-        var player = myRound.players[i];
+        const player = myRound.players[i];
         if (!player.thisIsMe && player.promise == null) return false;
         if (player.promise != null) totalPromise+= player.promise;
     }
@@ -300,7 +267,7 @@ function speedPromiseTimerTick(speedPromiseValue) {
 
 function mySpeedPromisePoints(myRound) {
     for (var i = 0; i < myRound.players.length; i++) {
-        var player = myRound.players[i];
+        const player = myRound.players[i];
         if (player.thisIsMe) return player.speedPromisePoints;
     }
     return null;
@@ -331,7 +298,7 @@ function speedPromiser(myRound) {
         $('.validPromiseButton').prop('disabled', true);
         deleteIntervaller();
         console.log('SPEEDPROMISE!');
-        var speedPromiseObj = {
+        const speedPromiseObj = {
             gameId: myRound.gameId,
             roundInd: myRound.roundInd,
             myId: window.localStorage.getItem('uUID'),
@@ -358,19 +325,20 @@ function initSpeedPromiseTimer(myRound) {
 
 function initPromise(myRound, evenPromisesAllowed, speedPromise) {
     $('#myPromiseCol').empty();
-    var node = $('#myPromiseCol');
+    const node = $('#myPromiseCol');
 
     for (var i = 0; i < myRound.cardsInRound + 1; i++) {
-        var promiseButton = $('<button id="makePromiseButton'+i+'" value="'+i+'"></button>').addClass('btn btn-primary makePromiseButton').text(i);
+        const promiseButton = $('<button id="makePromiseButton'+i+'" value="'+i+'"></button>').addClass('btn btn-primary makePromiseButton').text(i);
         node.append(promiseButton);
         if (evenPromisesAllowed || !isEvenPromise(myRound, i)) {
             promiseButton.addClass(' validPromiseButton');
             promiseButton.prop('disabled', false);
-            $('#makePromiseButton'+i).on('click', function() {
+            $('#makePromiseButton'+i).one('click', function() {
                 deleteIntervaller();
+                $(this).off('click');
                 $('.makePromiseButton').off('click');
                 $('.validPromiseButton').prop('disabled', true);
-                var promiseDetails = { gameId: myRound.gameId,
+                const promiseDetails = { gameId: myRound.gameId,
                     roundInd: myRound.roundInd,
                     myId: window.localStorage.getItem('uUID'),
                     promise: this.value,
@@ -401,9 +369,9 @@ function hidePromise() {
 }
 
 function drawSpeedBar(max, now) {
-    var progressMain = $('#speedProgressBar');
+    const progressMain = $('#speedProgressBar');
     progressMain.empty();
-    var width = (now/max)*100;
+    const width = (now/max)*100;
     var classStr = "bg-success";
     if (width < 60 && width > 35) {
         classStr = "bg-info";
@@ -413,30 +381,30 @@ function drawSpeedBar(max, now) {
         classStr = "bg-danger";
     }
 
-    var progressBar = $('<div></div>').addClass('progress-bar '+classStr).css({width: width+"%"});
+    const progressBar = $('<div></div>').addClass('progress-bar '+classStr).css({width: width+"%"});
     progressMain.append(progressBar);
 }
 
 function drawPromiseAsProgress(max, promise, keep) {
-    var progressMain = $('<div></div>').addClass('progress').css({marginTop: "4px", border: "1px solid black"});
+    const progressMain = $('<div></div>').addClass('progress').css({marginTop: "4px", border: "1px solid black"});
     if (promise == keep) {
-        var width = (promise/max)*100;
-        var progressBar = $('<div></div>').addClass('progress-bar bg-success').css({width: width+"%"});
+        const width = (promise/max)*100;
+        const progressBar = $('<div></div>').addClass('progress-bar bg-success').css({width: width+"%"});
         progressMain.append(progressBar);
     }
     if (promise < keep) {
-        var widthPromise = (promise/max)*100;
-        var widthOver = ((keep-promise)/max)*100;
-        var progressBarPromise = $('<div></div>').addClass('progress-bar bg-success').css({width: widthPromise+"%"});
-        var progressBarOver = $('<div></div>').addClass('progress-bar bg-danger').css({width: widthOver+"%"});
+        const widthPromise = (promise/max)*100;
+        const widthOver = ((keep-promise)/max)*100;
+        const progressBarPromise = $('<div></div>').addClass('progress-bar bg-success').css({width: widthPromise+"%"});
+        const progressBarOver = $('<div></div>').addClass('progress-bar bg-danger').css({width: widthOver+"%"});
         progressMain.append(progressBarPromise);
         progressMain.append(progressBarOver);
     }
     if (promise > keep) {
-        var widthKeep = (keep/max)*100;
-        var widthRemaining = ((promise-keep)/max)*100;
-        var progressBarKeep = $('<div></div>').addClass('progress-bar bg-success').css({width: widthKeep+"%"});
-        var progressBarRemaining = $('<div></div>').addClass('progress-bar bg-secondary').css({width: widthRemaining+"%"});
+        const widthKeep = (keep/max)*100;
+        const widthRemaining = ((promise-keep)/max)*100;
+        const progressBarKeep = $('<div></div>').addClass('progress-bar bg-success').css({width: widthKeep+"%"});
+        const progressBarRemaining = $('<div></div>').addClass('progress-bar bg-secondary').css({width: widthRemaining+"%"});
         progressMain.append(progressBarKeep);
         progressMain.append(progressBarRemaining);
     }
@@ -446,10 +414,10 @@ function drawPromiseAsProgress(max, promise, keep) {
 
 function showPlayerPromises(myRound, showPromise, showSpeedPromise) {
     myRound.players.forEach(function (player, idx) {
-        var tableIdx = otherPlayerMapper(idx, myRound.players);
+        const tableIdx = otherPlayerMapper(idx, myRound.players);
         if (player.promise != null) {
             $('#player'+tableIdx+'Keeps').html('k: '+player.keeps);
-            var speedPromiseStr = showSpeedPromise ? ' ('+(player.speedPromisePoints == 1 ? '+' : player.speedPromisePoints)+')' : '';
+            const speedPromiseStr = showSpeedPromise ? ' ('+(player.speedPromisePoints == 1 ? '+' : player.speedPromisePoints)+')' : '';
             if (!showPromise && tableIdx != 0) {
                 if (showSpeedPromise) $('#player'+tableIdx+'Promised').html('p: '+speedPromiseStr);
                 return;
@@ -485,7 +453,7 @@ function showPlayerPromises(myRound, showPromise, showSpeedPromise) {
 function showCardValues(handValues) {
     handValues.forEach(function(handValue) {
         console.log(handValue);
-        var index = mapPlayerNameToTable(handValue.name);
+        const index = mapPlayerNameToTable(handValue.name);
         $('#player'+index+'StatsCol1').text('hv: '+handValue.cardValues);
     });
 }
@@ -532,7 +500,7 @@ function showPromisesNow(gameInfo, myRound) {
 
 function cardToClassMapper(card) {
     // note: ace has rank 1 in ui but 14 in server
-    var rank = card.rank == 14 ? 1 : card.rank;
+    const rank = card.rank == 14 ? 1 : card.rank;
     var retStr = '.card.';
     retStr+= card.suit + '.rank' + rank;
     return retStr;
@@ -578,37 +546,44 @@ function deleteIntervaller() {
     $('#speedProgressBar').empty();
 }
 
+function removeCardEvents() {
+    console.log('removeCardEvents');
+    $('.card').off('click');
+    $('.card').off('touchstart');
+}
+
 function initCardEvents(myRound, onlySuit) {
+    removeCardEvents();
     var cardsAbleToPlay = 0;
     possibleCards = [];
     for (var i = 0; i < myRound.myCards.length; i++) {
-        var cardMapperStr = cardToClassMapper(myRound.myCards[i]);
+        const cardMapperStr = cardToClassMapper(myRound.myCards[i]);
+        const cardMapperStrDiv = 'div'+cardMapperStr;
         if (onlySuit == null || myRound.myCards[i].suit == onlySuit) {
             // activate this card / div
             cardsAbleToPlay++;
             possibleCards.push(cardMapperStr);
             // console.log('activate this card / div: ' + myRound.myCards[i].suit + ' ' + myRound.myCards[i].rank);
-            // console.log(' mapped to: ' + cardMapperStr);
-            $(cardMapperStr+' ').animate({backgroundColor: "#ffffff"}, 300);
-            $(cardMapperStr).on('click touchstart', function () {
-                $('.card').off('click touchstart');
+            console.log(' mapped to: ' + cardMapperStrDiv);
+            $(cardMapperStrDiv).animate({backgroundColor: "#ffffff"}, 300);
+            $(cardMapperStrDiv).one('click touchstart', async function (event) {
+                console.log(event);
+                $(this).off('click');
+                $(this).off('touchstart');
+                removeCardEvents();
                 deleteIntervaller();
 
-                var card = classToCardMapper(this.className);
-                var playDetails = { gameId: myRound.gameId,
+                const card = classToCardMapper(this.className);
+                const playDetails = { gameId: myRound.gameId,
                     roundInd: myRound.roundInd,
                     myId: window.localStorage.getItem('uUID'),
                     playedCard: card,
                 };
-                socket.emit('play card', playDetails, function (playReturn) {
-                    // this is now disabled on server side
-                    console.log('playReturn:');
-                    console.log(playReturn);
-                });
+                socket.emit('play card', playDetails, cardPlayedCallback);
             });
         } else {
             // fade this card
-            $(cardMapperStr+' ').animate({backgroundColor: "#bbbbbb"}, 300);
+            $(cardMapperStrDiv).animate({backgroundColor: "#bbbbbb"}, 300);
         }
     }
     return cardsAbleToPlay;
@@ -624,8 +599,8 @@ function dimMyCards(myRound, visibility) {
         default: break;
     }
     for (var i = 0; i < myRound.myCards.length; i++) {
-        var cardMapperStr = cardToClassMapper(myRound.myCards[i]);
-        $(cardMapperStr+' ').animate({backgroundColor: "#"+bgColor}, 400);
+        const cardMapperStr = 'div'+cardToClassMapper(myRound.myCards[i]);
+        $(cardMapperStr).animate({backgroundColor: "#"+bgColor}, 400);
     }
 }
 
@@ -651,17 +626,17 @@ function initCardsToPlay(myRound, freeTrump) {
 }
 
 function highlightWinningCard(myRound) {
-    var playedCards = myRound.cardsPlayed[myRound.cardsPlayed.length-1]; // last is current
+    const playedCards = myRound.cardsPlayed[myRound.cardsPlayed.length-1]; // last is current
     if (playedCards.length == 0) return;
 
-    var winnerName = myRound.playerGoingToWinThisPlay ?? winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
+    const winnerName = myRound.playerGoingToWinThisPlay ?? winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
 
     for (var i = 0; i < playedCards.length; i++) {
-        var playerIndex = mapPlayerNameToTable(playedCards[i].name);
+        const playerIndex = mapPlayerNameToTable(playedCards[i].name);
         
         var cardPlayedDivs = $('#player'+playerIndex+'CardPlayedDiv').children();
         if (cardPlayedDivs.length == 1) {
-            var cardPlayedDiv = cardPlayedDivs[0];
+            const cardPlayedDiv = cardPlayedDivs[0];
             if (i == 0) {
                 $(cardPlayedDiv).addClass('charge-black-div');
             } else if (playedCards[i].name == winnerName) {
@@ -674,8 +649,8 @@ function highlightWinningCard(myRound) {
 }
 
 function showPlayedCards(myRound) {
-    var deck = Deck();
-    var dummyDeck = Deck();
+    const deck = Deck();
+    const dummyDeck = Deck();
     const playedCards = myRound.cardsPlayed[myRound.cardsPlayed.length-1]; // last is current
     if (playedCards.length == 0) return;
 
@@ -686,9 +661,9 @@ function showPlayedCards(myRound) {
         const playerIndex = mapPlayerNameToTable(playedCards[i].name);
         const cardPlayed = playedCards[i].card;
         
-        var $container = document.getElementById('player'+playerIndex+'CardPlayedDiv');
+        const $container = document.getElementById('player'+playerIndex+'CardPlayedDiv');
         const cardIndex = cardPlayed.suit == 'dummy' ? dummyCardIndex++ : getCardIndex(deck.cards, cardPlayed);
-        var card = cardPlayed.suit == 'dummy' ? dummyDeck.cards[cardIndex] :  deck.cards[cardIndex];
+        const card = cardPlayed.suit == 'dummy' ? dummyDeck.cards[cardIndex] :  deck.cards[cardIndex];
         card.mount($container);
         cardPlayed.suit == 'dummy' ? card.setSide('back') : card.setSide('front');
         card.animateTo({
@@ -701,15 +676,15 @@ function showPlayedCards(myRound) {
 
         if (i == 0) {
             // starter, lets highlight starter card
-            var cardPlayedDivs = $('#player'+playerIndex+'CardPlayedDiv').children();
+            const cardPlayedDivs = $('#player'+playerIndex+'CardPlayedDiv').children();
             if (cardPlayedDivs.length == 1) {
-                var cardPlayedDiv = cardPlayedDivs[0];
+                const cardPlayedDiv = cardPlayedDivs[0];
                 $(cardPlayedDiv).addClass('charge-black-div');
             }
         } else if (playedCards[i].name == winnerName) {
-            var cardPlayedDivs = $('#player'+playerIndex+'CardPlayedDiv').children();
+            const cardPlayedDivs = $('#player'+playerIndex+'CardPlayedDiv').children();
             if (cardPlayedDivs.length == 1) {
-                var cardPlayedDiv = cardPlayedDivs[0];
+                const cardPlayedDiv = cardPlayedDivs[0];
                 $(cardPlayedDiv).addClass('winning-yellow-div');
             }
         }
@@ -734,7 +709,7 @@ function winnerOfSinglePlay(cardsPlayed, trumpSuit) {
     var winningCard = cardsPlayed[0].card;
     for (var i = 1; i < cardsPlayed.length; i++) {
         var wins = false;
-        var currentCard = cardsPlayed[i].card;
+        const currentCard = cardsPlayed[i].card;
         if (winningCard.suit == trumpSuit) {
             // has to be bigger trump to win
             wins = currentCard.suit == trumpSuit && currentCard.rank > winningCard.rank;
@@ -759,18 +734,18 @@ function clearWonCards() {
 }
 
 function showWonCards(myRound) {
-    var deck = Deck();
-    var playerCount = myRound.players.length;
+    const deck = Deck();
+    const playerCount = myRound.players.length;
     var cardCount = 0;
     for (var i = 0; i < myRound.cardsPlayed.length; i++) {
-        var playedCards = myRound.cardsPlayed[i];
+        const playedCards = myRound.cardsPlayed[i];
         if (playedCards.length == playerCount) {
-            var winnerName = myRound.playerGoingToWinThisPlay ?? winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
-            var playerIndex = mapPlayerNameToTable(winnerName);
-            var wonIndex = getNextFreeCardWonDiv(playerIndex);
-            var $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
+            const winnerName = myRound.playerGoingToWinThisPlay ?? winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
+            const playerIndex = mapPlayerNameToTable(winnerName);
+            const wonIndex = getNextFreeCardWonDiv(playerIndex);
+            const $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
             for (var j = 0; j < playerCount; j++) {
-                var card = deck.cards[cardCount];
+                const card = deck.cards[cardCount];
                 card.mount($containerTo);
                 card.animateTo({
                     x: randomNegToPos(2),
@@ -787,28 +762,25 @@ function showWonCards(myRound) {
 
 function showDealer(myRound) {
     $('.dealer').removeClass('dealer');
-    var indInTable = otherPlayerMapper(myRound.dealerPositionIndex, myRound.players);
+    const indInTable = otherPlayerMapper(myRound.dealerPositionIndex, myRound.players);
     $('#player'+indInTable+'NameCol').addClass('dealer');
 }
 
 function playSpeedGamerCard(myRound) {
     if (possibleCards.length > 0) {
-        var randomIndex = Math.floor(Math.random() * possibleCards.length);
-        var className = possibleCards[randomIndex];
+        const randomIndex = Math.floor(Math.random() * possibleCards.length);
+        const className = possibleCards[randomIndex];
         console.log(className);
 
-        var card = classToCardMapper(className);
+        const card = classToCardMapper(className);
         console.log(card);
-        var playDetails = { gameId: myRound.gameId,
+        const playDetails = {
+            gameId: myRound.gameId,
             roundInd: myRound.roundInd,
             myId: window.localStorage.getItem('uUID'),
             playedCard: card,
         };
-        socket.emit('play card', playDetails, function (playReturn) {
-            // this is now disabled on server side
-            console.log('playReturn:');
-            console.log(playReturn);
-        });
+        socket.emit('play card', playDetails, cardPlayedCallback);
     } else {
         possibleCards = [];
     }
@@ -865,84 +837,6 @@ function findMinMaxPoints(arr) {
     return [min, max];
 }
 
-function showPlayersAvgPointsStats(playerKeeps, playersEqualKeeps) {
-    const reportColName = 'avgPointsStats';
-    var reportDataArr = [['Player', 'Avg points in all previous rounds', {type: "string", role: "tooltip"}, 'Avg points in equal previous rounds', {type: "string", role: "tooltip"}]];
-    for (var i = 0; i < playerKeeps.length; i++) {
-        if (Object.keys(playerKeeps[i]).length <= 1) {
-            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
-        } else {
-            const avgPoints = playerKeeps[i].avgPoints;
-            const avgPointsTooltip = 'average of '+ playerKeeps[i].avgPoints.toFixed(2) +' points\nin all previous '+ playerKeeps[i].total +' rounds';
-            const equalAvgPoints = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? playersEqualKeeps[i].avgPoints : 0;
-            const equalAvgPointsTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'average of '+ (equalAvgPoints).toFixed(2) +' points\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-            reportDataArr.push([playerKeeps[i]._id, avgPoints, avgPointsTooltip, equalAvgPoints, equalAvgPointsTooltip]);
-        }
-    }
-    
-    const avgStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-
-    avgStatsChart = new google.visualization.ColumnChart(document.getElementById(reportColName));
-    avgStatsChart.draw(avgStatsReportData, avgStatsOptions);
-}
-
-function updatePlayersAvgPointsStats(playerKeeps, playersEqualKeeps) {
-    var reportDataArr = [['Player', 'Avg points in all previous rounds', {type: "string", role: "tooltip"}, 'Avg points in equal previous rounds', {type: "string", role: "tooltip"}]];
-    for (var i = 0; i < playerKeeps.length; i++) {
-        if (Object.keys(playerKeeps[i]).length <= 1) {
-            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
-        } else {
-            const avgPoints = playerKeeps[i].avgPoints;
-            const avgPointsTooltip = 'average of '+ playerKeeps[i].avgPoints.toFixed(2) +' points\nin all previous '+ playerKeeps[i].total +' rounds';
-            const equalAvgPoints = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? playersEqualKeeps[i].avgPoints : 0;
-            const equalAvgPointsTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'average of '+ (equalAvgPoints).toFixed(2) +' points\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-            reportDataArr.push([playerKeeps[i]._id, avgPoints, avgPointsTooltip, equalAvgPoints, equalAvgPointsTooltip]);
-        }
-    }
-
-    const avgStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-    avgStatsChart.draw(avgStatsReportData, avgStatsOptions);
-}
-
-function showPlayersKeepPercentStats(playerKeeps, playersEqualKeeps) {
-    const reportColName = 'keepPercentStats';
-    var reportDataArr = [['Player', 'Keep percent in previous rounds', {type: "string", role: "tooltip"}, 'Keep percent in previous equal rounds', {type: "string", role: "tooltip"}]];
-    for (var i = 0; i < playerKeeps.length; i++) {
-        if (Object.keys(playerKeeps[i]).length <= 1) {
-            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
-        } else {
-            const keepPercentage = 100 * (playerKeeps[i].keeps/playerKeeps[i].total);
-            const keepPercentageTooltip = 'keep percentage '+ (keepPercentage).toFixed(1) +'%\nin all previous '+ playerKeeps[i].total +' rounds';
-            const keepEqualPercentage = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 100 * (playersEqualKeeps[i].keeps/playersEqualKeeps[i].total) : 0;
-            const keepEqualPercentageTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'keep percentage '+ (keepEqualPercentage).toFixed(1) +'%\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-            reportDataArr.push([playerKeeps[i]._id, keepPercentage, keepPercentageTooltip, keepEqualPercentage, keepEqualPercentageTooltip]);
-        }
-    }
-    
-    const keepsStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-
-    keepStatsChart = new google.visualization.ColumnChart(document.getElementById(reportColName));
-    keepStatsChart.draw(keepsStatsReportData, keepStatsOptions);
-}
-
-function updatePlayersKeepPercentStats(playerKeeps, playersEqualKeeps) {
-    var reportDataArr = [['Player', 'Keep percent in previous rounds', {type: "string", role: "tooltip"}, 'Keep percent in previous equal rounds', {type: "string", role: "tooltip"}]];
-    for (var i = 0; i < playerKeeps.length; i++) {
-        if (Object.keys(playerKeeps[i]).length <= 1) {
-            reportDataArr.push([playerKeeps[i]._id, 0, '', 0, '']);
-        } else {
-            const keepPercentage = 100 * (playerKeeps[i].keeps/playerKeeps[i].total);
-            const keepPercentageTooltip = 'keep percentage '+ (keepPercentage).toFixed(1) +'%\nin all previous '+ playerKeeps[i].total +' rounds';
-            const keepEqualPercentage = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 100 * (playersEqualKeeps[i].keeps/playersEqualKeeps[i].total) : 0;
-            const keepEqualPercentageTooltip = playersEqualKeeps != null && playersEqualKeeps[i] != null && playersEqualKeeps[i].total > 0 ? 'keep percentage '+ (keepEqualPercentage).toFixed(1) +'%\nin all equal previous '+ playersEqualKeeps[i].total +' rounds' : 'no equal data yet';
-            reportDataArr.push([playerKeeps[i]._id, keepPercentage, keepPercentageTooltip, keepEqualPercentage, keepEqualPercentageTooltip]);
-        }
-    }
-    
-    const keepsStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-    keepStatsChart.draw(keepsStatsReportData, keepStatsOptions);
-}
-
 function showPlayerAvgPoints(playerInd, playerAvgPoints, min, max) {
     const reportColName = 'player'+playerInd+'StatsCol2';
     $('#'+reportColName).text('avg: '+playerAvgPoints.toFixed(2));
@@ -966,20 +860,9 @@ function showPlayerKeepStats(playerKeeps) {
 }
 
 function showLiveStats(myRound) {
-    if (myRound.statistics == null) return;
-    if (myRound.statistics.playersKeeps != null) {
-        //showPlayerKeepStats(myRound.statistics.playersKeeps);
-        if (avgStatsChart == null) {
-            showPlayersAvgPointsStats(myRound.statistics.playersKeeps, myRound.statistics.playersEqualKeeps);
-        } else {
-            updatePlayersAvgPointsStats(myRound.statistics.playersKeeps, myRound.statistics.playersEqualKeeps);
-        }
-        if (keepStatsChart == null) {
-            showPlayersKeepPercentStats(myRound.statistics.playersKeeps, myRound.statistics.playersEqualKeeps);
-        } else {
-            updatePlayersKeepPercentStats(myRound.statistics.playersKeeps, myRound.statistics.playersEqualKeeps);
-        }
-    }
+    if (myRound.statistics == null || myRound.statistics.statsAvgObj == null) return;
+    liveStats1Graph(myRound.statistics.statsAvgObj);
+    liveStats2Graph(myRound.statistics.statsAvgObj);
 }
 
 function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
@@ -996,7 +879,7 @@ function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) 
     }
     if (isMyPlayTurn(myRound)) {
         showMyTurn();
-        var cardsAbleToPlay = initCardsToPlay(myRound, freeTrump);
+        const cardsAbleToPlay = initCardsToPlay(myRound, freeTrump);
         if (privateSpeedGame) initPrivateSpeedTimer(cardsAbleToPlay, myRound);
     } else {
         showWhoIsPlaying(myRound);
@@ -1008,7 +891,7 @@ function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) 
 function getCardFromDiv(divStr) {
     var div = $('#' + divStr).children();
     if (div.length == 1) {
-        var classStr = div[0].className;
+        const classStr = div[0].className;
         return classToCardMapper(classStr);
     }
     return null;
@@ -1022,28 +905,31 @@ function getNextFreeCardWonDiv(playerIndex) {
 }
 
 async function moveCardFromTableToWinDeck(winnerName, players) {
-    var deck = Deck();
+    const deck = Deck();
 
-    var playerIndex = mapPlayerNameToTable(winnerName);
-    var wonIndex = getNextFreeCardWonDiv(playerIndex);
-    var $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
-    var containerToPosition = $('#player'+playerIndex+'CardsWon'+wonIndex+'Div').offset();
+    const playerIndex = mapPlayerNameToTable(winnerName);
+    const wonIndex = getNextFreeCardWonDiv(playerIndex);
+    const $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
+    const containerToPosition = $('#player'+playerIndex+'CardsWon'+wonIndex+'Div').offset();
 
-    var delay = 400;
-    var duration = 900;
-    var movingCards = [];
+    const delay = 400;
+    const duration = 900;
+    const movingCards = [];
+    var cardLooper = 0;
+    var cardReadyLooper = 0;
 
     for (var i = 0; i < players.length; i++) {
-        var containerFromPosition = $('#player'+i+'CardPlayedDiv').offset();
-        var cardToCheck = getCardFromDiv('player'+i+'CardPlayedDiv');
+        const containerFromPosition = $('#player'+i+'CardPlayedDiv').offset();
+        const cardToCheck = getCardFromDiv('player'+i+'CardPlayedDiv');
         if (cardToCheck == null) {
             continue;
         }
-        var cardIndex = getCardIndex(deck.cards, cardToCheck);
+        const cardIndex = getCardIndex(deck.cards, cardToCheck);
         movingCards[i] = deck.cards[cardIndex];
         $('#player'+i+'CardPlayedDiv').empty();
         
         movingCards[i].mount($containerTo);
+        movingCards[i].setSide('front');
         movingCards[i].animateTo({
             delay: 0,
             duration: 0,
@@ -1052,23 +938,25 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
             y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
             rot: randomNegToPos(5),
             onComplete: async function() {
-                for (var j = 0; j < movingCards.length; j++) {
-                    movingCards[j].animateTo({
-                        delay: delay,
-                        duration: duration,
-                        ease: 'quartOut',
-                        x: randomNegToPos(2),
-                        y: randomNegToPos(2),
-                        rot: randomNegToPos(5),
-                    });
-                }
-                
+                movingCards[cardLooper].animateTo({
+                    delay: delay,
+                    duration: duration,
+                    ease: 'quartOut',
+                    x: randomNegToPos(2),
+                    y: randomNegToPos(2),
+                    rot: randomNegToPos(5),
+                    onComplete: function() {
+                        movingCards[cardReadyLooper].setSide('back');
+                        cardReadyLooper++;
+                    }
+                });
+                cardLooper++;
             }
         });
     }
 
     return new Promise(resolve => {
-        setTimeout(resolve, (delay+duration+500));
+        setTimeout(resolve, (delay+duration+safeMs));
     });
 
 }
@@ -1081,7 +969,7 @@ function getLastCardContainer(playerIndex) {
 }
 
 function getCurrentCardContainer(card) {
-    var cardClassStr = cardToClassMapper(card);
+    const cardClassStr = cardToClassMapper(card);
     for (var i = 0; i < 10; i++) {
         if ($('#player0CardCol'+i).find(cardClassStr).length == 1) return i;
     }
@@ -1089,18 +977,21 @@ function getCurrentCardContainer(card) {
 }
 
 async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hiddenCardsMode) {
-    var deck = Deck();
+    console.log('moveCardFromHandToTable, card:', card);
+    const deck = Deck();
 
-    if (cardsInThisPlay != null)
-    {
+    // this is used when last card of play is hit, reveal all played cards
+    if (cardsInThisPlay != null) {
+        console.log('moveCardFromHandToTable, cardsInThisPlay:', cardsInThisPlay);
         for (var i = 0; i < cardsInThisPlay.length; i++) {
-            if (playerName == cardsInThisPlay[i].name) continue;
+            if (playerName == cardsInThisPlay[i].name) continue; // animate this player card
     
             const thisPlayerIndex = mapPlayerNameToTable(cardsInThisPlay[i].name);
-            var $thisContainerTo = document.getElementById('player'+thisPlayerIndex+'CardPlayedDiv');
             const cardToCheck = getCardFromDiv('player'+thisPlayerIndex+'CardPlayedDiv');
             if (cardToCheck == null || cardToCheck.suit != cardsInThisPlay[i].card.suit || cardToCheck.rank != cardsInThisPlay[i].card.rank) {
-                $('#player'+thisPlayerIndex+'CardPlayedDiv').empty();
+                console.log('moveCardFromHandToTable, empty div, cardToCheck: ', cardToCheck);
+                const $thisContainerTo = document.getElementById('player'+thisPlayerIndex+'CardPlayedDiv');
+                $thisContainerTo.empty();
                 const thisCardIndex = getCardIndex(deck.cards, cardsInThisPlay[i].card);
                 const thisCard = deck.cards[thisCardIndex];
                 thisCard.mount($thisContainerTo);
@@ -1109,15 +1000,18 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
         }
     }
 
-    const cardIndex = card.suit == "dummy" ? 0 : getCardIndex(deck.cards, card);
+    const cardIndex = card.suit == 'dummy' ? 0 : getCardIndex(deck.cards, card);
+    console.log('moveCardFromHandToTable, cardIndex:', cardIndex);
     const movingCard = deck.cards[cardIndex];
-
+    console.log('moveCardFromHandToTable, movingCard:', movingCard);
+    
     const playerIndex = mapPlayerNameToTable(playerName);
+    console.log('moveCardFromHandToTable, playerIndex:', playerIndex);
     const containerIndex = playerIndex == 0 ? getCurrentCardContainer(card) : getLastCardContainer(playerIndex);
+    console.log('moveCardFromHandToTable, containerIndex:', containerIndex);
     $('#player'+playerIndex+'CardCol'+containerIndex).empty();
 
-    // var $containerFrom = document.getElementById('player'+playerIndex+'CardCol'+containerIndex);
-    var $containerTo = document.getElementById('player'+playerIndex+'CardPlayedDiv');
+    const $containerTo = document.getElementById('player'+playerIndex+'CardPlayedDiv');
     const containerFromPosition = $('#player'+playerIndex+'CardCol'+containerIndex).offset();
     const containerToPosition = $('#player'+playerIndex+'CardPlayedDiv').offset();
 
@@ -1134,7 +1028,7 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
         y: parseInt(containerFromPosition.top - containerToPosition.top, 10),
         rot: randomNegToPos(5),
         onComplete: async function() {
-            if (card.suit != "dummy") movingCard.setSide('front');
+            if (card.suit != 'dummy') movingCard.setSide('front');
             movingCard.animateTo({
                 delay: delay,
                 duration: duration,
@@ -1147,7 +1041,7 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
     });
 
     return new Promise(resolve => {
-        setTimeout(resolve, (delay+duration+500));
+        setTimeout(resolve, (delay+duration+safeMs));
     });
 }
 
@@ -1164,8 +1058,8 @@ function initPromiseTable(promiseTable) {
         var playerOver = 0;
         var playerUnder = 0;
         for (var j = 0; j < promiseTable.rounds.length; j++) {
-            var cardsInRound = promiseTable.rounds[j].cardsInRound;
-            var totalPromise = promiseTable.rounds[j].totalPromise;
+            const cardsInRound = promiseTable.rounds[j].cardsInRound;
+            const totalPromise = promiseTable.rounds[j].totalPromise;
             if (totalPromise != null) {
                 if (cardsInRound == totalPromise) {
                     $('#promiseTableHeader'+j).removeClass('promiseOver');
@@ -1184,9 +1078,9 @@ function initPromiseTable(promiseTable) {
                     $('#promiseTableHeader'+j).tooltip({title: "Under promised, total: " + totalPromise + "/" + cardsInRound});
                 }
             }
-            var promise = promiseTable.promisesByPlayers[i][j];
-            var speedPromiseStr = promise.speedPromisePoints != null && promise.speedPromisePoints != 0 ? (promise.speedPromisePoints == 1 ? '+' : promise.speedPromisePoints) : '';
-            var promiseStr = (promise != null) ? promise.promise : '&nbsp;';
+            const promise = promiseTable.promisesByPlayers[i][j];
+            const speedPromiseStr = promise.speedPromisePoints != null && promise.speedPromisePoints != 0 ? (promise.speedPromisePoints == 1 ? '+' : promise.speedPromisePoints) : '';
+            const promiseStr = (promise != null) ? promise.promise : '&nbsp;';
             $('#player'+i+'Prom'+j).html(promiseStr);
             if (promise.points != null) {
                 var tooltipStr = "";
@@ -1213,14 +1107,14 @@ function initPromiseTable(promiseTable) {
 function initScoreBoard(promiseTable, gameOver) {
     if ($('#scoreboard').children().length == 0) createScoreboard(promiseTable);
     
-    var totalPoints = [];
+    const totalPoints = [];
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
         var playerPoints = 0;
         for (var j = 0; j < promiseTable.promisesByPlayers[i].length; j++) {
-            var currentPoints = promiseTable.promisesByPlayers[i][j].points;
+            const currentPoints = promiseTable.promisesByPlayers[i][j].points;
             if (currentPoints != null) {
-                var speedPromisePoints = promiseTable.promisesByPlayers[i][j].speedPromisePoints;
-                var speedPromiseTotal = promiseTable.promisesByPlayers[i][j].speedPromiseTotal;
+                const speedPromisePoints = promiseTable.promisesByPlayers[i][j].speedPromisePoints;
+                const speedPromiseTotal = promiseTable.promisesByPlayers[i][j].speedPromiseTotal;
                 var tooltipStr = 'Total '+currentPoints;
                 if (currentPoints != 0) {
                     playerPoints+= currentPoints;
@@ -1261,9 +1155,36 @@ function checkSmall(playerCount) {
 function printPointStats(players) {
     if ($('#pointsStats').children().length > 0) return;
 
-    const reportColName = 'pointsStats';
-    var reportDataArr = [['Player', 'Points in previous games', {type: "string", role: "tooltip"}, 'Points in previous equal games', {type: "string", role: "tooltip"}]];
+    const node = $('#pointsStats');
+    const inGameReportCanvasName = 'averagesReportCanvas';
+    const reportCanvas = $('<canvas id="'+inGameReportCanvasName+'"></canvas>');
+    node.append(reportCanvas);
+    const inGameReportOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                ticks: {
+                    beginAtZero: true,
+                }
+            },
+        },
+        plugins: {
+            title: {
+                display: false,
+            },
+            legend: {
+                display: false,
+            },
+        },
+    };
+
+    const datasetsData = [];
+    const playersArr = [];
+    const allArr = [];
+    const equalArr = [];
     for (var i = 0; i < players.length; i++) {
+        playersArr.push(players[i].name);
         const allGamesSum = players[i].playerStats.playersAllGames.reduce((a, b) => a + b, 0);
         const allGamesCount = players[i].playerStats.playersAllGames.length;
         const allGamesAvg = allGamesSum/allGamesCount;
@@ -1272,30 +1193,115 @@ function printPointStats(players) {
         const equalGamesAvg = equalGamesSum/equalGamesCount;
         const allGamesTooltip = 'avg points  '+ (allGamesAvg).toFixed(1) +'\nin all previous '+ allGamesCount +' games';
         const equalGamesTooltip = 'avg points  '+ (equalGamesAvg).toFixed(1) +'\nin all previous '+ equalGamesCount +' equal games';
-        reportDataArr.push([players[i].name, allGamesAvg, allGamesTooltip, equalGamesAvg, equalGamesTooltip]);
+        allArr.push(allGamesAvg);
+        equalArr.push(equalGamesAvg);
+        // reportDataArr.push([players[i].name, allGamesAvg, allGamesTooltip, equalGamesAvg, equalGamesTooltip]);
     }
-    
-    const pointStatsReportData = new google.visualization.arrayToDataTable(reportDataArr);
-    const pointStatsOptions = {
-        backgroundColor: '#45a173',
-        height: 145,
-        // theme: 'maximized',
-        chartArea: {width: '99%', height: 145},
-        legend: { position: 'none' },
-        hAxis: {
-            textPosition: 'in',
-        },
-        vAxis: {
-            textPosition: 'in',
-            minValue: 0,
-            // maxValue: 100,
-            title: '',
-        },
+    datasetsData.push({
+        label: 'all games',
+        data: allArr,
+        borderWidth: 1,
+        backgroundColor: 'rgba(66,133,244,1.0)',
+        borderWidth: 3,
+    });
+    datasetsData.push({
+        label: 'equal games',
+        data: equalArr,
+        borderWidth: 1,
+        backgroundColor: 'rgba(233,66,66,1.0)',
+        borderWidth: 3,
+    });
+    const barData = {
+        labels: playersArr,
+        datasets: datasetsData,
     };
-    
-    var pointStatsChart = new google.visualization.ColumnChart(document.getElementById(reportColName));
-    pointStatsChart.draw(pointStatsReportData, pointStatsOptions);
 
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.chart.canvas.id == inGameReportCanvasName) instance.destroy();
+    });
+
+    const ctx = document.getElementById(inGameReportCanvasName);
+    const inGameReportChart = new Chart(ctx, {
+        type: 'bar',
+        data: barData,
+        options: inGameReportOptions,
+    });
+
+}
+
+async function cardPlayedCallback(gameInfo) {
+    $('#currentGameId').val(gameInfo.id);
+    console.log('card played', gameInfo);
+    hideThinkings();
+    var newRound = false;
+    var gameOver = false;
+
+    if (gameInfo.eventInfo != null) {
+        console.log('card played, eventInfoType: '+gameInfo.eventInfo.eventInfoType);
+        // animate played card
+        const playedCard = gameInfo.eventInfo.playedCard;
+        const cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
+        const players = gameInfo.humanPlayers;
+        newRound = gameInfo.eventInfo.newRound;
+        gameOver = gameInfo.eventInfo.gameOver;
+        
+        await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay, gameInfo.hiddenCardsMode);
+        if (gameInfo.eventInfo.newPlay) {
+            const winnerName = gameInfo.eventInfo.winnerName;
+            await moveCardFromTableToWinDeck(winnerName, players);
+        }
+    }
+
+    const doReloadInit = gameInfo.reloaded;
+    var getRoundIndex = gameInfo.currentRound;
+    if (newRound && !gameOver) {
+        getRoundIndex++;
+    }
+
+    var getRound = {
+        gameId: gameInfo.id,
+        myId: window.localStorage.getItem('uUID'),
+        round: getRoundIndex,
+        doReload: doReloadInit,
+        newRound: newRound,
+        gameOver: gameOver,
+        callTimeStamp: new Date(),
+    };
+
+    socket.emit('get round', getRound, function(myRound) {
+        console.log(myRound);
+        $('#myName').val(myRound.myName);
+        if (myRound.gameOver) {
+            showPlayerPromises(myRound, true, gameInfo.speedPromise);
+            initPromiseTable(myRound.promiseTable);
+            initScoreBoard(myRound.promiseTable, myRound.gameOver);
+            $('#showGameReportCollapse').collapse('show');
+            getOneGameReport(gameInfo.id);
+            return;
+        }
+        if (myRound.doReloadInit) {
+            console.log('reloading...');
+            $('#gameReportContainer').hide();
+            $('#gameChooser').hide();
+            $('#gameContainer').show();
+            browserReload(myRound, gameInfo.speedPromise);
+            initRuleList(gameInfo);
+            initSpeedBar(gameInfo);
+        }
+        showPlayerPromises(myRound, showPromisesNow(gameInfo, myRound), gameInfo.speedPromise);
+        if (myRound.newRound) {
+            console.log('newRound');
+            clearWonCards();
+            browserReload(myRound, gameInfo.speedPromise);
+        }
+        if (roundPromised(myRound)) {
+            showOnlyTotalPromiseInfo(myRound.promiseTable.rounds[myRound.roundInd], gameInfo.onlyTotalPromise, myRound.players);
+            playRound(myRound, gameInfo.freeTrump, gameInfo.privateSpeedGame, gameInfo.opponentGameCardValue);
+        } else {
+            initSpeedBar(gameInfo);
+            getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
+        }
+    });
 }
 
 function browserReload(myRound, speedPromise) {
@@ -1312,7 +1318,7 @@ function browserReload(myRound, speedPromise) {
 
 function appendToChat(text) {
     $('#chatTextArea').val($('#chatTextArea').val() +'\n'+ text);
-    var textArea = document.getElementById('chatTextArea');
+    const textArea = document.getElementById('chatTextArea');
     textArea.scrollTop = textArea.scrollHeight;
 }
 
