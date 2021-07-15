@@ -1,6 +1,6 @@
 {
     "name": "promiseweb",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "multiplayer promise web card game, uses socket.io",
     "license": "UNLICENSED",
     "author": {
@@ -22,7 +22,7 @@
         "@types/node": "^16.3.2"
     },
     "dependencies": {
-        "bootstrap": "^4.6.0",
+        "bootstrap": "^5.0.2",
         "card-deck": "^1.0.1",
         "chart.js": "^3.4.1",
         "chartjs-plugin-annotation": "^1.0.2",
