@@ -52,6 +52,10 @@ try {
         app.get('/', (req, res) => {
             res.sendFile('index.html');
         });
+        app.get('/ping', (req, res) => {
+            console.log('ping');
+            res.sendFile(__dirname +'/static/ping.html');
+        });
         app.get('/css/faces/:face', (req, res) => {
             try {
                 res.sendFile(__dirname + '/cardGallery/fourColorFaces/' + req.params.face);
