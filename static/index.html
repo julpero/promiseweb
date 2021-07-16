@@ -32,7 +32,7 @@
         <div class="container-fluid" id="gameChooser">
             <div class="row">
                 <div class="col">
-                    <a class="btn btn-primary" data-toggle="collapse" data-bs-toggle="collapse" href="#joinGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#joinGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Show open games
                     </a>
                     <div class="collapse" id="joinGameCollapse">
@@ -41,17 +41,14 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <a class="btn btn-primary" data-toggle="collapse" data-bs-toggle="collapse" href="#createGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#createGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Create game
                     </a>
                     <div class="collapse" id="createGameCollapse">
-                        <div class="form-group">
-                            <div class="row">
-                                <div class="col">
-                                    <label for="newGameHumanPlayersCount">
-                                        Total number of human players
-                                    </label>
-                                    <select class="form-control" id="newGameHumanPlayersCount">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-floating">
+                                    <select class="form-select" id="newGameHumanPlayersCount">
                                         <!-- <option value="0">0</option>
                                         <option value="1">1</option>
                                         <option value="2">2</option> -->
@@ -60,13 +57,15 @@
                                         <option value="5">5</option>
                                         <option value="6">6</option>
                                     </select>
-    
-                                </div>
-                                <div class="col">
-                                    <label for="newGameBotPlayersCount">
-                                        Total number of ai players
+                                    <label for="newGameHumanPlayersCount">
+                                        Total number of human players
                                     </label>
-                                    <select class="form-control" id="newGameBotPlayersCount">
+                                </div>
+
+                            </div>
+                            <div class="col">
+                                <div class="form-floating">
+                                    <select class="form-select" id="newGameBotPlayersCount">
                                         <option value="0">0</option>
                                         <!-- <option value="1">1</option>
                                         <option value="2">2</option>
@@ -74,64 +73,81 @@
                                         <option value="4">4</option>
                                         <option value="5">5</option> -->
                                     </select>
-                                            
+                                    <label for="newGameBotPlayersCount">
+                                        Total number of ai players
+                                    </label>
+                                </div>
+                                        
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-floating">
+                                    <select class="form-select" id="newGameStartRound">
+                                        <option value="10">10</option>
+                                        <option value="9">9</option>
+                                        <option value="8">8</option>
+                                        <option value="7">7</option>
+                                        <option value="6">6</option>
+                                        <option value="5">5</option>
+                                        <option value="4">4</option>
+                                        <option value="3">3</option>
+                                        <option value="2">2</option>
+                                        <option value="1">1</option>
+                                    </select>
+                                    <label for="newGameStartRound">
+                                        Start round of the game
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-floating">
+                                    <select class="form-select" id="newGameTurnRound">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                    </select>
+                                    <label for="newGameTurnRound">
+                                        Turn round of the game
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-floating">
+                                    <select class="form-select" id="newGameEndRound">
+                                        <option value="10">10</option>
+                                        <option value="9">9</option>
+                                        <option value="8">8</option>
+                                        <option value="7">7</option>
+                                        <option value="6">6</option>
+                                        <option value="5">5</option>
+                                        <option value="4">4</option>
+                                        <option value="3">3</option>
+                                        <option value="2">2</option>
+                                        <option value="1">1</option>
+                                    </select>
+                                    <label for="newGameEndRound">
+                                        End round of the game
+                                    </label>
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="newGameTurns">
-                                Start - Turn - End rounds of the game
-                            </label>
-                            <div class="row">
-                                <div class="col">
-                                    <select class="form-control" id="newGameStartRound">
-                                        <option value="10">10</option>
-                                        <option value="9">9</option>
-                                        <option value="8">8</option>
-                                        <option value="7">7</option>
-                                        <option value="6">6</option>
-                                        <option value="5">5</option>
-                                        <option value="4">4</option>
-                                        <option value="3">3</option>
-                                        <option value="2">2</option>
-                                        <option value="1">1</option>
-                                    </select>
-                                </div>
-                                <div class="col">
-                                    <select class="form-control" id="newGameTurnRound">
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
-                                        <option value="6">6</option>
-                                        <option value="7">7</option>
-                                        <option value="8">8</option>
-                                        <option value="9">9</option>
-                                        <option value="10">10</option>
-                                    </select>
-                                </div>
-                                <div class="col">
-                                    <select class="form-control" id="newGameEndRound">
-                                        <option value="10">10</option>
-                                        <option value="9">9</option>
-                                        <option value="8">8</option>
-                                        <option value="7">7</option>
-                                        <option value="6">6</option>
-                                        <option value="5">5</option>
-                                        <option value="4">4</option>
-                                        <option value="3">3</option>
-                                        <option value="2">2</option>
-                                        <option value="1">1</option>
-                                    </select>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="newGameMyName" placeholder="nickname">
+                                    <label for="newGameMyName">
+                                        My (nick)name in the game
+                                    </label>
                                 </div>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="newGameMyName">
-                                My (nick)name in the game
-                            </label>
-                            <input type="text" class="form-control" id="newGameMyName">
                         </div>
                         <div class="row">
                             <div class="col">
@@ -197,7 +213,7 @@
                                 </div>
                             </div>
                             <div class="col">
-                                <select class="form-control form-control-sm" id="hiddenCardsMode">
+                                <select class="form-select form-select-sm" id="hiddenCardsMode">
                                     <option value="0">show cards normally</option>
                                     <option value="1">show only card in charge</option>
                                     <option value="2">show card in charge and winning card</option>
@@ -217,16 +233,20 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" value="" id="opponentGameCardValue">
                                     <label class="form-check-label" for="opponentGameCardValue">
-                                        Show hand value in game
+                                        Show hand value in the game
                                     </label>
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="newGamePassword">
-                                Password for new game, leave empty if this is a public game
-                            </label>
-                            <input type="text" class="form-control" id="newGamePassword">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="newGamePassword" placeholder="password">
+                                    <label for="newGamePassword">
+                                        Password for the new game, leave empty if this is a public game
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                         <button type="button" class="btn btn-primary" id="createNewGameButton">Create</button>
                     </div>
@@ -234,7 +254,7 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <a class="btn btn-primary" data-toggle="collapse" data-bs-toggle="collapse" href="#joinGameByIdCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#joinGameByIdCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Join by ID
                     </a>
                     <div class="collapse" id="joinGameByIdCollapse">
@@ -242,19 +262,19 @@
                         <div class="row">
                             <div class="col-2"></div>
                             <div class="col-4">
-                                <div class="form-group">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="joinGameId" placeholder="gameid">
                                     <label for="joinGameId">
                                         Other game id
                                     </label>
-                                    <input type="text" class="form-control" id="joinGameId">
                                 </div>
                             </div>
                             <div class="col-4">
-                                <div class="form-group">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="joinById" placeholder="palyerid">
                                     <label for="joinById">
                                         Other player Id
                                     </label>
-                                    <input type="text" class="form-control" id="joinById">
                                 </div>
                             </div>
                             <div class="col-2">
@@ -268,7 +288,7 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <button type="button" id="showCommonReportsButton" class="btn btn-primary" data-toggle="modal" data-bs-toggle="modal" data-target="#commonReportModal" data-bs-target="#commonReportModal">Show graphs</button>
+                    <button type="button" id="showCommonReportsButton" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#commonReportModal">Show graphs</button>
                 </div>
             </div>
         </div>
@@ -309,16 +329,16 @@
                     <div class="row">
                         <div class="col-2">
                             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                                <a class="nav-link small active" id="v-pills-chat-tab" data-toggle="pill" data-bs-toggle="pill" href="#v-pills-chat" role="tab" aria-controls="v-pills-chat" aria-selected="true">
+                                <a class="nav-link small active" id="v-pills-chat-tab" data-bs-toggle="pill" href="#v-pills-chat" role="tab" aria-controls="v-pills-chat" aria-selected="true">
                                     Chat
                                 </a>
-                                <a class="nav-link small" id="v-pills-stat-tab" data-toggle="pill" data-bs-toggle="pill" href="#v-pills-stat" role="tab" aria-controls="v-pills-stat" aria-selected="false">
+                                <a class="nav-link small" id="v-pills-stat-tab" data-bs-toggle="pill" href="#v-pills-stat" role="tab" aria-controls="v-pills-stat" aria-selected="false">
                                     Stats
                                 </a>
-                                <a class="nav-link small" id="v-pills-live-1-tab" data-toggle="pill" data-bs-toggle="pill" href="#v-pills-live-1" role="tab" aria-controls="v-pills-live-1" aria-selected="false">
+                                <a class="nav-link small" id="v-pills-live-1-tab" data-bs-toggle="pill" href="#v-pills-live-1" role="tab" aria-controls="v-pills-live-1" aria-selected="false">
                                     Live1
                                 </a>
-                                <a class="nav-link small" id="v-pills-live-2-tab" data-toggle="pill" data-bs-toggle="pill" href="#v-pills-live-2" role="tab" aria-controls="v-pills-live-2" aria-selected="false">
+                                <a class="nav-link small" id="v-pills-live-2-tab" data-bs-toggle="pill" href="#v-pills-live-2" role="tab" aria-controls="v-pills-live-2" aria-selected="false">
                                     Live2
                                 </a>
                             </div>
@@ -364,7 +384,7 @@
                 </div>
 
                 <div class="col-2" id="menu" style="border: 1px solid black;">
-                    <a class="btn btn-primary" data-toggle="collapse" data-bs-toggle="collapse" href="#leaveGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#leaveGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Leave game
                     </a>
 
@@ -372,7 +392,7 @@
                         really leaving?
                         <div class="btn-group" role="group" aria-label="Leaving buttons">
                             <button type="button" id="dontLeaveButton" class="btn btn-success">No</button>
-                            <button type="button" id="leaveButton" class="btn btn-danger" data-toggle="modal" data-bs-toggle="modal" data-target="#leavingGameModal" data-bs-target="#leavingGameModal">Yes</button>
+                            <button type="button" id="leaveButton" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#leavingGameModal">Yes</button>
                         </div>
                     </div>
 
@@ -467,7 +487,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="oneGameReportModalLabel">Report of the Promise Game</h5>
-                        <button type="button" class="btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -481,7 +501,7 @@
                         <canvas id="oneGamePointsBody" style="height: 210px"></canvas>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
@@ -492,7 +512,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="commonReportModalLabel">Report of the played Promise Games</h5>
-                        <button type="button" class="btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -507,7 +527,7 @@
                     <div class="modal-body"><canvas id="avgPercentagePointsGraph" style="height: 230px"></canvas></div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
@@ -518,7 +538,7 @@
               <div class="modal-content">
                 <div class="modal-header">
                   <h5 class="modal-title">You are now leaving the game</h5>
-                  <button type="button" class="btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                   </button>
                 </div>
@@ -530,7 +550,7 @@
                     <input type="text" id="leavingUId" class="form-control" readonly>
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
               </div>
             </div>
