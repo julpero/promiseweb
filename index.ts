@@ -1,5 +1,3 @@
-import { exception } from "console";
-
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
@@ -70,10 +68,10 @@ try {
                 pingTime: new Date().getTime()
             };
             const pingResult = await collection.insertOne(pingObject);
-            if (pingResult.insertedCount != 1) {
+            const pingId = pingResult.insertedId;
+            if (pingId == undefined) {
                 throw new Error('ping insert failed');
             }
-            const pingId = pingResult.insertedId;
             const deleteResult = await collection.deleteOne({
                 '_id': pingId
             });
