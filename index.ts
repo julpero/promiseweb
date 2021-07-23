@@ -24,7 +24,7 @@ app.use(express.static('node_modules/chartjs-plugin-annotation'))
 const pf = require(__dirname + '/promiseFunctions.js');
 const rf = require(__dirname + '/reportFunctions.js');
 const sm = require(__dirname + '/clientSocketMapper.js');
-const ai = require(__dirname + '/aiPlayer.js');
+// const ai = require(__dirname + '/aiPlayer.js');
 
 const minGamesToReport = 5;
 const vanillaGameRules = {
@@ -43,19 +43,45 @@ const vanillaGameRules = {
     hiddenCardsMode: {$in: [null, 0]},
 };
 
+const promisewebCollection = 'promiseweb';
+const statsCollection = 'promisewebStats';
+const pingCollection = 'pingCollection';
+
 try {
     var mongoUtil = require(__dirname + '/mongoUtil.js');
     mongoUtil.connectToServer(async function(err, client ) {
 
         if (err) await doLog('server', null, err, null, null);
         if (err) console.log('server', err);
+
         app.get('/', (req, res) => {
             res.sendFile('index.html');
         });
-        app.get('/ping', (req, res) => {
+
+        app.get('/ping', async (req, res) => {
             console.log('ping');
+            const database = mongoUtil.getDb();
+            const collection = database.collection(pingCollection);
+            // const ObjectId = require('mongodb').ObjectId;
+            // const pingId = new ObjectId();
+            const pingObject = {
+                pingTime: new Date().getTime()
+            };
+            const pingResult = await collection.insertOne(pingObject);
+            const pingId = pingResult.insertedId;
+            if (pingId == undefined) {
+                throw new Error('ping insert failed');
+            }
+            const deleteResult = await collection.deleteOne({
+                '_id': pingId
+            });
+            if (deleteResult.deletedCount != 1) {
+                throw new Error('ping delete failed');
+            }
+
             res.sendFile(__dirname +'/static/ping.html');
         });
+        
         app.get('/css/faces/:face', (req, res) => {
             try {
                 res.sendFile(__dirname + '/cardGallery/fourColorFaces/' + req.params.face);
@@ -99,7 +125,7 @@ try {
                 const myId = gameCheck.myId;
                 var gameFound = false;
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const query = {
                     gameStatus: 1, // check first ongoing game
                 };
@@ -158,7 +184,7 @@ try {
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const query = {
                     _id: searchId,
                     gameStatus: 1,
@@ -223,7 +249,7 @@ try {
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const query = {
                     _id: searchId,
                     gameStatus: 0,
@@ -292,7 +318,7 @@ try {
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const query = {
                     _id: searchId,
                     gameStatus: 1,
@@ -362,7 +388,7 @@ try {
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const query = {
                     _id: searchId,
                     gameStatus: 0,
@@ -429,7 +455,7 @@ try {
                     if (resultGameInfo.humanPlayersCount == resultGameInfo.humanPlayers.length) {
                         // add bot players here
                         if (resultGameInfo.botPlayersCount > 0) {
-                            resultGameInfo.humanPlayers.concat(ai.getRandomAiPlayers(resultGameInfo.botPlayersCount));
+                            // resultGameInfo.humanPlayers.concat(ai.getRandomAiPlayers(resultGameInfo.botPlayersCount));
                         }
                         // start game
                         await startGame(resultGameInfo);
@@ -443,7 +469,7 @@ try {
                 await doLog('create game', null, gameOptions, null, null);
                 console.log('create game', gameOptions);
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
     
                 const query = {
                     gameStatus: { $lte: 1 },
@@ -490,7 +516,7 @@ try {
                 const roundInd = getRound.round;
     
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
     
@@ -531,7 +557,7 @@ try {
                 }
 
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const query = {
@@ -600,7 +626,7 @@ try {
                 var promiseMadeOk = false;
     
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 
@@ -696,7 +722,7 @@ try {
                 var eventInfoToCardPlayer = null;
     
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const statsCollection = database.collection('promisewebStats');
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
@@ -885,7 +911,7 @@ try {
                 console.log('get games - start to get games');
                 const myId = data.myId;
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const query = {
                     gameStatus: 0,
                 };
@@ -957,7 +983,7 @@ try {
                     // await doLog(games[gameIdStr]);
                 }
 
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const queryAggregation = [{$match: {
                     gameStatus: {$eq: 2}
                   }}, {$sort: {
@@ -1020,7 +1046,7 @@ try {
                 };
 
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
 
                 // game count
                 await doLog('get report data', 'report data - game count', null, null, null);
@@ -1507,7 +1533,7 @@ try {
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const query = {
                     gameStatus: 2,
                     _id: searchId,
@@ -1525,7 +1551,7 @@ try {
                 console.log('update all game reports - start to update all game reports');
                 const updatedIds = [];
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const query = {
                     gameStatus: 2,
                 };
@@ -1560,7 +1586,7 @@ try {
                     averagePointsPerGames: null,
                 };
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
 
                 // games played
                 await doLog('get average report', ' ... games played', null, null, null);
@@ -1683,7 +1709,7 @@ try {
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const query = {
                     _id: searchId,
                     gameStatus: 2,
@@ -1716,7 +1742,7 @@ try {
                 console.log('change nick - game database '+oldName+' to '+newName, gameIdStr);
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
-                const collection = database.collection('promiseweb');
+                const collection = database.collection(promisewebCollection);
                 const query = {
                     _id: searchId,
                     gameStatus: 2,
@@ -1837,7 +1863,7 @@ async function startGame (gameInfo) {
     };
 
     const database = mongoUtil.getDb();
-    const collection = database.collection('promiseweb');
+    const collection = database.collection(promisewebCollection);
     const ObjectId = require('mongodb').ObjectId;
     const searchId = new ObjectId(gameIdStr);
 
@@ -1863,7 +1889,7 @@ async function startGame (gameInfo) {
 async function startRound(gameInfo, roundInd) {
     const gameIdStr = gameInfo.id;
     const database = mongoUtil.getDb();
-    const collection = database.collection('promiseweb');
+    const collection = database.collection(promisewebCollection);
     const ObjectId = require('mongodb').ObjectId;
     const searchId = new ObjectId(gameIdStr);
 
@@ -1901,7 +1927,7 @@ async function getPlayerPreviousStats(playerName, equalObj) {
     const hiddenCardsMode = equalObj == null || equalObj.hiddenCardsMode == null || equalObj.hiddenCardsMode == 0 ? [0, null] : [equalObj.hiddenCardsMode];
 
     const database = mongoUtil.getDb();
-    const collection = database.collection('promiseweb');
+    const collection = database.collection(promisewebCollection);
     const match = equalObj == null
     ? {
         gameStatus: {$eq: 2},
