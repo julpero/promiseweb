@@ -1,37 +1,37 @@
 function showNickChanger(gameList) {
-    const gameListContainer = $('#chooseNickGameCollapse');
+    const gameListContainer = document.getElementById('chooseNickGameCollapse');
     console.log(gameList);
     gameList.forEach(function (game) {
-        const gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
-        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').html(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null)+showErrorNames(game.playerNameErrors)));
+        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id +'">').classList.add('row');
+        gameContainerDiv.appendChild(createElementWithIdAndClasses('div', 'gamePlayers' + game.id + '">').classList.add('col-4 report-players').innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null)+showErrorNames(game.playerNameErrors)));
 
-        const oldNameCol = $('<div></div>').addClass('col-2');
+        const oldNameCol = createElementWithIdAndClasses('div', null, 'col-2');
         const oldNameInput = $('<input id="oldName'+game.id+'" type="text">');
-        const newNameCol = $('<div></div>').addClass('col-2');
+        const newNameCol = createElementWithIdAndClasses('div', null, 'col-2');
         const newNameInput = $('<input id="newName'+game.id+'" type="text">');
-        oldNameCol.append(oldNameInput);
-        gameContainerDiv.append(oldNameCol);
-        newNameCol.append(newNameInput);
-        gameContainerDiv.append(newNameCol);
+        oldNameCol.appendChild(oldNameInput);
+        gameContainerDiv.appendChild(oldNameCol);
+        newNameCol.appendChild(newNameInput);
+        gameContainerDiv.appendChild(newNameCol);
 
         const btnId1 = 'changeNick' + game.id;
-        const showGameButton = ($('<button id="'+btnId1+'" value="'+game.id+'">').addClass('btn btn-primary change-nick-button').text('Change'));
-        gameContainerDiv.append(($('<div>').addClass('col-1')).append(showGameButton));
+        const showGameButton = ($('<button id="'+btnId1+'" value="'+game.id+'">').classList.add('btn btn-primary change-nick-button').text('Change'));
+        gameContainerDiv.appendChild(($('<div>').classList.add('col-1')).appendChild(showGameButton));
 
         const btnId2 = 'generateReports' + game.id;
         const generatedStr = game.gameStatistics != null ? new Date(game.gameStatistics.generated).toLocaleString('fi-fi') : 'NULL';
-        const generateReportsButton = ($('<button id="'+btnId2+'" value="'+game.id+'">').addClass('btn btn-primary generate-report-button').text('Generate '+generatedStr));
-        gameContainerDiv.append(($('<div>').addClass('col-3')).append(generateReportsButton));
+        const generateReportsButton = ($('<button id="'+btnId2+'" value="'+game.id+'">').classList.add('btn btn-primary generate-report-button').text('Generate '+generatedStr));
+        gameContainerDiv.appendChild(($('<div>').classList.add('col-3')).appendChild(generateReportsButton));
 
-        gameListContainer.append(gameContainerDiv);
+        gameListContainer.appendChild(gameContainerDiv);
 
     });
 
-    $('.change-nick-button').on('click', function() {
+    $('.change-nick-button').addEventListener('click', function() {
         console.log(this.value);
-        const oldName = $('#oldName'+this.value).val();
+        const oldName = document.getElementById('oldName'+this.value).val();
         const defNewName = oldNameToNewName(oldName);
-        const newName = defNewName != null ? defNewName : $('#newName'+this.value).val().trim();
+        const newName = defNewName != null ? defNewName : document.getElementById('newName'+this.value).val().trim();
 
         if (oldName != newName && newName != '') {
             const nickChangeObj = {
@@ -42,7 +42,7 @@ function showNickChanger(gameList) {
     
             socket.emit('change nick', nickChangeObj, function() {
                 socket.emit('get games for report', {}, function (response) {
-                    $('#chooseNickGameCollapse').empty();
+                    emptyElementById('chooseNickGameCollapse');
                     showNickChanger(response);
                 });
             });
@@ -51,7 +51,7 @@ function showNickChanger(gameList) {
         }
     });
 
-    $('.generate-report-button').on('click', function() {
+    $('.generate-report-button').addEventListener('click', function() {
         console.log(this.value);
 
         const generateReportObj = {
@@ -60,7 +60,7 @@ function showNickChanger(gameList) {
         socket.emit('generate game statistics', generateReportObj, function(gameStatistics) {
             console.log(gameStatistics);
             socket.emit('get games for report', {}, function (response) {
-                $('#chooseNickGameCollapse').empty();
+                emptyElementById('chooseNickGameCollapse');
                 showNickChanger(response);
             });
         });
@@ -68,17 +68,17 @@ function showNickChanger(gameList) {
 }
 
 function showGames(gameList) {
-    const gameListContainer = $('#chooseGameCollapse');
+    const gameListContainer = document.getElementById('chooseGameCollapse');
     console.log(gameList);
     const dateformatoptions = {
         year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false,
     };
     gameList.forEach(function (game) {
-        const gameContainerDiv = $('<div id="gameContainerDiv'+ game.id +'">').addClass('row');
+        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id +'">').classList.add('row');
         const gameStarted = new Date(game.created).getTime();
         const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
         const winnerName = game.gameStatistics.winnerName;
-        gameContainerDiv.append($('<div>').addClass('col-2 report-date').text(dateStr));
+        gameContainerDiv.appendChild($('<div>').classList.add('col-2 report-date').text(dateStr));
 
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
         if (!game.evenPromisesAllowed) ruleStr+= ', no even promises';
@@ -92,27 +92,27 @@ function showGames(gameList) {
         if (game.opponentGameCardValue) ruleStr+= ', hand value in game';
         if (game.hiddenCardsMode == 1) ruleStr+= ', show only card in charge';
         if (game.hiddenCardsMode == 2) ruleStr+= ', show card in charge and winning card';
-        gameContainerDiv.append($('<div>').addClass('col-4 report-rules').text(ruleStr));
-        gameContainerDiv.append($('<div id="gamePlayers' + game.id + '">').addClass('col-4 report-players').html(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, winnerName)));
+        gameContainerDiv.appendChild($('<div>').classList.add('col-4 report-rules').text(ruleStr));
+        gameContainerDiv.appendChild(createElementWithIdAndClasses('div', 'gamePlayers' + game.id + '">').classList.add('col-4 report-players').innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, winnerName)));
 
         const btnId = 'showGameButton' + game.id;
-        const showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').addClass('btn btn-primary reportGameButton').text('Show report'));
-        gameContainerDiv.append(($('<div>').addClass('col-2')).append(showGameButton));
+        const showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').classList.add('btn btn-primary reportGameButton').text('Show report'));
+        gameContainerDiv.appendChild(($('<div>').classList.add('col-2')).appendChild(showGameButton));
 
-        gameListContainer.append(gameContainerDiv);
+        gameListContainer.appendChild(gameContainerDiv);
     });
 
-    $('.reportGameButton').on('click', function() {
+    $('.reportGameButton').addEventListener('click', function() {
         getOneGameReport(this.value);
     });
 }
 
 function showGamesPlayed(reportObject) {
-    const node = $('#averageReportCollapse');
+    const node = document.getElementById('averageReportCollapse');
 
     const gamesPlayedReportCanvasName = 'gamesPlayedReportCanvas';
     const reportCanvas = $('<canvas id="'+gamesPlayedReportCanvasName+'"></canvas>');
-    node.append(reportCanvas);
+    node.appendChild(reportCanvas);
     const gamesPlayedReportOptions = {
         scales: {
             y: {
@@ -163,11 +163,11 @@ function showGamesPlayed(reportObject) {
 }
 
 function showAveragePointsPerGames(reportObject) {
-    const node = $('#averageReportCollapse');
+    const node = document.getElementById('averageReportCollapse');
 
     const averagesReportCanvasName = 'averagesReportCanvas';
     const reportCanvas = $('<canvas id="'+averagesReportCanvasName+'"></canvas>');
-    node.append(reportCanvas);
+    node.appendChild(reportCanvas);
     const averagesReportOptions = {
         scales: {
             y: {

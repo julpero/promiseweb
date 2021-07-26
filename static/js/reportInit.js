@@ -1,41 +1,41 @@
 function initGameListEvent() {
-    $('#chooseGameCollapse').on('shown.bs.collapse', function () {
+    document.getElementById('chooseGameCollapse').addEventListener('shown.bs.collapse', function () {
         socket.emit('get games for report', {}, function (response) {
             showGames(response);
         });
     });
 
-    $('#chooseGameCollapse').on('hidden.bs.collapse', function () {
-        $('#chooseGameCollapse').empty();
+    document.getElementById('chooseGameCollapse').addEventListener('hidden.bs.collapse', function () {
+        emptyElementById('chooseGameCollapse');
     });
 }
 
 function initAverageEvent() {
-    $('#averageReportCollapse').on('shown.bs.collapse', function () {
+    document.getElementById('averageReportCollapse').addEventListener('shown.bs.collapse', function () {
         socket.emit('get average report', {}, function (response) {
             showAverages(response);
         });
     });
 
-    $('#averageReportCollapse').on('hidden.bs.collapse', function () {
-        $('#averageReportCollapse').empty();
+    document.getElementById('averageReportCollapse').addEventListener('hidden.bs.collapse', function () {
+        emptyElementById('averageReportCollapse');
     });
 }
 
 function initNickChangeEvent() {
-    $('#chooseNickGameCollapse').on('shown.bs.collapse', function () {
+    document.getElementById('chooseNickGameCollapse').addEventListener('shown.bs.collapse', function () {
         socket.emit('get games for report', {}, function (response) {
             showNickChanger(response);
         });
     });
 
-    $('#chooseNickGameCollapse').on('hidden.bs.collapse', function () {
-        $('#chooseNickGameCollapse').empty();
+    document.getElementById('chooseNickGameCollapse').addEventListener('hidden.bs.collapse', function () {
+        emptyElementById('chooseNickGameCollapse');
     });
 }
 
 function initUpdateAllButton() {
-    $('#updateAllGameReportsButton').on('click', function() {
+    document.getElementById('updateAllGameReportsButton').addEventListener('click', function() {
         if (window.confirm('Are you sure you wan\'t to update ALL game reports?')) {
             socket.emit('update all game reports', {}, function (response) {
                 console.log(response);
@@ -52,7 +52,7 @@ function initEvents() {
 }
 
 function enableButtons() {
-    $('.report-button').removeClass('disabled');
+    $('.report-button').classList.remove('disabled');
 }
 
 function mainInit() {

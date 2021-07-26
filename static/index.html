@@ -558,15 +558,16 @@
         <script src="/socket.io/socket.io.js"></script>
         <script src="/dist/chart.min.js"></script>
         <script src="/dist/chartjs-plugin-annotation.js"></script>
-        <script src="/jquery.min.js"></script>
+        <!-- <script src="/jquery.min.js"></script> -->
         <script src="/js/bootstrap.bundle.min.js"></script>
         <script src="/js/common.js"></script>
         <script src="/js/tableLayouts.js"></script>
         <script src="/js/beforeGame.js"></script>
         <script src="/js/promiseweb.js"></script>
         <script src="/js/indexReports.js"></script>
+        <script src="/velocity.min.js"></script>
         <script src="/deck.min.js"></script>
-        <script src="/jquery.animate-colors-min.js"></script>
+        <!-- <script src="/jquery.animate-colors-min.js"></script> -->
 
         <script type="text/javascript">
             const socket = io();
@@ -585,7 +586,7 @@
             var live1GraphChart = null;
             var live2GraphChart = null;
             
-            $(function () {
+            document.addEventListener('DOMContentLoaded', () => {
                 var joinedGame = null;
                 if (window.localStorage.getItem('uUID')) {
                     console.log(window.localStorage.getItem('uUID'));
@@ -597,11 +598,11 @@
                 }
                 
                 socket.on('delete gameinfo', function(gameId) {
-                    $('#gameContainerDiv'+gameId).remove();
+                    document.getElementById('gameContainerDiv'+gameId).remove();
                 });
 
                 socket.on('update gameinfo', function(gameInfo) {
-                    $('#gamePlayers'+gameInfo.id).text(gamePlayersToStr(gameInfo.humanPlayers, gameInfo.humanPlayersCount, gameInfo.computerPlayersCount, null));
+                    document.getElementById('gamePlayers'+gameInfo.id).text(gamePlayersToStr(gameInfo.humanPlayers, gameInfo.humanPlayersCount, gameInfo.computerPlayersCount, null));
                 });
 
                 socket.on('new chat line', function(chatLine) {
@@ -609,11 +610,11 @@
                 });
 
                 socket.on('start game', function(gameInfo) {
-                    $('#currentGameId').val(gameInfo.id);
-                    $('#myName').val(gameInfo.myName);
-                    $('#gameReportContainer').hide();
-                    $('#gameChooser').hide();
-                    $('#gameContainer').show();
+                    document.getElementById('currentGameId').val(gameInfo.id);
+                    document.getElementById('myName').val(gameInfo.myName);
+                    document.getElementById('gameReportContainer').style.display = 'none';
+                    document.getElementById('gameChooser').style.display = 'none';
+                    document.getElementById('gameContainer').style.display = '';
                     initRuleList(gameInfo);
                     const getRound = {
                         gameId: gameInfo.id,
@@ -624,7 +625,7 @@
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
-                        $('#myName').val(myRound.myName);
+                        document.getElementById('myName').val(myRound.myName);
                         browserReload(myRound, gameInfo.speedPromise);
                         initSpeedBar(gameInfo);
                         getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
@@ -632,7 +633,7 @@
                 });
 
                 socket.on('promise made', function(gameInfo) {
-                    $('#currentGameId').val(gameInfo.id);
+                    document.getElementById('currentGameId').val(gameInfo.id);
                     console.log('promise made');
                     console.log(gameInfo);
                     const doReloadInit = gameInfo.reloaded;
@@ -646,7 +647,7 @@
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
-                        $('#myName').val(myRound.myName);
+                        document.getElementById('myName').val(myRound.myName);
                         if (myRound.doReloadInit) {
                             console.log('reloading...');
                             browserReload(myRound, gameInfo.speedPromise);

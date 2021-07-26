@@ -495,12 +495,12 @@ function liveStats1Graph(reportData) {
     const statsData = reportData.stats;
     const canvasIdStr = 'pointsLiveStats1Graph';
 
-    if (live1GraphChart == null || $('#pointsLive1Stats').children().length == 0) {
+    if (live1GraphChart == null || document.getElementById('pointsLive1Stats').children.length == 0) {
         console.log('create live 1 graph canvas');
-        const node = $('#pointsLive1Stats');
-        node.empty();
-        const reportCanvas = $('<canvas id="'+canvasIdStr+'"></canvas>');
-        node.append(reportCanvas);
+        emptyElementById('pointsLive1Stats')
+        const node = document.getElementById('pointsLive1Stats');
+        const reportCanvas = createElementWithIdAndClasses('canvas', canvasIdStr);
+        node.appendChild(reportCanvas);
     }
 
     
@@ -588,12 +588,12 @@ function liveStats2Graph(reportData) {
     const statsData = reportData.stats;
     const canvasIdStr = 'pointsLiveStats2Graph';
 
-    if (live2GraphChart == null || $('#pointsLive2Stats').children().length == 0) {
+    if (live2GraphChart == null || document.getElementById('pointsLive2Stats').children.length == 0) {
         console.log('create live 2 graph canvas');
-        const node = $('#pointsLive2Stats');
-        node.empty();
-        const reportCanvas = $('<canvas id="'+canvasIdStr+'"></canvas>');
-        node.append(reportCanvas);
+        emptyElementById('pointsLive2Stats');
+        const node = document.getElementById('pointsLive2Stats');
+        const reportCanvas = createElementWithIdAndClasses('canvas', canvasIdStr);
+        node.appendChild(reportCanvas);
     }
 
     

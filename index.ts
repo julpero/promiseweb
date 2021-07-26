@@ -20,6 +20,7 @@ app.use(express.static('node_modules/deck-of-cards/dist'))
 app.use(express.static('node_modules/jquery-color-animation'))
 app.use(express.static('node_modules/chart.js'))
 app.use(express.static('node_modules/chartjs-plugin-annotation'))
+app.use(express.static('node_modules/velocity-animate'))
 
 const pf = require(__dirname + '/promiseFunctions.js');
 const rf = require(__dirname + '/reportFunctions.js');

@@ -294,8 +294,8 @@ function showOnePointsReport(reportObject) {
 }
 
 function getOneGameReport(gameId) {
-    $('#oneGameReportModal').off('shown.bs.modal');
-    $('#oneGameReportModal').on('shown.bs.modal', function() {
+    document.getElementById('oneGameReportModal').off('shown.bs.modal');
+    document.getElementById('oneGameReportModal').addEventListener('shown.bs.modal', function() {
         const getReportObj = { gameId: gameId };
         socket.emit('get game report', getReportObj, function(gameReportData) {
             console.log(gameReportData);
@@ -304,5 +304,67 @@ function getOneGameReport(gameId) {
             showOnePointsReport(gameReportData);
         });
     });
-    $('#oneGameReportModal').modal('show');
+    document.getElementById('oneGameReportModal').modal('show');
+}
+
+function emptyElementById(elId) {
+    let el = document.getElementById(elId);
+    if (el == null) return;
+    while (el.firstChild)
+        el.removeChild(el.firstChild);
+}
+
+function emptyElementByClass(className) {
+    let els = document.getElementsByClassName(className);
+    Array.prototype.forEach.call(els, function(el, i) {
+        while (el.firstChild)
+            el.removeChild(el.firstChild);
+    });
+}
+
+function removeElementById(elName) {
+    let el = document.getElementById(elName);
+    if (el != null)
+        el.parentNode.removeChild(el);
+}
+
+function setValidPromiseButtons(disabled) {
+    let validPromiseButtons = document.getElementsByClassName('validPromiseButton');
+    Array.prototype.forEach.call(validPromiseButtons, function(el, i) {
+        el.disabled = disabled;
+    });
+}
+
+function createElementWithIdAndClasses(elType, elId, classes, opt) {
+    const el = document.createElement(elType);
+    if (elId != null)
+        el.setAttribute('id', elId);
+    if (classes !== undefined) {
+        const classArr = classes.split(' ');
+        Array.prototype.forEach.call(classArr, function(classStr, i) {
+            el.classList.add(classStr);
+        });
+    }
+
+    if (opt !== undefined) {
+        for (const [key, value] of Object.entries(opt)) {
+            el.setAttribute(key, value);
+        }
+    }
+    return el;
+}
+
+function removeClassByClass(searchClass, removeClass) {
+    if (removeClass == undefined) removeClass = searchClass;
+    const els = document.getElementsByClassName(searchClass);
+    Array.prototype.forEach.call(els, function(el, i) {
+        el.classList.remove(removeClass);
+    });
+}
+
+function removeEventByClass(className, eventName, functionName) {
+    const els = document.getElementsByClassName(className);
+    Array.prototype.forEach.call(els, function(el, i) {
+        el.removeEventListener(eventName, functionName, false);
+    });
 }
