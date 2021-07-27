@@ -307,6 +307,12 @@ function getOneGameReport(gameId) {
     document.getElementById('oneGameReportModal').modal('show');
 }
 
+function getCurrentRoundInd() {
+    const roundIndStr = document.getElementById('currentRoundInd').value;
+    if (roundIndStr != '') return parseInt(roundIndStr, 10);
+    return null;
+}
+
 function emptyElementById(elId) {
     let el = document.getElementById(elId);
     if (el == null) return;
@@ -362,9 +368,10 @@ function removeClassByClass(searchClass, removeClass) {
     });
 }
 
-function removeEventByClass(className, eventName, functionName) {
+function removeEventByClass(className, eventName, functionName, removeClass) {
     const els = document.getElementsByClassName(className);
     Array.prototype.forEach.call(els, function(el, i) {
         el.removeEventListener(eventName, functionName, false);
+        if (removeClass) el.classList.remove(className);
     });
 }

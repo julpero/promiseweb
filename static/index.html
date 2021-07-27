@@ -545,6 +545,7 @@
                 <div class="modal-body">
                     <p>If you want to leave game and someone else is continuing it, give this game id to him/her (other players in the game will also have these):</p>
                     <input type="text" id="myName" hidden>
+                    <input type="text" id="currentRoundInd" hidden>
                     <input type="text" id="currentGameId" class="form-control" readonly>
                     <p>... and also your id:</p>
                     <input type="text" id="leavingUId" class="form-control" readonly>
@@ -610,8 +611,8 @@
                 });
 
                 socket.on('start game', function(gameInfo) {
-                    document.getElementById('currentGameId').val(gameInfo.id);
-                    document.getElementById('myName').val(gameInfo.myName);
+                    document.getElementById('currentGameId').value = gameInfo.id;
+                    document.getElementById('myName').value = gameInfo.myName;
                     document.getElementById('gameReportContainer').style.display = 'none';
                     document.getElementById('gameChooser').style.display = 'none';
                     document.getElementById('gameContainer').style.display = '';
@@ -625,7 +626,8 @@
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
-                        document.getElementById('myName').val(myRound.myName);
+                        document.getElementById('myName').value = myRound.myName;
+                        document.getElementById('currentRoundInd').value = myRound.roundInd;
                         browserReload(myRound, gameInfo.speedPromise);
                         initSpeedBar(gameInfo);
                         getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
@@ -633,7 +635,7 @@
                 });
 
                 socket.on('promise made', function(gameInfo) {
-                    document.getElementById('currentGameId').val(gameInfo.id);
+                    document.getElementById('currentGameId').value = gameInfo.id;
                     console.log('promise made');
                     console.log(gameInfo);
                     const doReloadInit = gameInfo.reloaded;
@@ -647,7 +649,8 @@
                     };
                     socket.emit('get round', getRound, function(myRound) {
                         console.log(myRound);
-                        document.getElementById('myName').val(myRound.myName);
+                        document.getElementById('myName').value = myRound.myName;
+                        document.getElementById('currentRoundInd').value = myRound.roundInd;
                         if (myRound.doReloadInit) {
                             console.log('reloading...');
                             browserReload(myRound, gameInfo.speedPromise);
@@ -669,6 +672,7 @@
                 socket.on('card played', cardPlayedCallback);
 
                 socket.on('round start', function(roundInfo) {
+                    debugger
                     console.log(roundInfo);
                 });
 

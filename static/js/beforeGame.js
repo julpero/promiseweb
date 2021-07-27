@@ -45,10 +45,10 @@ function initcreateNewGameButton() {
             startRound: parseInt(document.getElementById('newGameStartRound option:selected')[0].value, 10),
             turnRound: parseInt(document.getElementById('newGameTurnRound option:selected')[0].value, 10),
             endRound: parseInt(document.getElementById('newGameEndRound option:selected')[0].value, 10),
-            adminName: document.getElementById('newGameMyName').val(),
-            password: document.getElementById('newGamePassword').val(),
+            adminName: document.getElementById('newGameMyName').value,
+            password: document.getElementById('newGamePassword').value,
             gameStatus: 0,
-            humanPlayers: [{ name: document.getElementById('newGameMyName').val(), playerId: window.localStorage.getItem('uUID'), active: true}],
+            humanPlayers: [{ name: document.getElementById('newGameMyName').value, playerId: window.localStorage.getItem('uUID'), active: true}],
             createDateTime: new Date(),
             evenPromisesAllowed: !document.getElementById('noEvenPromises').prop('checked'),
             visiblePromiseRound: !document.getElementById('hidePromiseRound').prop('checked'),
@@ -90,15 +90,15 @@ function validateJoinGame(gameDetails) {
 }
 
 function joinGame(id) {
-    if (document.getElementById('myName'+id).val() == '-Lasse-') {
+    if (document.getElementById('myName'+id).value == '-Lasse-') {
         if (window.confirm('Olisiko sittenkin \'-lasse-\' ?')) {
-            document.getElementById('myName'+id).val('-lasse-');
+            document.getElementById('myName'+id).value = '-lasse-';
         }
     }
     const gameDetails = { gameId: id,
-        myName: document.getElementById('myName'+id).val(),
+        myName: document.getElementById('myName'+id).value,
         myId: window.localStorage.getItem('uUID'),
-        gamePassword: document.getElementById('password'+id).val(),
+        gamePassword: document.getElementById('password'+id).value,
     };
     if (validateJoinGame(gameDetails)) {
         socket.emit('join game', gameDetails, function (response) {
@@ -186,8 +186,8 @@ function initGameListEvent() {
 
 function initJoinByIdButton() {
     document.getElementById('joinByIdButton').addEventListener('click', function() {
-        const uuid = document.getElementById('joinById').val();
-        const gameId = document.getElementById('joinGameId').val();
+        const uuid = document.getElementById('joinById').value;
+        const gameId = document.getElementById('joinGameId').value;
         if (uuid.length == 36 && gameId.length > 5) {
             const joiningDetails = {
                 gameId: gameId,
@@ -210,7 +210,7 @@ function initLeavingButtons() {
         document.getElementById('leaveGameCollapse').collapse('hide');
     });
     document.getElementById('leaveButton').addEventListener('click', function() {
-        document.getElementById('leavingUId').val(window.localStorage.getItem('uUID'));
+        document.getElementById('leavingUId').value = window.localStorage.getItem('uUID');
     });
     document.getElementById('leavingGameModal').addEventListener('hidden.bs.modal', function() {
         const uuid = uuidv4();
@@ -218,8 +218,8 @@ function initLeavingButtons() {
         window.localStorage.setItem('uUID', uuid);
         deleteIntervaller();
         const leaveGameObj = {
-            gameId: document.getElementById('currentGameId').val(),
-            playerId: document.getElementById('leavingUId').val()
+            gameId: document.getElementById('currentGameId').value,
+            playerId: document.getElementById('leavingUId').value
         };
         socket.emit('leave ongoing game', leaveGameObj, function(retVal) {
             if (retVal.leavingResult == 'LEAVED') {
@@ -237,31 +237,31 @@ function initLeavingButtons() {
 
 function initChatButton() {
     document.getElementById('sendChatButton').addEventListener('click', function() {
-        const newLine = document.getElementById('newChatLine').val().trim();
-        const myName = document.getElementById('myName').val().trim();
+        const newLine = document.getElementById('newChatLine').value.trim();
+        const myName = document.getElementById('myName').value.trim();
         if (newLine.length > 0) {
             const chatObj = {
-                gameId: document.getElementById('currentGameId').val(),
+                gameId: document.getElementById('currentGameId').value,
                 chatLine: newLine,
                 myName: myName,
             }
             socket.emit('write chat', chatObj, function() {
-                document.getElementById('newChatLine').val('');
+                document.getElementById('newChatLine').value = '';
             });
         }
     });
     document.getElementById('newChatLine').addEventListener('keypress', function(e) {
         if (e.which == 13) {
-            const newLine = document.getElementById('newChatLine').val().trim();
-            const myName = document.getElementById('myName').val().trim();
+            const newLine = document.getElementById('newChatLine').value.trim();
+            const myName = document.getElementById('myName').value.trim();
             if (newLine.length > 0) {
                 const chatObj = {
-                    gameId: document.getElementById('currentGameId').val(),
+                    gameId: document.getElementById('currentGameId').value,
                     chatLine: newLine,
                     myName: myName,
                 }
                 socket.emit('write chat', chatObj, function() {
-                    document.getElementById('newChatLine').val('');
+                    document.getElementById('newChatLine').value = '';
                 });
             }
         }
@@ -270,7 +270,7 @@ function initChatButton() {
 
 function initShowReportButton() {
     document.getElementById('showGameReportButton').addEventListener('click', function() {
-        const gameId = document.getElementById('currentGameId').val();
+        const gameId = document.getElementById('currentGameId').value;
         getOneGameReport(gameId);
     });
 }

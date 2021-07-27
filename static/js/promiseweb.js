@@ -334,6 +334,24 @@ function initSpeedPromiseTimer(myRound) {
     intervaller = setInterval(speedPromiser, intervalTime, myRound);
 }
 
+function doPromise() {
+    console.log('doPromise: '+this.value);
+    deleteIntervaller();
+    removeEventByClass('makePromiseButton', 'click', doPromise)
+    setValidPromiseButtons(true);
+    const promiseDetails = {
+        gameId: document.getElementById('currentGameId').value,
+        roundInd: getCurrentRoundInd(),
+        myId: window.localStorage.getItem('uUID'),
+        promise: parseInt(this.value, 10),
+    };
+    socket.emit('make promise', promiseDetails, function (promiseReturn) {
+        hidePromise();
+        console.log('promiseReturn:');
+        console.log(promiseReturn);
+    });
+}
+
 function initPromise(myRound, evenPromisesAllowed, speedPromise) {
     emptyElementById('myPromiseCol');
     const node = document.getElementById('myPromiseCol');
@@ -344,27 +362,12 @@ function initPromise(myRound, evenPromisesAllowed, speedPromise) {
         promiseButton.innerHTML = i;
         node.appendChild(promiseButton);
         if (evenPromisesAllowed || !isEvenPromise(myRound, i)) {
-            promiseButton.addClass('validPromiseButton');
-            promiseButton.prop('disabled', false);
-            document.getElementById('makePromiseButton'+i).one('click', function() {
-                deleteIntervaller();
-                $(this).off('click');
-                $('.makePromiseButton').off('click');
-                setValidPromiseButtons(true);
-                const promiseDetails = { gameId: myRound.gameId,
-                    roundInd: myRound.roundInd,
-                    myId: window.localStorage.getItem('uUID'),
-                    promise: this.value,
-                };
-                socket.emit('make promise', promiseDetails, function (promiseReturn) {
-                    hidePromise();
-                    console.log('promiseReturn:');
-                    console.log(promiseReturn);
-                });
-            });
+            promiseButton.classList.add('validPromiseButton');
+            // promiseButton.setAttribute('disabled', false);
+            promiseButton.addEventListener('click', doPromise, {once: true});
         } else {
-            promiseButton.addClass('disabled');
-            promiseButton.prop('disabled', true);
+            promiseButton.classList.add('disabled');
+            promiseButton.setAttribute('disabled', true);
         }
     }
 
@@ -533,6 +536,13 @@ function rankCard(rank) {
     return rank;
 }
 
+function toCard(suit, rank) {
+    return {
+        suit: suit,
+        rank: parseInt(rank, 10),
+    }
+}
+
 function classToCardMapper(classStr) {
     var classes = classStr.split(/\s+/);
     if (classes[1] && classes[2]) {
@@ -569,17 +579,21 @@ function deleteIntervaller() {
 
 function removeCardEvents() {
     console.log('removeCardEvents');
-    removeEventByClass('card', 'click', cardClickEvent);
-    removeEventByClass('card', 'touchstart', cardClickEvent);
+    removeEventByClass('activeCard', 'click', cardClickEvent);
+    removeEventByClass('activeCard', 'touchstart', cardClickEvent);
+    removeClassByClass('activeCard');
 }
 
-var cardClickEvent = async function (myRound, cardClassStr) {
-    console.log(cardClassStr);
+function cardClickEvent() {
     removeCardEvents();
     deleteIntervaller();
-    const card = classToCardMapper(cardClassStr);
-    const playDetails = { gameId: myRound.gameId,
-        roundInd: myRound.roundInd,
+    const suit = this.getAttribute('cardsuit');
+    const rank = this.getAttribute('cardrank');
+    const card = toCard(suit, rank);
+    console.log('played card: ', card);
+    const playDetails = {
+        gameId: document.getElementById('currentGameId').value,
+        roundInd: getCurrentRoundInd(),
         myId: window.localStorage.getItem('uUID'),
         playedCard: card,
     };
@@ -591,19 +605,21 @@ function initCardEvents(myRound, onlySuit) {
     var cardsAbleToPlay = 0;
     possibleCards = [];
     for (var i = 0; i < myRound.myCards.length; i++) {
-        const cardMapperStr = cardToClassMapper(myRound.myCards[i]);
+        const card = myRound.myCards[i];
+        const cardMapperStr = cardToClassMapper(card);
         const cardMapperStrDiv = 'div'+cardMapperStr;
         const thisCard = document.querySelector(cardMapperStrDiv);
-        if (onlySuit == null || myRound.myCards[i].suit == onlySuit) {
+        if (onlySuit == null || card.suit == onlySuit) {
             // activate this card / div
             cardsAbleToPlay++;
             possibleCards.push(cardMapperStr);
-            // console.log('activate this card / div: ' + myRound.myCards[i].suit + ' ' + myRound.myCards[i].rank);
             console.log(' mapped to: ' + cardMapperStrDiv);
+            thisCard.setAttribute('cardsuit', card.suit);
+            thisCard.setAttribute('cardrank', card.rank);
+            thisCard.classList.add('activeCard');
             thisCard.velocity({backgroundColor: "#ffffff"}, 300);
-            thisCard.addEventListener('click', cardClickEvent.bind(null, myRound, cardMapperStrDiv), {once: true});
-            // thisCard.addEventListener('click', clickFunc = function() { cardClickEvent(myRound, cardMapperStrDiv) }, {once: true});
-            thisCard.addEventListener('touchstart', cardClickEvent.bind(null, myRound, cardMapperStrDiv), {once: true});
+            thisCard.addEventListener('click', cardClickEvent, {once: true});
+            thisCard.addEventListener('touchstart', cardClickEvent, {once: true});
             // thisCard.addEventListener('touchstart', touchFunc = function() { cardClickEvent(myRound, cardMapperStrDiv) }, {once: true});
         } else {
             // fade this card
@@ -1149,22 +1165,24 @@ function initScoreBoard(promiseTable, gameOver) {
                 const speedPromisePoints = promiseTable.promisesByPlayers[i][j].speedPromisePoints;
                 const speedPromiseTotal = promiseTable.promisesByPlayers[i][j].speedPromiseTotal;
                 var tooltipStr = 'Total '+currentPoints;
+                const playerPointsEl = document.getElementById('player'+i+'Points'+j);
                 if (currentPoints != 0) {
                     playerPoints+= currentPoints;
-                    document.getElementById('player'+i+'Points'+j).innerHTML = playerPoints;
-                    document.getElementById('player'+i+'Points'+j).classList.add('hasPoints')
+                    playerPointsEl.innerHTML = playerPoints;
+                    playerPointsEl.classList.add('hasPoints')
                 } else {
-                    document.getElementById('player'+i+'Points'+j).innerHTML = '-';
-                    document.getElementById('player'+i+'Points'+j).classList.add('zeroPoints')
+                    playerPointsEl.innerHTML = '-';
+                    playerPointsEl.classList.add('zeroPoints')
                 }
                 if (speedPromisePoints == 1) {
-                    document.getElementById('player'+i+'Points'+j).classList.add('speedPromiseBonus');
+                    playerPointsEl.classList.add('speedPromiseBonus');
                     tooltipStr+= (currentPoints > 0) ? ', including '+ speedPromiseTotal +' promise bonus' : ', missed promise bonus';
                 } else if (speedPromisePoints < 0) {
-                    document.getElementById('player'+i+'Points'+j).classList.add('speedPromisePenalty');
+                    playerPointsEl.classList.add('speedPromisePenalty');
                     tooltipStr+= ', including '+ speedPromiseTotal +' promise penalty'
                 }
-                document.getElementById('player'+i+'Points'+j).tooltip({title: tooltipStr});
+                const playerPointsTooltip = new bootstrap.Tooltip(playerPointsEl);
+                // playerPointsEl.tooltip({title: tooltipStr});
             }
         }
         totalPoints.push(playerPoints);
@@ -1317,6 +1335,7 @@ async function cardPlayedCallback(gameInfo) {
     socket.emit('get round', getRound, function(myRound) {
         console.log(myRound);
         document.getElementById('myName').value = myRound.myName;
+        document.getElementById('currentRoundInd').value = myRound.roundInd;
         if (myRound.gameOver) {
             showPlayerPromises(myRound, true, gameInfo.speedPromise);
             initPromiseTable(myRound.promiseTable);

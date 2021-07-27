@@ -29,9 +29,9 @@ function showNickChanger(gameList) {
 
     $('.change-nick-button').addEventListener('click', function() {
         console.log(this.value);
-        const oldName = document.getElementById('oldName'+this.value).val();
+        const oldName = document.getElementById('oldName'+this.value).value;
         const defNewName = oldNameToNewName(oldName);
-        const newName = defNewName != null ? defNewName : document.getElementById('newName'+this.value).val().trim();
+        const newName = defNewName != null ? defNewName : document.getElementById('newName'+this.value).value.trim();
 
         if (oldName != newName && newName != '') {
             const nickChangeObj = {
