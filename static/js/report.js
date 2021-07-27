@@ -3,7 +3,7 @@ function showNickChanger(gameList) {
     console.log(gameList);
     gameList.forEach(function (game) {
         const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id +'">').classList.add('row');
-        gameContainerDiv.appendChild(createElementWithIdAndClasses('div', 'gamePlayers' + game.id + '">').classList.add('col-4 report-players').innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null)+showErrorNames(game.playerNameErrors)));
+        gameContainerDiv.appendChild(createElementWithIdAndClasses('div', 'gamePlayers' + game.id + '">').classList.add('col-4 report-players').innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null)+showErrorNames(game.playerNameErrors));
 
         const oldNameCol = createElementWithIdAndClasses('div', null, 'col-2');
         const oldNameInput = $('<input id="oldName'+game.id+'" type="text">');
@@ -93,7 +93,7 @@ function showGames(gameList) {
         if (game.hiddenCardsMode == 1) ruleStr+= ', show only card in charge';
         if (game.hiddenCardsMode == 2) ruleStr+= ', show card in charge and winning card';
         gameContainerDiv.appendChild($('<div>').classList.add('col-4 report-rules').text(ruleStr));
-        gameContainerDiv.appendChild(createElementWithIdAndClasses('div', 'gamePlayers' + game.id + '">').classList.add('col-4 report-players').innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, winnerName)));
+        gameContainerDiv.appendChild(createElementWithIdAndClasses('div', 'gamePlayers' + game.id + '">').classList.add('col-4 report-players').innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, winnerName));
 
         const btnId = 'showGameButton' + game.id;
         const showGameButton = ($('<button id="'+btnId+'" value="'+game.id+'">').classList.add('btn btn-primary reportGameButton').text('Show report'));
