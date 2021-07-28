@@ -27,7 +27,7 @@
         <link rel="stylesheet" type="text/css" href="/css/cardGallery.css">
         <link rel="stylesheet" type="text/css" href="/css/cardTable.css">
     </head>
-    <body>
+    <body data-bs-no-jquery>
         
         <div class="container-fluid" id="gameChooser">
             <div class="row">
@@ -391,7 +391,7 @@
                     <div class="collapse" id="leaveGameCollapse">
                         really leaving?
                         <div class="btn-group" role="group" aria-label="Leaving buttons">
-                            <button type="button" id="dontLeaveButton" class="btn btn-success">No</button>
+                            <button type="button" id="dontLeaveButton" class="btn btn-success" data-bs-toggle="collapse" data-bs-target="#leaveGameCollapse">No</button>
                             <button type="button" id="leaveButton" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#leavingGameModal">Yes</button>
                         </div>
                     </div>
@@ -599,11 +599,14 @@
                 }
                 
                 socket.on('delete gameinfo', function(gameId) {
-                    document.getElementById('gameContainerDiv'+gameId).remove();
+                    removeElementById('gameContainerDiv'+gameId);
                 });
 
                 socket.on('update gameinfo', function(gameInfo) {
-                    document.getElementById('gamePlayers'+gameInfo.id).text(gamePlayersToStr(gameInfo.humanPlayers, gameInfo.humanPlayersCount, gameInfo.computerPlayersCount, null));
+                    const gameInfoDiv = document.getElementById('gamePlayers'+gameInfo.id);
+                    if (gameInfoDiv != null) {
+                        gameInfoDiv.innerHTML = gamePlayersToStr(gameInfo.humanPlayers, gameInfo.humanPlayersCount, gameInfo.computerPlayersCount, null);
+                    }
                 });
 
                 socket.on('new chat line', function(chatLine) {

@@ -314,14 +314,14 @@ function getCurrentRoundInd() {
 }
 
 function emptyElementById(elId) {
-    let el = document.getElementById(elId);
+    const el = document.getElementById(elId);
     if (el == null) return;
     while (el.firstChild)
         el.removeChild(el.firstChild);
 }
 
 function emptyElementByClass(className) {
-    let els = document.getElementsByClassName(className);
+    const els = document.getElementsByClassName(className);
     Array.prototype.forEach.call(els, function(el, i) {
         while (el.firstChild)
             el.removeChild(el.firstChild);
@@ -329,13 +329,13 @@ function emptyElementByClass(className) {
 }
 
 function removeElementById(elName) {
-    let el = document.getElementById(elName);
+    const el = document.getElementById(elName);
     if (el != null)
         el.parentNode.removeChild(el);
 }
 
-function setValidPromiseButtons(disabled) {
-    let validPromiseButtons = document.getElementsByClassName('validPromiseButton');
+function disableButtonsByClass(btnClass, disabled) {
+    const validPromiseButtons = document.getElementsByClassName(btnClass);
     Array.prototype.forEach.call(validPromiseButtons, function(el, i) {
         el.disabled = disabled;
     });
@@ -345,7 +345,7 @@ function createElementWithIdAndClasses(elType, elId, classes, opt) {
     const el = document.createElement(elType);
     if (elId != null)
         el.setAttribute('id', elId);
-    if (classes !== undefined) {
+    if (classes !== undefined && classes !== null) {
         const classArr = classes.split(' ');
         Array.prototype.forEach.call(classArr, function(classStr, i) {
             el.classList.add(classStr);
@@ -374,4 +374,9 @@ function removeEventByClass(className, eventName, functionName, removeClass) {
         el.removeEventListener(eventName, functionName, false);
         if (removeClass) el.classList.remove(className);
     });
+}
+
+function getSelectValue(selectName) {
+    const sel = document.getElementById(selectName);
+    return parseInt(sel.options[sel.selectedIndex].value, 10);
 }

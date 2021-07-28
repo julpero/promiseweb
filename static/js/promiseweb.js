@@ -287,7 +287,7 @@ function mySpeedPromisePoints(myRound) {
 function makeSpeedPromise(speedPromiseObj) {
     socket.emit('speedpromise', speedPromiseObj, function (resultObj) {
         if (resultObj.speedOk) {
-            setValidPromiseButtons(false);
+            disableButtonsByClass('validPromiseButton', false);
             if (resultObj.fullSpeedPromises) {
                 // now player already get maximum thinking penalty
             } else {
@@ -306,7 +306,7 @@ function speedPromiser(myRound) {
     usedTime+= intervalTime;
     window.localStorage.setItem('usedTime', usedTime);
     if (usedTime > timerTime) {
-        setValidPromiseButtons(true);
+        disableButtonsByClass('validPromiseButton', true);
         deleteIntervaller();
         console.log('SPEEDPROMISE!');
         const speedPromiseObj = {
@@ -337,8 +337,8 @@ function initSpeedPromiseTimer(myRound) {
 function doPromise() {
     console.log('doPromise: '+this.value);
     deleteIntervaller();
-    removeEventByClass('makePromiseButton', 'click', doPromise)
-    setValidPromiseButtons(true);
+    removeEventByClass('makePromiseButton', 'click', doPromise);
+    disableButtonsByClass('validPromiseButton', true);
     const promiseDetails = {
         gameId: document.getElementById('currentGameId').value,
         roundInd: getCurrentRoundInd(),
@@ -580,8 +580,7 @@ function deleteIntervaller() {
 function removeCardEvents() {
     console.log('removeCardEvents');
     removeEventByClass('activeCard', 'click', cardClickEvent);
-    removeEventByClass('activeCard', 'touchstart', cardClickEvent);
-    removeClassByClass('activeCard');
+    removeEventByClass('activeCard', 'touchstart', cardClickEvent, true);
 }
 
 function cardClickEvent() {

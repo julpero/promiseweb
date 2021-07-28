@@ -30,36 +30,35 @@ function createNewGame(gameOptions) {
         } else {
             console.log('created game with id: '+createdGameId);
             gameId = createdGameId;
-            document.getElementById('createGameCollapse').collapse('hide');
-            document.getElementById('joinGameCollapse').collapse('show');
+            document.getElementById('createGameCollapse').classList.remove('show');
+            document.getElementById('joinGameCollapse').classList.add('show');
         }
     });
-    
 }
 
 function initcreateNewGameButton() {
     document.getElementById('createNewGameButton').addEventListener('click', function() {
         const gameOptions = {
-            humanPlayersCount: parseInt(document.getElementById('newGameHumanPlayersCount option:selected')[0].value, 10),
-            botPlayersCount: parseInt(document.getElementById('newGameBotPlayersCount option:selected')[0].value, 10),
-            startRound: parseInt(document.getElementById('newGameStartRound option:selected')[0].value, 10),
-            turnRound: parseInt(document.getElementById('newGameTurnRound option:selected')[0].value, 10),
-            endRound: parseInt(document.getElementById('newGameEndRound option:selected')[0].value, 10),
+            humanPlayersCount: getSelectValue('newGameHumanPlayersCount'),
+            botPlayersCount: getSelectValue('newGameBotPlayersCount'),
+            startRound: getSelectValue('newGameStartRound'),
+            turnRound: getSelectValue('newGameTurnRound'),
+            endRound: getSelectValue('newGameEndRound'),
             adminName: document.getElementById('newGameMyName').value,
             password: document.getElementById('newGamePassword').value,
             gameStatus: 0,
             humanPlayers: [{ name: document.getElementById('newGameMyName').value, playerId: window.localStorage.getItem('uUID'), active: true}],
             createDateTime: new Date(),
-            evenPromisesAllowed: !document.getElementById('noEvenPromises').prop('checked'),
-            visiblePromiseRound: !document.getElementById('hidePromiseRound').prop('checked'),
-            onlyTotalPromise: document.getElementById('onlyTotalPromise').prop('checked'),
-            freeTrump: !document.getElementById('mustTrump').prop('checked'),
-            hiddenTrump: document.getElementById('hiddenTrump').prop('checked'),
-            speedPromise: document.getElementById('speedPromise').prop('checked'),
-            privateSpeedGame: document.getElementById('privateSpeedGame').prop('checked'),
-            opponentPromiseCardValue: document.getElementById('opponentPromiseCardValue').prop('checked'),
-            opponentGameCardValue: document.getElementById('opponentGameCardValue').prop('checked'),
-            hiddenCardsMode: parseInt(document.getElementById('hiddenCardsMode option:selected')[0].value, 10),
+            evenPromisesAllowed: !document.getElementById('noEvenPromises').checked,
+            visiblePromiseRound: !document.getElementById('hidePromiseRound').checked,
+            onlyTotalPromise: document.getElementById('onlyTotalPromise').checked,
+            freeTrump: !document.getElementById('mustTrump').checked,
+            hiddenTrump: document.getElementById('hiddenTrump').checked,
+            speedPromise: document.getElementById('speedPromise').checked,
+            privateSpeedGame: document.getElementById('privateSpeedGame').checked,
+            opponentPromiseCardValue: document.getElementById('opponentPromiseCardValue').checked,
+            opponentGameCardValue: document.getElementById('opponentGameCardValue').checked,
+            hiddenCardsMode: getSelectValue('hiddenCardsMode'),
         };
         if (validateNewGame(gameOptions)) {
             createNewGame(gameOptions);
@@ -69,13 +68,13 @@ function initcreateNewGameButton() {
 
 function initRulesCheck() {
     document.getElementById('hidePromiseRound').addEventListener('click', function() {
-        if (!document.getElementById('hidePromiseRound').prop('checked')) {
-            document.getElementById('onlyTotalPromise').prop('checked', false);
+        if (!document.getElementById('hidePromiseRound').checked) {
+            document.getElementById('onlyTotalPromise').checked = false;
         }
     });
     document.getElementById('onlyTotalPromise').addEventListener('click', function() {
-        if (document.getElementById('onlyTotalPromise').prop('checked')) {
-            document.getElementById('hidePromiseRound').prop('checked', true);
+        if (document.getElementById('onlyTotalPromise').checked) {
+            document.getElementById('hidePromiseRound').checked = true;
         }
     });
 }
@@ -104,8 +103,9 @@ function joinGame(id) {
         socket.emit('join game', gameDetails, function (response) {
             console.log(response);
             if (response.joiningResult == 'OK') {
-                $('.joinThisGameButton').prop('disabled', true);
-                document.getElementById('leaveGameButton'+response.joiningResult.gameId).prop('disabled', false);
+                disableButtonsByClass('joinThisGameButton', true);
+                const leaveBtn = document.getElementById('leaveGameButton'+response.joiningResult.gameId);
+                if (leaveBtn != null) leaveBtn.disabled = false;
             }
         });
     }
@@ -118,8 +118,9 @@ function leaveGame(id) {
     socket.emit('leave game', gameDetails, function (response) {
         console.log(response);
         if (response.leavingResult == 'OK') {
-            $('.joinThisGameButton').prop('disabled', true);
-            document.getElementById('leaveGameButton'+response.leavingResult.gameId).prop('disabled', false);
+            disableButtonsByClass('joinThisGameButton', true);
+            const leaveBtn = document.getElementById('leaveGameButton'+response.leavingResult.gameId);
+            if (leaveBtn != null) leaveBtn.disabled = false;
         }
     });
 }
@@ -129,7 +130,7 @@ function showGames(gameList) {
     var firstId = '';
     gameList.forEach(function (game) {
         if (firstId ==  '') firstId = game.id;
-        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id +'">').classList.add('row');
+        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
         var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
         if (!game.evenPromisesAllowed) ruleStr+= ', no even promises';
         if (!game.visiblePromiseRound) ruleStr+= ', hidden promise round';
@@ -142,32 +143,56 @@ function showGames(gameList) {
         if (game.opponentGameCardValue) ruleStr+= ', game hand value';
         if (game.hiddenCardsMode == 1) ruleStr+= ', show only card in charge';
         if (game.hiddenCardsMode == 2) ruleStr+= ', show card in charge and winning card';
-        gameContainerDiv.appendChild($('<div>').classList.add('col-2').text(ruleStr));
-        gameContainerDiv.appendChild(createElementWithIdAndClasses('div', 'gamePlayers' + game.id + '">').classList.add('col-3').text(gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null)));
-        const joinBtnStatus = game.imInThisGame ? ' disabled' : '';
-        gameContainerDiv.appendChild(($('<div>').classList.add('col-2').appendChild($('<input type="text" id="myName'+game.id+'"'+joinBtnStatus+'>').classList.add('newGameMyNameInput'))));
-        gameContainerDiv.appendChild(($('<div>').classList.add('col-2').appendChild($('<input disabled type="text" id="password'+game.id+'">'))));
-        const btnId = 'joinGameButton' + game.id;
-        const leaveBtnId = 'leaveGameButton' + game.id;
-        const joinGameButton = ($('<button id="'+btnId+'">').classList.add('btn btn-primary joinThisGameButton'+joinBtnStatus).text('Join'));
-        const leaveBtnStatus = !game.imInThisGame ? ' disabled' : '';
-        const leaveGameButton = ($('<button id="'+leaveBtnId+'">').classList.add('btn btn-primary leaveThisGameButton'+leaveBtnStatus).text('Leave'));
-        gameContainerDiv.appendChild(($('<div>').classList.add('col-1')).appendChild(joinGameButton));
-        gameContainerDiv.appendChild(($('<div>').classList.add('col-1')).appendChild(leaveGameButton));
+        const ruleDiv = createElementWithIdAndClasses('div', null, 'col-2');
+        ruleDiv.innerText = ruleStr;
+        gameContainerDiv.appendChild(ruleDiv);
+
+        const playersDiv = createElementWithIdAndClasses('div', 'gamePlayers' + game.id, 'col-3');
+        playersDiv.innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null);
+        gameContainerDiv.appendChild(playersDiv);
+
+        const myNameDiv = createElementWithIdAndClasses('div', null, 'col-2');
+        const myNameInput = createElementWithIdAndClasses('input', 'myName'+game.id, 'newGameMyNameInput', {type: 'text'});
+        if (game.imInThisGame) myNameInput.disabled = true;
+        myNameDiv.appendChild(myNameInput);
+        gameContainerDiv.appendChild(myNameDiv);
+
+        const passwordDiv = createElementWithIdAndClasses('div', null, 'col-2');
+        const passwordInput = createElementWithIdAndClasses('input', 'password'+game.id, null, {type: 'text'});
+        passwordInput.disabled = true;
+        passwordDiv.appendChild(passwordInput);
+        gameContainerDiv.appendChild(passwordDiv);
+
+        const joinGameButton = createElementWithIdAndClasses('button', 'joinGameButton' + game.id, 'btn btn-primary joinThisGameButton');
+        if (game.imInThisGame) joinGameButton.disabled = true;
+        joinGameButton.innerText = 'Join';
+        joinGameButton.addEventListener('click', function() {
+            joinGame(game.id);
+        });
+        const joinGameBtnDiv = createElementWithIdAndClasses('div', null, 'col-1');
+        joinGameBtnDiv.appendChild(joinGameButton);
+        gameContainerDiv.appendChild(joinGameBtnDiv);
+        
+        const leaveGameButton = createElementWithIdAndClasses('button', 'leaveGameButton' + game.id, 'btn btn-primary leaveThisGameButton');
+        if (!game.imInThisGame) leaveGameButton.disabled = true;
+        leaveGameButton.innerText = 'Leave';
+        leaveGameButton.addEventListener('click', function() {
+            leaveGame(game.id);
+        });
+        const leaveGameBtnDiv = createElementWithIdAndClasses('div', null, 'col-1');
+        leaveGameBtnDiv.appendChild(leaveGameButton);
+        gameContainerDiv.appendChild(leaveGameBtnDiv);
 
         gameListContainer.appendChild(gameContainerDiv);
 
-        document.getElementById(''+btnId).addEventListener('click', function() {
-            joinGame(game.id);
-        });
-        document.getElementById(''+leaveBtnId).addEventListener('click', function() {
-            leaveGame(game.id);
-        });
 
         console.log(game);
         if (firstId !==  '') document.getElementById('myName'+firstId).focus();
-
     });
+
+    if (firstId == '') {
+        gameListContainer.innerText = 'no open games';
+    }
 }
 
 function initGameListEvent() {
@@ -206,9 +231,9 @@ function initJoinByIdButton() {
 }
 
 function initLeavingButtons() {
-    document.getElementById('dontLeaveButton').addEventListener('click', function() {
-        document.getElementById('leaveGameCollapse').collapse('hide');
-    });
+    // document.getElementById('dontLeaveButton').addEventListener('click', function() {
+    //     document.getElementById('leaveGameCollapse').collapse;
+    // });
     document.getElementById('leaveButton').addEventListener('click', function() {
         document.getElementById('leavingUId').value = window.localStorage.getItem('uUID');
     });
@@ -224,9 +249,9 @@ function initLeavingButtons() {
         socket.emit('leave ongoing game', leaveGameObj, function(retVal) {
             if (retVal.leavingResult == 'LEAVED') {
                 deleteIntervaller();
-                $('.validPromiseButton').prop('disabled', true);
-                $('.makePromiseButton').off('click');
-                $('.card').off('click touchstart');
+                disableButtonsByClass('validPromiseButton', true);
+                removeEventByClass('makePromiseButton', 'click', doPromise);
+                removeCardEvents();
                 alert('You have now left the game. Please click OK and then refresh this page.');
             } else {
                 alert('Something went wrong! Try to refresh page and see what happens...');
