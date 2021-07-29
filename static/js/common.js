@@ -294,8 +294,8 @@ function showOnePointsReport(reportObject) {
 }
 
 function getOneGameReport(gameId) {
-    document.getElementById('oneGameReportModal').off('shown.bs.modal');
-    document.getElementById('oneGameReportModal').addEventListener('shown.bs.modal', function() {
+    const reportModalEl = document.getElementById('oneGameReportModal');
+    reportModalEl.addEventListener('shown.bs.modal', function() {
         const getReportObj = { gameId: gameId };
         socket.emit('get game report', getReportObj, function(gameReportData) {
             console.log(gameReportData);
@@ -304,7 +304,8 @@ function getOneGameReport(gameId) {
             showOnePointsReport(gameReportData);
         });
     });
-    document.getElementById('oneGameReportModal').modal('show');
+    const bsModal = bootstrap.Modal.getOrCreateInstance(reportModalEl);
+    bsModal.show();
 }
 
 function getCurrentRoundInd() {

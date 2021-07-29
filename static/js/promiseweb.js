@@ -1339,7 +1339,7 @@ async function cardPlayedCallback(gameInfo) {
             showPlayerPromises(myRound, true, gameInfo.speedPromise);
             initPromiseTable(myRound.promiseTable);
             initScoreBoard(myRound.promiseTable, myRound.gameOver);
-            document.getElementById('showGameReportCollapse').collapse('show');
+            document.getElementById('showGameReportCollapse').classList.add('show');
             getOneGameReport(gameInfo.id);
             return;
         }
