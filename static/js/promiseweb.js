@@ -1145,13 +1145,11 @@ function initPromiseTable(promiseTable) {
                     playerUnder++;
                 }
                 if (speedPromiseStr != '') tooltipStr+= ' ('+speedPromiseStr+')';
-                const playerPromTooltip = new bootstrap.Tooltip(playerPromEl);
-                // document.getElementById('player'+i+'Prom'+j).tooltip({title: tooltipStr});
+                const playerPromTooltip = new bootstrap.Tooltip(playerPromEl, {title: tooltipStr});
             }
         }
         const promiseNameEl = document.getElementById('player'+i+'PromiseName');
-        const promiseNameTooltip = new bootstrap.Tooltip(promiseNameEl);
-        // const promiseNameTooltip = new bootstrap.Tooltip({title: "kept: " + playerKept + " / over: " + playerOver + " / under: " + playerUnder});
+        const promiseNameTooltip = new bootstrap.Tooltip(promiseNameEl, {title: "kept: " + playerKept + " / over: " + playerOver + " / under: " + playerUnder});
     }
 }
 
@@ -1183,8 +1181,7 @@ function initScoreBoard(promiseTable, gameOver) {
                     playerPointsEl.classList.add('speedPromisePenalty');
                     tooltipStr+= ', including '+ speedPromiseTotal +' promise penalty'
                 }
-                const playerPointsTooltip = new bootstrap.Tooltip(playerPointsEl);
-                // playerPointsEl.tooltip({title: tooltipStr});
+                const playerPointsTooltip = new bootstrap.Tooltip(playerPointsEl, {title: tooltipStr});
             }
         }
         totalPoints.push(playerPoints);

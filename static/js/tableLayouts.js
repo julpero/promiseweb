@@ -418,8 +418,7 @@ function createScoreboard(promiseTable) {
         if (playerShortName.length > 3) playerShortName = playerShortName.substring(0, 3);
         const tableHeaderCol = createElementWithIdAndClasses('th', 'tableHeaderName'+i, 'scoreboardTableHeader', {scope: 'col'});
         tableHeaderCol.innerHTML = playerShortName;
-        const tableHeaderColTooltip = new bootstrap.Tooltip(tableHeaderCol);
-        // $(tableHeaderCol).tooltip({title: playerName});
+        const tableHeaderColTooltip = new bootstrap.Tooltip(tableHeaderCol, {title: playerName});
         tableHeaderRow.appendChild(tableHeaderCol);
     }
     tableHeader.appendChild(tableHeaderRow);
