@@ -357,9 +357,9 @@ function initPromise(myRound, evenPromisesAllowed, speedPromise) {
     const node = document.getElementById('myPromiseCol');
 
     for (var i = 0; i < myRound.cardsInRound + 1; i++) {
-        const promiseButton = createElementWithIdAndClasses('button', 'makePromiseButton'+i, 'btn btn-primary makePromiseButton');// value="'+i+'"></button>').classList.add().text(i);
+        const promiseButton = createElementWithIdAndClasses('button', 'makePromiseButton'+i, 'btn btn-primary makePromiseButton');
         promiseButton.value = i;
-        promiseButton.innerHTML = i;
+        promiseButton.innerText = i;
         node.appendChild(promiseButton);
         if (evenPromisesAllowed || !isEvenPromise(myRound, i)) {
             promiseButton.classList.add('validPromiseButton');
@@ -478,7 +478,7 @@ function showCardValues(handValues) {
     handValues.forEach(function(handValue) {
         console.log(handValue);
         const index = mapPlayerNameToTable(handValue.name);
-        document.getElementById('player'+index+'StatsCol1').text('hv: '+handValue.cardValues);
+        document.getElementById('player'+index+'StatsCol1').innerText = 'hv: '+handValue.cardValues;
     });
 }
 
@@ -619,7 +619,6 @@ function initCardEvents(myRound, onlySuit) {
             thisCard.velocity({backgroundColor: "#ffffff"}, 300);
             thisCard.addEventListener('click', cardClickEvent, {once: true});
             thisCard.addEventListener('touchstart', cardClickEvent, {once: true});
-            // thisCard.addEventListener('touchstart', touchFunc = function() { cardClickEvent(myRound, cardMapperStrDiv) }, {once: true});
         } else {
             // fade this card
             thisCard.velocity({backgroundColor: "#bbbbbb"}, 300);
@@ -737,7 +736,7 @@ function showOnlyTotalPromiseInfo(round, show, players) {
         players.forEach(function (player) {
             keptSoFar+= player.keeps;
         });
-        document.getElementById("totalPromiseInfo").text('Promised total: ' + round.totalPromise + '/' + round.cardsInRound + ' (' + keptSoFar + ')');
+        document.getElementById("totalPromiseInfo").innerText = 'Promised total: ' + round.totalPromise + '/' + round.cardsInRound + ' (' + keptSoFar + ')';
     } else {
         emptyElementById("totalPromiseInfo");
     }
@@ -836,7 +835,8 @@ function privateSpeedGamer(myRound) {
     usedTime+= intervalTime;
     window.localStorage.setItem('usedTime', usedTime);
     if (usedTime > timerTime) {
-        $('.card').off('click touchstart');
+        removeEventByClass('activeCard', 'click', cardClickEvent);
+        removeEventByClass('activeCard', 'touchstart', cardClickEvent, true);
         deleteIntervaller();
         console.log('PLAY!');
         playSpeedGamerCard(myRound);
@@ -878,13 +878,13 @@ function findMinMaxPoints(arr) {
 
 function showPlayerAvgPoints(playerInd, playerAvgPoints, min, max) {
     const reportColName = 'player'+playerInd+'StatsCol2';
-    document.getElementById(''+reportColName).text('avg: '+playerAvgPoints.toFixed(2));
+    document.getElementById(''+reportColName).innerText = 'avg: '+playerAvgPoints.toFixed(2);
 }
 
 function showPlayerKeepPrecent(playerInd, keeps, total) {
     const reportColName = 'player'+playerInd+'StatsCol3';
     const keepPercent = 100 * (keeps / total);
-    document.getElementById(''+reportColName).text('kp: '+keepPercent.toFixed(1)+'%');
+    document.getElementById(''+reportColName).innerText = 'kp: '+keepPercent.toFixed(1)+'%';
 }
 
 function showPlayerKeepStats(playerKeeps) {
@@ -1003,7 +1003,8 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
 
 function getLastCardContainer(playerIndex) {
     for (var i = 9; i >= 0; i--) {
-        if (document.getElementById('player'+playerIndex+'CardCol'+i).children.length > 0) return i;
+        const el = document.getElementById('player'+playerIndex+'CardCol'+i);
+        if (el != null && el.children.length > 0) return i;
     }
     return 0;
 }
@@ -1029,11 +1030,12 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
             if (playerName == cardsInThisPlay[i].name) continue; // animate this player card
     
             const thisPlayerIndex = mapPlayerNameToTable(cardsInThisPlay[i].name);
-            const cardToCheck = getCardFromDiv('player'+thisPlayerIndex+'CardPlayedDiv');
+            const divIdStr = 'player'+thisPlayerIndex+'CardPlayedDiv';
+            const cardToCheck = getCardFromDiv(divIdStr);
             if (cardToCheck == null || cardToCheck.suit != cardsInThisPlay[i].card.suit || cardToCheck.rank != cardsInThisPlay[i].card.rank) {
                 console.log('moveCardFromHandToTable, empty div, cardToCheck: ', cardToCheck);
-                const $thisContainerTo = document.getElementById('player'+thisPlayerIndex+'CardPlayedDiv');
-                $thisContainerTo.empty();
+                emptyElementById(divIdStr);
+                const $thisContainerTo = document.getElementById(divIdStr);
                 const thisCardIndex = getCardIndex(deck.cards, cardsInThisPlay[i].card);
                 const thisCard = deck.cards[thisCardIndex];
                 thisCard.mount($thisContainerTo);
@@ -1104,23 +1106,24 @@ function initPromiseTable(promiseTable) {
             const totalPromise = promiseTable.rounds[j].totalPromise;
             if (totalPromise != null) {
                 const el = document.getElementById('promiseTableHeader'+j);
-                const elTootip = new bootstrap.Tooltip(el);
+                let tooltipTitle = '';
                 if (cardsInRound == totalPromise) {
                     el.classList.remove('promiseOver');
                     el.classList.remove('promiseUnder');
                     el.classList.add('promiseKept');
-                    // document.getElementById('promiseTableHeader'+j).tooltip({title: "Even"});
+                    tooltipTitle = 'Even';
                 } else if (cardsInRound < totalPromise) {
                     el.classList.remove('promiseKept');
                     el.classList.remove('promiseUnder');
                     el.classList.add('promiseOver');
-                    // document.getElementById('promiseTableHeader'+j).tooltip({title: "Over promised, total: " + totalPromise + "/" + cardsInRound});
+                    tooltipTitle = 'Over promised, total: ' + totalPromise + '/' + cardsInRound;
                 } else {
                     el.classList.remove('promiseKept');
                     el.classList.remove('promiseOver');
                     el.classList.add('promiseUnder');
-                    // document.getElementById('promiseTableHeader'+j).tooltip({title: "Under promised, total: " + totalPromise + "/" + cardsInRound});
+                    tooltipTitle = 'Under promised, total: ' + totalPromise + '/' + cardsInRound;
                 }
+                const elTootip = new bootstrap.Tooltip(el, {title: tooltipTitle});
             }
             const promise = promiseTable.promisesByPlayers[i][j];
             const speedPromiseStr = promise.speedPromisePoints != null && promise.speedPromisePoints != 0 ? (promise.speedPromisePoints == 1 ? '+' : promise.speedPromisePoints) : '';

@@ -191,7 +191,6 @@ function initTableFor6() {
     col23.appendChild(cardRow);
     col23.appendChild(cardRow0);
     col23.appendChild(cardRow23);
-    col23.appendChild();
 
     const col24 = initPlayerTable(4, 'right', 8, 5);
 
@@ -207,7 +206,6 @@ function initTableFor6() {
     col32.appendChild(myCardsRow);
 
     const col33 = initPlayerTable(5, 'right', 8, 5);
-    col33.appendChild();
 
     row3.appendChild(col31);
     row3.appendChild(col32);
@@ -443,27 +441,35 @@ function createScoreboard(promiseTable) {
     node.appendChild(table);
 }
 
+function liElementWithText(text) {
+    const el = document.createElement('li');
+    el.innerText = text;
+    return el;
+}
+
 function initRuleList(gameInfo) {
     emptyElementById('ruleList');
     const node = document.getElementById('ruleList');
-    if (!gameInfo.evenPromisesAllowed) node.appendChild($('<li></li>').text('no even promises'));
-    if (!gameInfo.visiblePromiseRound) node.appendChild($('<li></li>').text('hidden promise round'));
-    if (gameInfo.onlyTotalPromise) node.appendChild($('<li></li>').text('only total promise visible'));
-    if (!gameInfo.freeTrump) node.appendChild($('<li></li>').text('must play trump'));
-    if (gameInfo.hiddenTrump) node.appendChild($('<li></li>').text('hidden trump'));
-    if (gameInfo.speedPromise) node.appendChild($('<li></li>').text('speed promise'));
-    if (gameInfo.privateSpeedGame) node.appendChild($('<li></li>').text('speed game'));
-    if (gameInfo.opponentPromiseCardValue) node.appendChild($('<li></li>').text('hand value in promise'));
-    if (gameInfo.opponentGameCardValue) node.appendChild($('<li></li>').text('hand value in game'));
-    if (gameInfo.hiddenCardsMode == 1) node.appendChild($('<li></li>').text('show only card in charge'));
-    if (gameInfo.hiddenCardsMode == 2) node.appendChild($('<li></li>').text('show card in charge and winning card'));
+    if (!gameInfo.evenPromisesAllowed) node.appendChild(liElementWithText('no even promises'));
+    if (!gameInfo.visiblePromiseRound) node.appendChild(liElementWithText('hidden promise round'));
+    if (gameInfo.onlyTotalPromise) node.appendChild(liElementWithText('only total promise visible'));
+    if (!gameInfo.freeTrump) node.appendChild(liElementWithText('must play trump'));
+    if (gameInfo.hiddenTrump) node.appendChild(liElementWithText('hidden trump'));
+    if (gameInfo.speedPromise) node.appendChild(liElementWithText('speed promise'));
+    if (gameInfo.privateSpeedGame) node.appendChild(liElementWithText('speed game'));
+    if (gameInfo.opponentPromiseCardValue) node.appendChild(liElementWithText('hand value in promise'));
+    if (gameInfo.opponentGameCardValue) node.appendChild(liElementWithText('hand value in game'));
+    if (gameInfo.hiddenCardsMode == 1) node.appendChild(liElementWithText('show only card in charge'));
+    if (gameInfo.hiddenCardsMode == 2) node.appendChild(liElementWithText('show card in charge and winning card'));
 }
 
 function initSpeedBar(gameInfo) {
     const node = document.getElementById('speedPromiseDiv');
     if (gameInfo.privateSpeedGame || gameInfo.speedPromise) {
         if (document.getElementById('speedPromiseDiv').children.length == 0) {
-            const progressMain = createElementWithIdAndClasses('div', 'speedProgressBar', 'progress').css({marginTop: "4px", border: "1px solid black"});
+            const progressMain = createElementWithIdAndClasses('div', 'speedProgressBar', 'progress');
+            progressMain.style.marginTop = '4px';
+            progressMain.style.border = '1px solid black';
             node.appendChild(progressMain);
         }
     } else {
