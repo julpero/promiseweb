@@ -14,10 +14,8 @@ const myCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 var hash = require('object-hash');
 
 app.use(express.static('static'))
-app.use(express.static('node_modules/jquery/dist'))
 app.use(express.static('node_modules/bootstrap/dist'))
 app.use(express.static('node_modules/deck-of-cards/dist'))
-app.use(express.static('node_modules/jquery-color-animation'))
 app.use(express.static('node_modules/chart.js'))
 app.use(express.static('node_modules/chartjs-plugin-annotation'))
 app.use(express.static('node_modules/velocity-animate'))
