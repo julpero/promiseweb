@@ -294,8 +294,8 @@ function showOnePointsReport(reportObject) {
 }
 
 function getOneGameReport(gameId) {
-    $('#oneGameReportModal').off('shown.bs.modal');
-    $('#oneGameReportModal').on('shown.bs.modal', function() {
+    const reportModalEl = document.getElementById('oneGameReportModal');
+    reportModalEl.addEventListener('shown.bs.modal', function() {
         const getReportObj = { gameId: gameId };
         socket.emit('get game report', getReportObj, function(gameReportData) {
             console.log(gameReportData);
@@ -304,5 +304,80 @@ function getOneGameReport(gameId) {
             showOnePointsReport(gameReportData);
         });
     });
-    $('#oneGameReportModal').modal('show');
+    const bsModal = bootstrap.Modal.getOrCreateInstance(reportModalEl);
+    bsModal.show();
+}
+
+function getCurrentRoundInd() {
+    const roundIndStr = document.getElementById('currentRoundInd').value;
+    if (roundIndStr != '') return parseInt(roundIndStr, 10);
+    return null;
+}
+
+function emptyElementById(elId) {
+    const el = document.getElementById(elId);
+    if (el == null) return;
+    while (el.firstChild)
+        el.removeChild(el.firstChild);
+}
+
+function emptyElementByClass(className) {
+    const els = document.getElementsByClassName(className);
+    Array.prototype.forEach.call(els, function(el, i) {
+        while (el.firstChild)
+            el.removeChild(el.firstChild);
+    });
+}
+
+function removeElementById(elName) {
+    const el = document.getElementById(elName);
+    if (el != null)
+        el.parentNode.removeChild(el);
+}
+
+function disableButtonsByClass(btnClass, disabled) {
+    const buttons = document.getElementsByClassName(btnClass);
+    Array.prototype.forEach.call(buttons, function(el, i) {
+        el.disabled = disabled;
+    });
+}
+
+function createElementWithIdAndClasses(elType, elId, classes, opt) {
+    const el = document.createElement(elType);
+    if (elId != null)
+        el.setAttribute('id', elId);
+    if (classes !== undefined && classes !== null) {
+        const classArr = classes.split(' ');
+        Array.prototype.forEach.call(classArr, function(classStr, i) {
+            el.classList.add(classStr);
+        });
+    }
+
+    if (opt !== undefined) {
+        for (const [key, value] of Object.entries(opt)) {
+            el.setAttribute(key, value);
+        }
+    }
+    return el;
+}
+
+function removeClassByClass(searchClass, removeClass) {
+    if (removeClass == undefined) removeClass = searchClass;
+    const els = document.getElementsByClassName(searchClass);
+    Array.prototype.forEach.call(els, function(el, i) {
+        el.classList.remove(removeClass);
+    });
+}
+
+function removeEventByClass(className, eventName, functionName, removeClass) {
+    const els = document.getElementsByClassName(className);
+    Array.prototype.forEach.call(els, function(el, i) {
+        el.removeEventListener(eventName, functionName, false);
+        if (removeClass) el.classList.remove(className);
+    });
+}
+
+function getSelectValue(selectName) {
+    const sel = document.getElementById(selectName);
+    return parseInt(sel.options[sel.selectedIndex].value, 10);
 }
