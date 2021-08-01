@@ -33,7 +33,7 @@ function playedGamesGraph(reportData) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push(reportData[i].count);
-        colors.push(StringToColor.next(name));
+        colors.push(colorize(name));
     }
     datasetsData.push({
         label: 'games played',
@@ -94,7 +94,7 @@ function avgKeepPercentageGraph(reportData) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push((100*(reportData[i].avgKeepPercentage)).toFixed(1));
-        colors.push(StringToColor.next(name));
+        colors.push(colorize(name));
     }
     datasetsData.push({
         label: 'keep-%',
@@ -155,7 +155,7 @@ function avgPointsGraph(reportData) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push((reportData[i].avgPoints).toFixed(1));
-        colors.push(StringToColor.next(name));
+        colors.push(colorize(name));
     }
     datasetsData.push({
         label: 'avg points',
@@ -216,7 +216,7 @@ function totalPointsGraph(reportData) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push(reportData[i].playersTotalPoints);
-        colors.push(StringToColor.next(name));
+        colors.push(colorize(name));
     }
     datasetsData.push({
         label: 'points',
@@ -277,7 +277,7 @@ function totalWinsGraph(reportData) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push(reportData[i].playerTotalWins);
-        colors.push(StringToColor.next(name));
+        colors.push(colorize(name));
     }
     datasetsData.push({
         label: 'wins',
@@ -339,7 +339,7 @@ function winPercentagesGraph(reportData) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push((100*reportData[i].winPercentage).toFixed(1));
-        colors.push(StringToColor.next(name));
+        colors.push(colorize(name));
     }
     datasetsData.push({
         label: 'win-%',
@@ -401,7 +401,7 @@ function avgPercentagePointsGraph(reportData) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push((100*reportData[i].playerAvgPercentPoints).toFixed(1));
-        colors.push(StringToColor.next(name));
+        colors.push(colorize(name));
     }
     datasetsData.push({
         label: 'point-%',
@@ -463,7 +463,7 @@ function scoreGraph(reportData) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push((reportData[i].playerAvgScorePoints).toFixed(3));
-        colors.push(StringToColor.next(name));
+        colors.push(colorize(name));
     }
     datasetsData.push({
         label: 'points',
@@ -518,8 +518,7 @@ function liveStats1Graph(reportData) {
         for (var j = 0; j < statsRounds; j++) {
             playerKeepPercentage.push(statsData[i] && statsData[i].stats[j] ? statsData[i].stats[j].kPerc : 0);
         }
-        const color = StringToColor.next(name);
-        const color2 = StringToColor.next(name+'X');
+        const color = colorize(name);
         datasetsData.push({
             label: name + ' keep%',
             data: playerKeepPercentage,
@@ -611,8 +610,7 @@ function liveStats2Graph(reportData) {
         for (var j = 0; j < statsRounds; j++) {
             playerAvgPoints.push(statsData[i] && statsData[i].stats[j] ? statsData[i].stats[j].avgPoints : 0);
         }
-        const color = StringToColor.next(name);
-        const color2 = StringToColor.next(name+'X');
+        const color = colorize(name);
         datasetsData.push({
             label: name + ' avgpoints',
             data: playerAvgPoints,
