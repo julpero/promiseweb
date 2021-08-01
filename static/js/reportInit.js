@@ -1,47 +1,58 @@
 function initGameListEvent() {
-    document.getElementById('chooseGameCollapse').addEventListener('shown.bs.collapse', function () {
-        socket.emit('get games for report', {}, function (response) {
-            showGames(response);
+    const chooseGameCollapseEl = document.getElementById('chooseGameCollapse');
+    if (chooseGameCollapseEl != null) {
+        chooseGameCollapseEl.addEventListener('shown.bs.collapse', function () {
+            socket.emit('get games for report', {}, function (response) {
+                showGames(response);
+            });
+            chooseGameCollapseEl.addEventListener('hidden.bs.collapse', function () {
+                emptyElementById('chooseGameCollapse');
+            });
         });
-    });
-
-    document.getElementById('chooseGameCollapse').addEventListener('hidden.bs.collapse', function () {
-        emptyElementById('chooseGameCollapse');
-    });
+    }
 }
 
 function initAverageEvent() {
-    document.getElementById('averageReportCollapse').addEventListener('shown.bs.collapse', function () {
-        socket.emit('get average report', {}, function (response) {
-            showAverages(response);
+    const averageReportCollapseEl = document.getElementById('averageReportCollapse');
+    if (averageReportCollapseEl != null) {
+        averageReportCollapseEl.addEventListener('shown.bs.collapse', function () {
+            socket.emit('get average report', {}, function (response) {
+                showAverages(response);
+            });
         });
-    });
-
-    document.getElementById('averageReportCollapse').addEventListener('hidden.bs.collapse', function () {
-        emptyElementById('averageReportCollapse');
-    });
+    
+        averageReportCollapseEl.addEventListener('hidden.bs.collapse', function () {
+            emptyElementById('averageReportCollapse');
+        });
+    }
 }
 
 function initNickChangeEvent() {
-    document.getElementById('chooseNickGameCollapse').addEventListener('shown.bs.collapse', function () {
-        socket.emit('get games for report', {}, function (response) {
-            showNickChanger(response);
+    const chooseNickGameCollapseEl = document.getElementById('chooseNickGameCollapse');
+    if (chooseNickGameCollapseEl != null) {
+        chooseNickGameCollapseEl.addEventListener('shown.bs.collapse', function () {
+            socket.emit('get games for report', {}, function (response) {
+                showNickChanger(response);
+            });
         });
-    });
-
-    document.getElementById('chooseNickGameCollapse').addEventListener('hidden.bs.collapse', function () {
-        emptyElementById('chooseNickGameCollapse');
-    });
+    
+        chooseNickGameCollapseEl.addEventListener('hidden.bs.collapse', function () {
+            emptyElementById('chooseNickGameCollapse');
+        });
+    }
 }
 
 function initUpdateAllButton() {
-    document.getElementById('updateAllGameReportsButton').addEventListener('click', function() {
-        if (window.confirm('Are you sure you wan\'t to update ALL game reports?')) {
-            socket.emit('update all game reports', {}, function (response) {
-                console.log(response);
-            });
-        }
-    });
+    const updateAllGameReportsButtonEl = document.getElementById('updateAllGameReportsButton');
+    if (updateAllGameReportsButtonEl != null) {
+        updateAllGameReportsButtonEl.addEventListener('click', function() {
+            if (window.confirm('Are you sure you wan\'t to update ALL game reports?')) {
+                socket.emit('update all game reports', {}, function (response) {
+                    console.log(response);
+                });
+            }
+        });
+    }
 }
 
 function initEvents() {
@@ -52,7 +63,8 @@ function initEvents() {
 }
 
 function enableButtons() {
-    $('.report-button').classList.remove('disabled');
+    disableButtonsByClass('report-button', false);
+    removeClassByClass('report-button', 'disabled');
 }
 
 function mainInit() {

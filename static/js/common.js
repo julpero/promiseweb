@@ -336,8 +336,8 @@ function removeElementById(elName) {
 }
 
 function disableButtonsByClass(btnClass, disabled) {
-    const validPromiseButtons = document.getElementsByClassName(btnClass);
-    Array.prototype.forEach.call(validPromiseButtons, function(el, i) {
+    const buttons = document.getElementsByClassName(btnClass);
+    Array.prototype.forEach.call(buttons, function(el, i) {
         el.disabled = disabled;
     });
 }
