@@ -344,7 +344,10 @@ function initCardTable(myRound) {
 
 function initOtherPlayers(myRound) {
     myRound.players.forEach(function(player, idx) {
-        document.getElementById('player'+otherPlayerMapper(idx, myRound.players)+'NameCol').innerHTML = player.name;
+        const playerNameDiv = document.getElementById('player'+otherPlayerMapper(idx, myRound.players)+'NameCol');
+        playerNameDiv.innerText = player.name;
+        const playerInfoRow = playerNameDiv.parentElement;
+        playerInfoRow.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(player.name)+', #45a173)';
     });
 }
 
@@ -382,7 +385,7 @@ function createPromiseTable(promiseTable) {
     tableHeaderRow.appendChild(createElementWithIdAndClasses('th', null, 'promiseTableHeader', {scope: 'col'}));
     for (var i = 0; i < promiseTable.rounds.length; i++) {
         const tableHeaderCol = createElementWithIdAndClasses('th', 'promiseTableHeader'+i, 'promiseTableHeader', {scope: 'col'});
-        tableHeaderCol.innerHTML = promiseTable.rounds[i].cardsInRound;
+        tableHeaderCol.innerText = promiseTable.rounds[i].cardsInRound;
         tableHeaderRow.appendChild(tableHeaderCol);
     }
     tableHeader.appendChild(tableHeaderRow);
@@ -391,7 +394,8 @@ function createPromiseTable(promiseTable) {
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
         const tableBodyRow = document.createElement('tr');
         const playerNameCol = createElementWithIdAndClasses('th', 'player'+i+'PromiseName', 'promiseTableCol playerPromiseNameCol', {scope: 'row'});
-        playerNameCol.innerHTML = promiseTable.players[i];
+        playerNameCol.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(promiseTable.players[i])+', #45a173)';
+        playerNameCol.innerText = promiseTable.players[i];
         tableBodyRow.appendChild(playerNameCol);
         for (var j = 0; j < promiseTable.rounds.length; j++) {
             const promiseCol = createElementWithIdAndClasses('td', 'player'+i+'Prom'+j, 'promiseTableCol playerPromiseCol');
@@ -417,7 +421,8 @@ function createScoreboard(promiseTable) {
         var playerShortName = playerName;
         if (playerShortName.length > 3) playerShortName = playerShortName.substring(0, 3);
         const tableHeaderCol = createElementWithIdAndClasses('th', 'tableHeaderName'+i, 'scoreboardTableHeader', {scope: 'col'});
-        tableHeaderCol.innerHTML = playerShortName;
+        tableHeaderCol.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(playerName)+', #45a173)';
+        tableHeaderCol.innerText = playerShortName;
         const tableHeaderColTooltip = new bootstrap.Tooltip(tableHeaderCol, {title: playerName});
         tableHeaderRow.appendChild(tableHeaderCol);
     }

@@ -440,14 +440,14 @@ function showPlayerPromises(myRound, showPromise, showSpeedPromise) {
     myRound.players.forEach(function (player, idx) {
         const tableIdx = otherPlayerMapper(idx, myRound.players);
         if (player.promise != null) {
-            document.getElementById('player'+tableIdx+'Keeps').innerHTML = 'k: '+player.keeps;
+            document.getElementById('player'+tableIdx+'Keeps').innerText = 'k: '+player.keeps;
             const speedPromiseStr = showSpeedPromise ? ' ('+(player.speedPromisePoints == 1 ? '+' : player.speedPromisePoints)+')' : '';
             if (!showPromise && tableIdx != 0) {
-                if (showSpeedPromise) document.getElementById('player'+tableIdx+'Promised').innerHTML = 'p: '+speedPromiseStr;
+                if (showSpeedPromise) document.getElementById('player'+tableIdx+'Promised').innerText = 'p: '+speedPromiseStr;
                 return;
             }
 
-            document.getElementById('player'+tableIdx+'Promised').innerHTML = 'p: '+player.promise+speedPromiseStr;
+            document.getElementById('player'+tableIdx+'Promised').innerText = 'p: '+player.promise+speedPromiseStr;
             if (player.promise == player.keeps) {
                 document.getElementById('player'+tableIdx+'Keeps').classList.remove('gamePromiseOver');
                 document.getElementById('player'+tableIdx+'Keeps').classList.remove('gamePromiseUnder');
@@ -1168,10 +1168,10 @@ function initScoreBoard(promiseTable, gameOver) {
                 const playerPointsEl = document.getElementById('player'+i+'Points'+j);
                 if (currentPoints != 0) {
                     playerPoints+= currentPoints;
-                    playerPointsEl.innerHTML = playerPoints;
+                    playerPointsEl.innerText = playerPoints;
                     playerPointsEl.classList.add('hasPoints')
                 } else {
-                    playerPointsEl.innerHTML = '-';
+                    playerPointsEl.innerText = '-';
                     playerPointsEl.classList.add('zeroPoints')
                 }
                 if (speedPromisePoints == 1) {
