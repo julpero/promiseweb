@@ -1,3 +1,4 @@
+const bgColor = '#f29ee9';
 
 function initTableFor3() {
     console.log('initTableFor3');
@@ -347,7 +348,7 @@ function initOtherPlayers(myRound) {
         const playerNameDiv = document.getElementById('player'+otherPlayerMapper(idx, myRound.players)+'NameCol');
         playerNameDiv.innerText = player.name;
         const playerInfoRow = playerNameDiv.parentElement;
-        playerInfoRow.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(player.name)+', #45a173)';
+        playerInfoRow.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(player.name)+', '+bgColor+')';
     });
 }
 
@@ -394,7 +395,7 @@ function createPromiseTable(promiseTable) {
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
         const tableBodyRow = document.createElement('tr');
         const playerNameCol = createElementWithIdAndClasses('th', 'player'+i+'PromiseName', 'promiseTableCol playerPromiseNameCol', {scope: 'row'});
-        playerNameCol.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(promiseTable.players[i])+', #45a173)';
+        playerNameCol.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(promiseTable.players[i])+', '+bgColor+')';
         playerNameCol.innerText = promiseTable.players[i];
         tableBodyRow.appendChild(playerNameCol);
         for (var j = 0; j < promiseTable.rounds.length; j++) {
@@ -421,7 +422,7 @@ function createScoreboard(promiseTable) {
         var playerShortName = playerName;
         if (playerShortName.length > 3) playerShortName = playerShortName.substring(0, 3);
         const tableHeaderCol = createElementWithIdAndClasses('th', 'tableHeaderName'+i, 'scoreboardTableHeader', {scope: 'col'});
-        tableHeaderCol.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(playerName)+', #45a173)';
+        tableHeaderCol.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(playerName)+', '+bgColor+')';
         tableHeaderCol.innerText = playerShortName;
         const tableHeaderColTooltip = new bootstrap.Tooltip(tableHeaderCol, {title: playerName});
         tableHeaderRow.appendChild(tableHeaderCol);
