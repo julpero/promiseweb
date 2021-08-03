@@ -113,7 +113,6 @@ function colorize(str) {
 
 function colorizeDatasets(datasets) {
     for (var i = 0; i < datasets.length; i++) {
-        console.log(datasets[i]);
         var dataset = datasets[i];
 
         dataset.accentColor = colorize(datasets[i].label);
@@ -268,7 +267,7 @@ function showOneKeepsReport(reportObject) {
             }
         }
     };
-    
+
     const labelsData = reportObject.players;
     const datasetsBigData = {
         label: 'Big rounds',
@@ -370,6 +369,86 @@ function showOnePointsReport(reportObject) {
     });
 }
 
+
+function showCardsReport(reportObject) {
+    const canvasIdStr = 'cardsByPlayerBody';
+    const keepsOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: {
+            x: {
+                stacked: true,
+                max: reportObject.bigCards[0]+reportObject.otherCards[0]+reportObject.smallCards[0]+reportObject.trumps[0],
+                min: 0,
+            },
+            y: {
+                stacked: true,
+            }
+        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'Cards in game by nickname'
+            },
+            tooltip: {
+                callbacks: {
+                    afterTitle: function(context) {
+                        var totalKeeps = 0;
+                        context.forEach(function (row) {
+                            totalKeeps+= row.raw;
+                        });
+                        return 'Total: '+totalKeeps;
+                    }
+                }
+            }
+        }
+    };
+    
+    const labelsData = reportObject.players;
+    const datasetsTrumpsData = {
+        label: 'Trumps',
+        data: reportObject.trumps,
+        borderWidth: 1,
+        backgroundColor: 'rgba(255,153,0,0.6)',
+    };
+    const datasetsBigsData = {
+        label: 'Big cards',
+        data: reportObject.bigCards,
+        borderWidth: 1,
+        backgroundColor: 'lightgreen',
+    };
+    const datasetsSmallsData = {
+        label: 'Small cards',
+        data: reportObject.smallCards,
+        borderWidth: 1,
+        backgroundColor: 'lightblue',
+    };
+    const datasetsOthersData = {
+        label: 'Other cards',
+        data: reportObject.otherCards,
+        borderWidth: 1,
+        backgroundColor: 'lightyellow',
+    };
+
+    const keepsData = {
+        labels: labelsData,
+        datasets:[datasetsTrumpsData, datasetsBigsData, datasetsSmallsData, datasetsOthersData],
+    };
+
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.canvas.id == canvasIdStr) instance.destroy();
+    });
+
+    const ctx = document.getElementById(canvasIdStr);
+    const keepChart = new Chart(ctx, {
+        type: 'bar',
+        data: keepsData,
+        options: keepsOptions,
+    });
+}
+
 function getOneGameReport(gameId) {
     const reportModalEl = document.getElementById('oneGameReportModal');
     reportModalEl.addEventListener('shown.bs.modal', function() {
@@ -379,6 +458,7 @@ function getOneGameReport(gameId) {
             showOneGameReport(gameReportData);
             showOneKeepsReport(gameReportData);
             showOnePointsReport(gameReportData);
+            showCardsReport(gameReportData);
         });
     });
     const bsModal = bootstrap.Modal.getOrCreateInstance(reportModalEl);

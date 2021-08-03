@@ -1483,7 +1483,7 @@ try {
                 const gameInDb = await collection.findOne(query);
    
                 console.log('get game report', gameInDb);
-                const retObj = rf.getGameReport(gameInDb.game);
+                const retObj = rf.getGameReport(gameInDb.game, gameInDb.gameStatistics.playersStatistics);
                 fn(retObj);
             });
             
