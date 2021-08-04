@@ -1510,8 +1510,11 @@ try {
                     const result = await collection.updateOne(updateQuery, updateDoc, options);
                     if (result.modifiedCount == 1) {
                         updatedIds.push(gameId.toString());
+                        console.log('update all game reports - game '+gameId.toString()+' statistics updated');
                     }
                 });
+
+                console.log('update all game reports - all game reports updated');
 
                 fn(updatedIds);
             });
