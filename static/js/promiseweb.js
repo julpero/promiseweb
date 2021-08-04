@@ -1093,10 +1093,18 @@ function initPromiseTable(promiseTable) {
     console.log('initPromiseTable');
     if (document.getElementById('promiseTable').children.length == 0) createPromiseTable(promiseTable);
 
-    // $('.promiseTableHeader').tooltip('dispose');
-    // $('.playerPromiseCol').tooltip('dispose');
-    // $('.playerPromiseNameCol').tooltip('dispose');
-    
+    const tooltippedDivs = document.getElementsByClassName('promTooltip');
+    if (tooltippedDivs != null) {
+        Array.prototype.forEach.call(tooltippedDivs, function(el, i) {
+                const tooltip = bootstrap.Tooltip.getInstance(el);
+                if (tooltip != null) {
+                    // disposed elements can't have animations
+                    tooltip.dispose();
+                }
+        });
+        console.log('all tooltips disposed');
+    }
+
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
         var playerKept = 0;
         var playerOver = 0;
@@ -1123,7 +1131,7 @@ function initPromiseTable(promiseTable) {
                     el.classList.add('promiseUnder');
                     tooltipTitle = 'Under promised, total: ' + totalPromise + '/' + cardsInRound;
                 }
-                const elTootip = new bootstrap.Tooltip(el, {title: tooltipTitle});
+                const elTootip = new bootstrap.Tooltip(el, {title: tooltipTitle, animation: false});
             }
             const promise = promiseTable.promisesByPlayers[i][j];
             const speedPromiseStr = promise.speedPromisePoints != null && promise.speedPromisePoints != 0 ? (promise.speedPromisePoints == 1 ? '+' : promise.speedPromisePoints) : '';
@@ -1131,6 +1139,7 @@ function initPromiseTable(promiseTable) {
             const playerPromEl = document.getElementById('player'+i+'Prom'+j);
             playerPromEl.innerHTML = promiseStr;
             if (promise.points != null) {
+                playerPromEl.classList.add('promTooltip');
                 var tooltipStr = "";
                 if (promise.keep == promise.promise) {
                     playerPromEl.classList.add('promiseKept');
@@ -1145,11 +1154,11 @@ function initPromiseTable(promiseTable) {
                     playerUnder++;
                 }
                 if (speedPromiseStr != '') tooltipStr+= ' ('+speedPromiseStr+')';
-                const playerPromTooltip = new bootstrap.Tooltip(playerPromEl, {title: tooltipStr});
+                const playerPromTooltip = new bootstrap.Tooltip(playerPromEl, {title: tooltipStr, animation: false});
             }
         }
         const promiseNameEl = document.getElementById('player'+i+'PromiseName');
-        const promiseNameTooltip = new bootstrap.Tooltip(promiseNameEl, {title: "kept: " + playerKept + " / over: " + playerOver + " / under: " + playerUnder});
+        const promiseNameTooltip = new bootstrap.Tooltip(promiseNameEl, {title: "kept: " + playerKept + " / over: " + playerOver + " / under: " + playerUnder, animation: false});
     }
 }
 

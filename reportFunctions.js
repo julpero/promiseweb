@@ -32,8 +32,9 @@ module.exports = {
             meltFrom: null,
             melter: null,
         }
+
         if (gameIsPlayed) {
-            const roundStats = this.getGameReport(game);
+            const roundStats = this.getGameReport(game, playersStatistics);
             const winnerName = playersStatistics[0].playerName;
 
             var maxSpurt = 0;
@@ -107,7 +108,7 @@ module.exports = {
         }
     },
 
-    getGameReport: function (game) {
+    getGameReport: function (game, playersStatistics) {
         const retObj = {
             players: null,
             points: null,
@@ -118,6 +119,10 @@ module.exports = {
             keepsSmall: null, // rounds of 1-5 cards
             smallStart: null,
             smallEnd: null,
+            trumps: null,
+            bigCards: null,
+            smallCards: null,
+            otherCards: null,
         };
 
         const players = [];
@@ -128,6 +133,10 @@ module.exports = {
         const keepsBigArr = [];
         const keepsSmallArr = [];
         const pointsArr = [];
+        const trumpsArr = [];
+        const bigCardsArr = [];
+        const smallCardsArr = [];
+        const otherCardsArr = [];
         for (var i = 0; i < game.playerOrder.length; i++) {
             const playerName = game.playerOrder[i].name == null ? game.playerOrder[i] : game.playerOrder[i].name;
             players.push(playerName);
@@ -149,6 +158,18 @@ module.exports = {
                         } else {
                             smallPointsPerPlayer+= pointsFromRound;
                         }
+                        break;
+                    }
+                }
+            }
+            if (playersStatistics != null) {
+                for (var j = 0; j < playersStatistics.length; j++) {
+                    if (playersStatistics[j].playerName == playerName) {
+                        trumpsArr.push(playersStatistics[j].trumpsInGame);
+                        bigCardsArr.push(playersStatistics[j].bigsCardsInGame);
+                        smallCardsArr.push(playersStatistics[j].smallCardsInGame);
+                        otherCardsArr.push(playersStatistics[j].otherCardsInGame);
+                        break;
                     }
                 }
             }
@@ -184,9 +205,44 @@ module.exports = {
         retObj.pointsSmall = pointsSmallArr;
         retObj.keepsBig = keepsBigArr;
         retObj.keepsSmall = keepsSmallArr;
+        retObj.trumps = trumpsArr;
+        retObj.bigCards = bigCardsArr;
+        retObj.smallCards = smallCardsArr;
+        retObj.otherCards = otherCardsArr;
 
         return retObj;
+    },
+
+}
+
+function countHandCards(game, playerName) {
+    let trumps = 0;
+    let bigCards = 0;
+    let smallCards = 0;
+    let otherCards = 0;
+    for (var roundInd = 0; roundInd < game.rounds.length; roundInd++) {
+        const round = game.rounds[roundInd];
+        const trumpSuit = round.trumpCard.suit;
+        for (var i = 0; i < round.cardsPlayed.length; i++) {
+            for (var j = 0; j < round.cardsPlayed[i].length; j++) {
+                if (round.cardsPlayed[i][j].name == playerName) {
+                    if (round.cardsPlayed[i][j].card.suit == trumpSuit) {
+                        trumps++;
+                    } else {
+                        if (round.cardsPlayed[i][j].card.rank > 10) {
+                            bigCards++;
+                        } else if (round.cardsPlayed[i][j].card.rank < 6) {
+                            smallCards++;
+                        } else {
+                            otherCards++;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
     }
+    return { trumps: trumps, bigCards: bigCards, smallCards: smallCards, otherCards: otherCards };
 }
 
 function getPlayerStatistics(game) {
@@ -196,6 +252,7 @@ function getPlayerStatistics(game) {
         const totalPoints = module.exports.getGamePoints(game, playerName);
         const totalKeeps = getGameKeeps(game, playerName);
         const pointsPerKeeps = totalKeeps == 0 ? 0 : totalPoints/totalKeeps;
+        const cards = countHandCards(game, playerName);
         players.push({
             playerName: playerName,
             totalPoints: totalPoints,
@@ -203,6 +260,10 @@ function getPlayerStatistics(game) {
             pointsPerKeeps: pointsPerKeeps,
             position: null,
             scorePoints: null,
+            trumpsInGame: cards.trumps,
+            bigsCardsInGame: cards.bigCards,
+            smallCardsInGame: cards.smallCards,
+            otherCardsInGame: cards.otherCards,
         });
     });
     return players;

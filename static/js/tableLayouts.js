@@ -1,5 +1,3 @@
-const bgColor = '#f29ee9';
-
 function initTableFor3() {
     console.log('initTableFor3');
     const nodeRow = createElementWithIdAndClasses('div', null, 'row');
@@ -344,6 +342,7 @@ function initCardTable(myRound) {
 }
 
 function initOtherPlayers(myRound) {
+    const bgColor = window.getComputedStyle(document.body, null).getPropertyValue("background-color");
     myRound.players.forEach(function(player, idx) {
         const playerNameDiv = document.getElementById('player'+otherPlayerMapper(idx, myRound.players)+'NameCol');
         playerNameDiv.innerText = player.name;
@@ -385,16 +384,17 @@ function createPromiseTable(promiseTable) {
     
     tableHeaderRow.appendChild(createElementWithIdAndClasses('th', null, 'promiseTableHeader', {scope: 'col'}));
     for (var i = 0; i < promiseTable.rounds.length; i++) {
-        const tableHeaderCol = createElementWithIdAndClasses('th', 'promiseTableHeader'+i, 'promiseTableHeader', {scope: 'col'});
+        const tableHeaderCol = createElementWithIdAndClasses('th', 'promiseTableHeader'+i, 'promiseTableHeader promTooltip', {scope: 'col'});
         tableHeaderCol.innerText = promiseTable.rounds[i].cardsInRound;
         tableHeaderRow.appendChild(tableHeaderCol);
     }
     tableHeader.appendChild(tableHeaderRow);
 
     const tableBody = document.createElement('tbody');
+    const bgColor = window.getComputedStyle(document.body, null).getPropertyValue("background-color");
     for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
         const tableBodyRow = document.createElement('tr');
-        const playerNameCol = createElementWithIdAndClasses('th', 'player'+i+'PromiseName', 'promiseTableCol playerPromiseNameCol', {scope: 'row'});
+        const playerNameCol = createElementWithIdAndClasses('th', 'player'+i+'PromiseName', 'promiseTableCol playerPromiseNameCol promTooltip', {scope: 'row'});
         playerNameCol.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(promiseTable.players[i])+', '+bgColor+')';
         playerNameCol.innerText = promiseTable.players[i];
         tableBodyRow.appendChild(playerNameCol);
@@ -416,7 +416,7 @@ function createScoreboard(promiseTable) {
     const table = document.createElement('table');
     const tableHeader = document.createElement('thead');
     const tableHeaderRow = document.createElement('tr');
-    
+    const bgColor = window.getComputedStyle(document.body, null).getPropertyValue("background-color");
     for (var i = 0; i < promiseTable.players.length; i++) {
         const playerName = promiseTable.players[i];
         var playerShortName = playerName;
