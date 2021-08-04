@@ -428,6 +428,100 @@ function avgPercentagePointsGraph(reportData) {
 }
 
 
+function cardsInHandGraph(reportData) {
+    const canvasIdStr = 'cardsInHandGraph';
+    const cardsOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: {
+            x: {
+                stacked: true,
+                max: 100,
+                min: 0,
+            },
+            y: {
+                stacked: true,
+            }
+        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'Cards in game by nickname'
+            },
+            tooltip: {
+                callbacks: {
+                    afterTitle: function(context) {
+                        var totalKeeps = 0;
+                        context.forEach(function (row) {
+                            totalKeeps+= row.raw;
+                        });
+                        return 'Total: '+totalKeeps;
+                    }
+                }
+            }
+        }
+    };
+    
+    const labelsData = [];
+    const trumpData = [];
+    const bigData = [];
+    const smallData = [];
+    const otherData = [];
+    const colors = [];
+
+    for (var i = 0; i < reportData.length; i++) {
+        const name = reportData[i]._id;
+        labelsData.push(name);
+        trumpData.push((100*reportData[i].trumpPercentage).toFixed(1));
+        bigData.push((100*reportData[i].bigPercentage).toFixed(1));
+        smallData.push((100*reportData[i].smallPercentage).toFixed(1));
+        otherData.push((100*reportData[i].otherPercentage).toFixed(1));
+        colors.push(colorize(name));
+    }
+    const datasetsTrumpsData = {
+        label: 'Trumps',
+        data: trumpData,
+        borderWidth: 1,
+        backgroundColor: 'rgba(255,153,0,0.6)',
+    };
+    const datasetsBigsData = {
+        label: 'Big cards',
+        data: bigData,
+        borderWidth: 1,
+        backgroundColor: 'lightgreen',
+    };
+    const datasetsSmallsData = {
+        label: 'Small cards',
+        data: smallData,
+        borderWidth: 1,
+        backgroundColor: 'lightblue',
+    };
+    const datasetsOthersData = {
+        label: 'Other cards',
+        data: otherData,
+        borderWidth: 1,
+        backgroundColor: 'lightyellow',
+    };
+
+    const cardsData = {
+        labels: labelsData,
+        datasets:[datasetsTrumpsData, datasetsBigsData, datasetsSmallsData, datasetsOthersData],
+    };
+
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.canvas.id == canvasIdStr) instance.destroy();
+    });
+
+    const ctx = document.getElementById(canvasIdStr);
+    const cardsChart = new Chart(ctx, {
+        type: 'bar',
+        data: cardsData,
+        options: cardsOptions,
+    });
+}
+
 function scoreGraph(reportData) {
     const canvasIdStr = 'scoreGraph';
     const graphOptions = {

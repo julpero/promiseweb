@@ -319,6 +319,7 @@ function showFrontPageBars(reportData) {
     winPercentagesGraph(reportData.playerWinPercentage);
     scoreGraph(reportData.avgScorePointsPerPlayer);
     if (reportData.avgPercentagePoints) avgPercentagePointsGraph(reportData.avgPercentagePoints);
+    if (reportData.cardsInHandCount) cardsInHandGraph(reportData.cardsInHandCount);
 }
 
 function initShowFrontPageBarsModal(reportData) {

@@ -372,7 +372,7 @@ function showOnePointsReport(reportObject) {
 
 function showCardsReport(reportObject) {
     const canvasIdStr = 'cardsByPlayerBody';
-    const keepsOptions = {
+    const cardsOptions = {
         responsive: true,
         maintainAspectRatio: false,
         indexAxis: 'y',
@@ -431,7 +431,7 @@ function showCardsReport(reportObject) {
         backgroundColor: 'lightyellow',
     };
 
-    const keepsData = {
+    const cardsData = {
         labels: labelsData,
         datasets:[datasetsTrumpsData, datasetsBigsData, datasetsSmallsData, datasetsOthersData],
     };
@@ -442,10 +442,10 @@ function showCardsReport(reportObject) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const keepChart = new Chart(ctx, {
+    const cardsChart = new Chart(ctx, {
         type: 'bar',
-        data: keepsData,
-        options: keepsOptions,
+        data: cardsData,
+        options: cardsOptions,
     });
 }
 
