@@ -1006,6 +1006,7 @@ try {
                     meltingGame: null,
                     spurtingGame: null,
                     avgPercentagePoints: null,
+                    cardsInHandCount: null,
                 };
 
                 const database = mongoUtil.getDb();
@@ -1330,6 +1331,57 @@ try {
                     if (val._id == 6) playerCount.sixPlayers = val.lkm;
                 });
                 retObj.playerCount = playerCount;
+                // ********
+
+                // cards in hand count
+                console.log('get report data - report data - cards in hand count');
+                const aggregationCardsInHandCount = [
+                    {
+                      '$match': {
+                        'gameStatus': {
+                          '$eq': 2
+                        }
+                      }
+                    }, {
+                      '$unwind': {
+                        'path': '$gameStatistics.playersStatistics', 
+                        'preserveNullAndEmptyArrays': false
+                      }
+                    }, {
+                      '$group': {
+                        '_id': '$gameStatistics.playersStatistics.playerName', 
+                        'trumps': {
+                          '$sum': '$gameStatistics.playersStatistics.trumpsInGame'
+                        }, 
+                        'bigs': {
+                          '$sum': '$gameStatistics.playersStatistics.bigsCardsInGame'
+                        }, 
+                        'smalls': {
+                          '$sum': '$gameStatistics.playersStatistics.smallCardsInGame'
+                        }, 
+                        'others': {
+                          '$sum': '$gameStatistics.playersStatistics.otherCardsInGame'
+                        }, 
+                        'games': {
+                          '$sum': 1
+                        }
+                      }
+                    }
+                ];
+
+                const cardsInHandCountPerPlayer = [];
+                const cursorCardsInHandCount = await collection.aggregate(aggregationCardsInHandCount);
+                await cursorCardsInHandCount.forEach(function(val) {
+                    if (val.games > minGamesToReport) {
+                        const totalCards = val.trumps + val.bigs + val.smalls + val.others;
+                        val.trumpPercentage = val.trumps/totalCards;
+                        val.bigPercentage = val.bigs/totalCards;
+                        val.smallPercentage = val.smalls/totalCards;
+                        val.otherPercentage = val.others/totalCards;
+                        cardsInHandCountPerPlayer.push(val);
+                    }
+                });
+                retObj.cardsInHandCount = cardsInHandCountPerPlayer;
                 // ********
 
                 // melter
