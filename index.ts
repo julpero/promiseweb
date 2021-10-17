@@ -1693,7 +1693,7 @@ try {
 
             socket.on('generate game statistics', async (data, fn) => {
                 const gameIdStr = data.gameId;
-                console.log('generate game statistics - start to generate game statistics for '+gameIdStr, gameIdStr);
+                console.log('generate game statistics - start to generate game statistics for %s', gameIdStr, gameIdStr);
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
@@ -1723,7 +1723,8 @@ try {
                 const oldName = data.oldName;
                 const newName = data.newName;
 
-                console.log('change nick - game database '+oldName+' to '+newName, gameIdStr);
+                console.log('change nick - game database %s to %s', oldName, newName, gameIdStr);
+
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
@@ -1777,7 +1778,7 @@ try {
                 };
                 const result = await collection.updateOne(query, updateDoc, options);
                 
-                console.log('change nick - stats database '+oldName+' to '+newName, gameIdStr);
+                console.log('change nick - stats database %s to %s', oldName, newName, gameIdStr);
                 const updateStatsDocQuery = {
                         name: oldName,
                         game: gameIdStr,
