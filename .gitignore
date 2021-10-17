@@ -107,3 +107,4 @@ web.config
 
 # build directory
 build/
+static/test.html
