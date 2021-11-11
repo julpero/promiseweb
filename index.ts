@@ -12,6 +12,8 @@ const NodeCache = require( "node-cache" );
 const myCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 var hash = require('object-hash');
 
+const sanitizeFileName = require("sanitize-filename");
+
 app.use(express.static('static'))
 app.use(express.static('node_modules/bootstrap/dist'))
 app.use(express.static('node_modules/deck-of-cards/dist'))
@@ -80,11 +82,27 @@ try {
         });
         
         app.get('/css/faces/:face', (req, res) => {
-            try {
-                res.sendFile(__dirname + '/cardGallery/fourColorFaces/' + req.params.face);
-            } catch(error) {
-                const err = JSON.stringify(error);
-                res.status(500).send('Request error: ' + err);
+            if (req.params && req.params.face) {
+                const faceName = sanitizeFileName(req.params.face);
+                try {
+                    const options = {
+                        root: __dirname + '/cardGallery/fourColorFaces/'
+                    };
+                    res.sendFile(faceName, options, function (err) {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send('Request error, face ' + faceName + ' not found!');
+                        } else {
+                            console.log(faceName + ' send');
+                        }
+                    });
+                } catch(error) {
+                    // const err = JSON.stringify(error);
+                    console.log(error);
+                    res.status(500).send('Request error, face ' + faceName + ' not found!');
+                }
+            } else {
+                res.status(500).send('Request error, no face!');
             }
         });
     
