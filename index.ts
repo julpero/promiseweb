@@ -12,6 +12,8 @@ const NodeCache = require( "node-cache" );
 const myCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 var hash = require('object-hash');
 
+const bcrypt = require('bcrypt');
+
 const sanitizeFileName = require("sanitize-filename");
 
 app.use(express.static('static'))
@@ -46,6 +48,7 @@ const vanillaGameRules = {
 const promisewebCollection = 'promiseweb';
 const statsCollection = 'promisewebStats';
 const pingCollection = 'pingCollection';
+const userCollection = 'userCollection';
 
 try {
     var mongoUtil = require(__dirname + '/mongoUtil.js');
@@ -468,6 +471,10 @@ try {
     
             socket.on('create game', async (gameOptions, fn) => {
                 var okToCreate = true;
+                var errorCode = 'NOT OK';
+
+                const adminUserName = gameOptions.adminName;
+                const adminId = gameOptions.humanPlayers[0].playerId;
     
                 console.log('create game', gameOptions);
                 const database = mongoUtil.getDb();
@@ -475,17 +482,66 @@ try {
     
                 const query = {
                     gameStatus: { $lte: 1 },
-                    'humanPlayers.playerId': {$eq: gameOptions.humanPlayers[0].playerId }
+                    'humanPlayers.playerId': { $eq: adminId }
                 };
                 const cursor = await collection.find(query);
                 await cursor.forEach(function(val) {
                     for (var i = 0; i < val.humanPlayers.length; i++) {
-                        if (val.humanPlayers[i].playerId == gameOptions.humanPlayers[0].playerId) {
+                        if (val.humanPlayers[i].playerId == adminId) {
                             okToCreate = false;
                             return;
                         }
                     }
                 });
+
+                var secretConfig = require(__dirname + '/secret.config.js');
+                
+                const saltRounds = 10;
+
+                const uCollection = database.collection(userCollection);
+                const uQuery = {
+                    playerName: { $eq: adminUserName }
+                };
+                const userDoc = await uCollection.findOne(uQuery);
+                if (userDoc == null) {
+                    // first time user, check if both passwords match
+                    if (gameOptions.userPassword1 != gameOptions.userPassword2) {
+                        errorCode = 'PWDMISMATCH';
+                        okToCreate = false;
+                    }
+                    if (gameOptions.userPassword2.length == 0) {
+                        errorCode = 'PWD2EMPTY';
+                        okToCreate = false;
+                    }
+                    if (gameOptions.userPassword1.length < 4) {
+                        errorCode = 'PWDSHORT';
+                        okToCreate = false;
+                    }
+
+                    if (okToCreate) {
+                        // create user
+                        const passStr = gameOptions.userPassword1+':'+secretConfig.secretPhase+':'+adminUserName;
+                        bcrypt.hash(passStr, saltRounds, async function(err, hash) {
+                            const userDoc2 = {
+                                playerName: adminUserName,
+                                passHash: hash,
+                            };
+                            await uCollection.insertOne(userDoc2);
+                        });
+                    }
+                } else {
+                    // check if password matches
+                    const passStr = gameOptions.userPassword1+':'+secretConfig.secretPhase+':'+adminUserName;
+                    const passOk = await bcrypt.compare(passStr, userDoc.passHash);
+                    if (!passOk) {
+                        errorCode = 'PWDFAILS';
+                        okToCreate = false;
+                    }
+                }
+
+                // unset passwords
+                gameOptions.userPassword1 = null;
+                gameOptions.userPassword2 = null;
                 
                 if (okToCreate) {
                     gameOptions.humanPlayers[0].playerStats = await getGamesStatistics(gameOptions, gameOptions.adminName);
@@ -495,7 +551,7 @@ try {
                     sm.addClientToMap(gameOptions.adminName, socket.id, result.insertedId);
                     fn(result.insertedId);
                 } else {
-                    fn('NOT OK');
+                    fn(errorCode);
                 }
             });
     

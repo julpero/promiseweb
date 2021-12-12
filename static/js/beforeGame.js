@@ -11,8 +11,12 @@ function validateNewGame(gameOptions) {
         alert('End round must be equal or greater than turn round');
         return false;
     }
-    if (gameOptions.humanPlayersCount > 0 && gameOptions.adminName.length  < 3) {
+    if (gameOptions.humanPlayersCount > 0 && gameOptions.adminName.length < 4) {
         alert('Your (nick)name must be at least four characters long');
+        return false;
+    }
+    if (gameOptions.humanPlayersCount > 0 && gameOptions.userPassword1.length  < 4) {
+        alert('Password must be at least four characters long');
         return false;
     }
     if (gameOptions.humanPlayersCount > 5 && (gameOptions.startRound > 8 || gameOptions.endRound > 8)) {
@@ -27,6 +31,14 @@ function createNewGame(gameOptions) {
     socket.emit('create game', gameOptions, function (createdGameId) {
         if (createdGameId == 'NOT OK') {
             alert('You have already created game!');
+        } else if (createdGameId == 'PWDFAILS') {
+            alert('Password doesn\'t match!');
+        } else if (createdGameId == 'PWDMISMATCH') {
+            alert('Passwords doesn\'t match!');
+        } else if (createdGameId == 'PWD2EMPTY') {
+            alert('New username, enter password to both fields!');
+        } else if (createdGameId == 'PWDSHORT') {
+            alert('Password must be at least four characters long!');
         } else {
             console.log('created game with id: '+createdGameId);
             gameId = createdGameId;
@@ -45,6 +57,8 @@ function initcreateNewGameButton() {
             turnRound: getSelectValue('newGameTurnRound'),
             endRound: getSelectValue('newGameEndRound'),
             adminName: document.getElementById('newGameMyName').value,
+            userPassword1: document.getElementById('password1').value,
+            userPassword2: document.getElementById('password2').value,
             password: document.getElementById('newGamePassword').value,
             gameStatus: 0,
             humanPlayers: [{ name: document.getElementById('newGameMyName').value, playerId: window.localStorage.getItem('uUID'), active: true}],
