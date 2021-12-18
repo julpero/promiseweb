@@ -201,7 +201,7 @@ function showGames(gameList) {
         playersDiv.appendChild(gamePlayersToDiv(game.humanPlayers, game.humanPlayersCount));
         gameContainerDiv.appendChild(playersDiv);
 
-        const myNameDiv = createElementWithIdAndClasses('div', null, 'col-2 form-floating');
+        const myNameDiv = createElementWithIdAndClasses('div', null, 'col-3 form-floating');
         const myNameInput = createElementWithIdAndClasses('input', 'myName'+game.id, 'newGameMyNameInput form-control', {type: 'text', placeholder: 'name'});
         const myNameLabel = createElementWithIdAndClasses('label', null, null, {for: 'myName'+game.id});
         myNameLabel.innerText = '(Nick)name';
@@ -210,7 +210,7 @@ function showGames(gameList) {
         myNameDiv.appendChild(myNameLabel);
         gameContainerDiv.appendChild(myNameDiv);
 
-        const myPassDiv = createElementWithIdAndClasses('div', null, 'col-2');
+        const myPassDiv = createElementWithIdAndClasses('div', null, 'col-3');
         const myPassDivRow1 = createElementWithIdAndClasses('div', null, 'row');
         const myPassDivCol1 = createElementWithIdAndClasses('div', null, 'col form-floating');
         const myPassDivRow2 = createElementWithIdAndClasses('div', null, 'row');
@@ -249,8 +249,9 @@ function showGames(gameList) {
             joinGame(game.id);
         });
         const joinGameBtnDiv = createElementWithIdAndClasses('div', null, 'col-1');
-        joinGameBtnDiv.appendChild(joinGameButton);
-        gameContainerDiv.appendChild(joinGameBtnDiv);
+        // joinGameBtnDiv.appendChild(joinGameButton);
+        //gameContainerDiv.appendChild(joinGameBtnDiv);
+        
         
         const leaveGameButton = createElementWithIdAndClasses('button', 'leaveGameButton' + game.id, 'btn btn-primary leaveThisGameButton');
         if (!game.imInThisGame) leaveGameButton.disabled = true;
@@ -258,9 +259,14 @@ function showGames(gameList) {
         leaveGameButton.addEventListener('click', function() {
             leaveGame(game.id);
         });
-        const leaveGameBtnDiv = createElementWithIdAndClasses('div', null, 'col-1');
-        leaveGameBtnDiv.appendChild(leaveGameButton);
-        gameContainerDiv.appendChild(leaveGameBtnDiv);
+        // const leaveGameBtnDiv = createElementWithIdAndClasses('div', null, 'col-1');
+        // leaveGameBtnDiv.appendChild(leaveGameButton);
+        const buttonsDiv = createElementWithIdAndClasses('div', null, 'btn-group', {role: 'group'});
+        buttonsDiv.appendChild(joinGameButton);
+        buttonsDiv.appendChild(leaveGameButton);
+        joinGameBtnDiv.appendChild(buttonsDiv);
+        gameContainerDiv.appendChild(joinGameBtnDiv);
+        // gameContainerDiv.appendChild(leaveGameBtnDiv);
 
         gameListContainer.appendChild(gameContainerDiv);
 
