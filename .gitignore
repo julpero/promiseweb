@@ -102,8 +102,11 @@ dist
 
 # TernJS port file
 .tern-port
+
 mongo.config.js
+secret.config.js
 web.config
 
 # build directory
 build/
+static/test.html

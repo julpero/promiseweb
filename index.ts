@@ -12,6 +12,10 @@ const NodeCache = require( "node-cache" );
 const myCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 var hash = require('object-hash');
 
+const bcrypt = require('bcrypt');
+
+const sanitizeFileName = require("sanitize-filename");
+
 app.use(express.static('static'))
 app.use(express.static('node_modules/bootstrap/dist'))
 app.use(express.static('node_modules/deck-of-cards/dist'))
@@ -44,6 +48,7 @@ const vanillaGameRules = {
 const promisewebCollection = 'promiseweb';
 const statsCollection = 'promisewebStats';
 const pingCollection = 'pingCollection';
+const userCollection = 'userCollection';
 
 try {
     var mongoUtil = require(__dirname + '/mongoUtil.js');
@@ -80,11 +85,27 @@ try {
         });
         
         app.get('/css/faces/:face', (req, res) => {
-            try {
-                res.sendFile(__dirname + '/cardGallery/fourColorFaces/' + req.params.face);
-            } catch(error) {
-                const err = JSON.stringify(error);
-                res.status(500).send('Request error: ' + err);
+            if (req.params && req.params.face) {
+                const faceName = sanitizeFileName(req.params.face);
+                try {
+                    const options = {
+                        root: __dirname + '/cardGallery/fourColorFaces/'
+                    };
+                    res.sendFile(faceName, options, function (err) {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send('Request error, face ' + faceName + ' not found!');
+                        } else {
+                            console.log(faceName + ' send');
+                        }
+                    });
+                } catch(error) {
+                    // const err = JSON.stringify(error);
+                    console.log(error);
+                    res.status(500).send('Request error, face ' + faceName + ' not found!');
+                }
+            } else {
+                res.status(500).send('Request error, no face!');
             }
         });
     
@@ -366,14 +387,69 @@ try {
             });
     
             socket.on('join game', async (newPlayer, fn) => {
-                var joiningResult = 'NOTSET';
+                var okToJoin = true;
                 const gameIdStr = newPlayer.gameId;
                 const myName = newPlayer.myName;
-                console.log('join game', newPlayer, gameIdStr, myName);
+                const retVal = {
+                    joiningResult: 'NOTSET',
+                    gameId: gameIdStr,
+                }
+                
                 const myId = newPlayer.myId;
+                const database = mongoUtil.getDb();
+
+                const secretConfig = require(__dirname + '/secret.config.js');
+                const saltRounds = 10;
+                const uCollection = database.collection(userCollection);
+                const uQuery = {
+                    playerName: { $eq: myName }
+                };
+                const userDoc = await uCollection.findOne(uQuery);
+                if (userDoc == null) {
+                    // first time user, check if both passwords match
+                    if (newPlayer.myPass1 != newPlayer.myPass2) {
+                        retVal.joiningResult = 'PWDMISMATCH';
+                        okToJoin = false;
+                    }
+                    if (newPlayer.myPass2.length == 0) {
+                        retVal.joiningResult = 'PWD2EMPTY';
+                        okToJoin = false;
+                    }
+                    if (newPlayer.myPass1.length < 4) {
+                        retVal.joiningResult = 'PWDSHORT';
+                        okToJoin = false;
+                    }
+
+                    if (okToJoin) {
+                        // create user
+                        const passStr = newPlayer.myPass1+':'+secretConfig.secretPhase+':'+myName;
+                        bcrypt.hash(passStr, saltRounds, async function(err, hash) {
+                            const userDoc2 = {
+                                playerName: myName,
+                                passHash: hash,
+                            };
+                            await uCollection.insertOne(userDoc2);
+                        });
+                    }
+                } else {
+                    // check if password matches
+                    const passStr = newPlayer.myPass1+':'+secretConfig.secretPhase+':'+myName;
+                    const passOk = await bcrypt.compare(passStr, userDoc.passHash);
+                    if (!passOk) {
+                        retVal.joiningResult = 'PWDFAILS';
+                        okToJoin = false;
+                    }
+                }
+
+                // unset passwords
+                newPlayer.myPass1 = null;
+                newPlayer.myPass2 = null;
+
+                // logging after nulling passwords
+                console.log('join game', newPlayer, gameIdStr, myName);
+
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
-                const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
                 const query = {
                     _id: searchId,
@@ -381,11 +457,7 @@ try {
                     password: newPlayer.gamePassword
                 };
                 const game = await collection.findOne(query);
-                const retVal = {
-                    joiningResult: null,
-                    gameId: gameIdStr,
-                }
-                if (game !== null) {
+                if (okToJoin && game !== null) {
                     if (game.humanPlayersCount > game.humanPlayers.length && game.adminName != myName) {
                         var nameFree = true;
                         var socketFree = true;
@@ -409,28 +481,26 @@ try {
                                 sm.addClientToMap(myName, socket.id, gameIdStr);
                                 var chatLine = 'player ' + myName + ' connected';
                                 io.to(gameIdStr).emit('new chat line', chatLine);
-                                joiningResult = 'OK';
+                                retVal.joiningResult = 'OK';
                             }
                         } else if (!nameFree) {
-                            joiningResult = 'NAMENOTOK';
+                            retVal.joiningResult = 'NAMENOTOK';
                         } else if (!socketFree) {
-                            joiningResult = 'SOCKETNOTOK';
+                            retVal.joiningResult = 'SOCKETNOTOK';
                         } else {
-                            joiningResult = 'UNKNOWNERROR';
+                            retVal.joiningResult = 'UNKNOWNERROR';
                         }
                     } else {
-                        joiningResult = 'NOTVALID';
+                        retVal.joiningResult = 'NOTVALID';
                     }
-                } else {
-                    joiningResult = 'GAMENOTFOUND';
+                } else if (game == null) {
+                    retVal.joiningResult = 'GAMENOTFOUND';
                 }
-    
-                retVal.joiningResult = joiningResult;
     
                 fn(retVal);
     
-                console.log('join game', joiningResult, gameIdStr, myName);
-                if (joiningResult == 'OK') {
+                console.log('join game', retVal.joiningResult, gameIdStr, myName);
+                if (retVal.joiningResult == 'OK') {
                     // let's update info to clients
                     const val = await collection.findOne(query);
                     const resultGameInfo = pf.gameToGameInfo(val);
@@ -450,24 +520,77 @@ try {
     
             socket.on('create game', async (gameOptions, fn) => {
                 var okToCreate = true;
+                var errorCode = 'NOT OK';
+
+                const adminUserName = gameOptions.adminName;
+                const adminId = gameOptions.humanPlayers[0].playerId;
     
-                console.log('create game', gameOptions);
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
     
                 const query = {
                     gameStatus: { $lte: 1 },
-                    'humanPlayers.playerId': {$eq: gameOptions.humanPlayers[0].playerId }
+                    'humanPlayers.playerId': { $eq: adminId }
                 };
                 const cursor = await collection.find(query);
                 await cursor.forEach(function(val) {
                     for (var i = 0; i < val.humanPlayers.length; i++) {
-                        if (val.humanPlayers[i].playerId == gameOptions.humanPlayers[0].playerId) {
+                        if (val.humanPlayers[i].playerId == adminId) {
                             okToCreate = false;
                             return;
                         }
                     }
                 });
+
+                const secretConfig = require(__dirname + '/secret.config.js');
+                const saltRounds = 10;
+                const uCollection = database.collection(userCollection);
+                const uQuery = {
+                    playerName: { $eq: adminUserName }
+                };
+                const userDoc = await uCollection.findOne(uQuery);
+                if (userDoc == null) {
+                    // first time user, check if both passwords match
+                    if (gameOptions.userPassword1 != gameOptions.userPassword2) {
+                        errorCode = 'PWDMISMATCH';
+                        okToCreate = false;
+                    }
+                    if (gameOptions.userPassword2.length == 0) {
+                        errorCode = 'PWD2EMPTY';
+                        okToCreate = false;
+                    }
+                    if (gameOptions.userPassword1.length < 4) {
+                        errorCode = 'PWDSHORT';
+                        okToCreate = false;
+                    }
+
+                    if (okToCreate) {
+                        // create user
+                        const passStr = gameOptions.userPassword1+':'+secretConfig.secretPhase+':'+adminUserName;
+                        bcrypt.hash(passStr, saltRounds, async function(err, hash) {
+                            const userDoc2 = {
+                                playerName: adminUserName,
+                                passHash: hash,
+                            };
+                            await uCollection.insertOne(userDoc2);
+                        });
+                    }
+                } else {
+                    // check if password matches
+                    const passStr = gameOptions.userPassword1+':'+secretConfig.secretPhase+':'+adminUserName;
+                    const passOk = await bcrypt.compare(passStr, userDoc.passHash);
+                    if (!passOk) {
+                        errorCode = 'PWDFAILS';
+                        okToCreate = false;
+                    }
+                }
+
+                // unset passwords
+                gameOptions.userPassword1 = null;
+                gameOptions.userPassword2 = null;
+
+                // logging after nulled passwords
+                console.log('create game', gameOptions);
                 
                 if (okToCreate) {
                     gameOptions.humanPlayers[0].playerStats = await getGamesStatistics(gameOptions, gameOptions.adminName);
@@ -477,7 +600,7 @@ try {
                     sm.addClientToMap(gameOptions.adminName, socket.id, result.insertedId);
                     fn(result.insertedId);
                 } else {
-                    fn('NOT OK');
+                    fn(errorCode);
                 }
             });
     
@@ -1693,7 +1816,7 @@ try {
 
             socket.on('generate game statistics', async (data, fn) => {
                 const gameIdStr = data.gameId;
-                console.log('generate game statistics - start to generate game statistics for '+gameIdStr, gameIdStr);
+                console.log('generate game statistics - start to generate game statistics for %s', gameIdStr, gameIdStr);
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
@@ -1723,7 +1846,8 @@ try {
                 const oldName = data.oldName;
                 const newName = data.newName;
 
-                console.log('change nick - game database '+oldName+' to '+newName, gameIdStr);
+                console.log('change nick - game database %s to %s', oldName, newName, gameIdStr);
+
                 const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
@@ -1777,7 +1901,7 @@ try {
                 };
                 const result = await collection.updateOne(query, updateDoc, options);
                 
-                console.log('change nick - stats database '+oldName+' to '+newName, gameIdStr);
+                console.log('change nick - stats database %s to %s', oldName, newName, gameIdStr);
                 const updateStatsDocQuery = {
                         name: oldName,
                         game: gameIdStr,

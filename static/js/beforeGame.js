@@ -11,8 +11,12 @@ function validateNewGame(gameOptions) {
         alert('End round must be equal or greater than turn round');
         return false;
     }
-    if (gameOptions.humanPlayersCount > 0 && gameOptions.adminName.length  < 3) {
+    if (gameOptions.humanPlayersCount > 0 && gameOptions.adminName.length < 4) {
         alert('Your (nick)name must be at least four characters long');
+        return false;
+    }
+    if (gameOptions.humanPlayersCount > 0 && gameOptions.userPassword1.length  < 4) {
+        alert('Password must be at least four characters long');
         return false;
     }
     if (gameOptions.humanPlayersCount > 5 && (gameOptions.startRound > 8 || gameOptions.endRound > 8)) {
@@ -27,6 +31,14 @@ function createNewGame(gameOptions) {
     socket.emit('create game', gameOptions, function (createdGameId) {
         if (createdGameId == 'NOT OK') {
             alert('You have already created game!');
+        } else if (createdGameId == 'PWDFAILS') {
+            alert('Password doesn\'t match!');
+        } else if (createdGameId == 'PWDMISMATCH') {
+            alert('Passwords doesn\'t match!');
+        } else if (createdGameId == 'PWD2EMPTY') {
+            alert('New username, enter password to both fields!');
+        } else if (createdGameId == 'PWDSHORT') {
+            alert('Password must be at least four characters long!');
         } else {
             console.log('created game with id: '+createdGameId);
             gameId = createdGameId;
@@ -45,6 +57,8 @@ function initcreateNewGameButton() {
             turnRound: getSelectValue('newGameTurnRound'),
             endRound: getSelectValue('newGameEndRound'),
             adminName: document.getElementById('newGameMyName').value,
+            userPassword1: document.getElementById('password1').value,
+            userPassword2: document.getElementById('password2').value,
             password: document.getElementById('newGamePassword').value,
             gameStatus: 0,
             humanPlayers: [{ name: document.getElementById('newGameMyName').value, playerId: window.localStorage.getItem('uUID'), active: true}],
@@ -80,10 +94,13 @@ function initRulesCheck() {
 }
 
 function validateJoinGame(gameDetails) {
-    if (gameDetails.myName.length < 3) {
-        alert('(Nick)name must be at least three charcters!');
+    if (gameDetails.myName.length < 4) {
+        alert('(Nick)name must be at least four charcters!');
         return false;
-        
+    }
+    if (gameDetails.myPass1.length < 4) {
+        alert('Password must be at least four characters long!');
+        return false;
     }
     return true;
 }
@@ -94,8 +111,11 @@ function joinGame(id) {
             document.getElementById('myName'+id).value = '-lasse-';
         }
     }
-    const gameDetails = { gameId: id,
+    const gameDetails = {
+        gameId: id,
         myName: document.getElementById('myName'+id).value,
+        myPass1: document.getElementById('myPass1'+id).value,
+        myPass2: document.getElementById('myPass2'+id).value,
         myId: window.localStorage.getItem('uUID'),
         gamePassword: document.getElementById('password'+id).value,
     };
@@ -106,6 +126,14 @@ function joinGame(id) {
                 disableButtonsByClass('joinThisGameButton', true);
                 const leaveBtn = document.getElementById('leaveGameButton'+response.joiningResult.gameId);
                 if (leaveBtn != null) leaveBtn.disabled = false;
+            } else if (response.joiningResult == 'PWDMISMATCH') {
+                alert('Passwords doesn\'t match!');
+            } else if (response.joiningResult == 'PWD2EMPTY') {
+                alert('New username, enter password to both fields!');
+            } else if (response.joiningResult == 'PWDSHORT') {
+                alert('Password must be at least four characters long!');
+            } else if (response.joiningResult == 'PWDFAILS') {
+                alert('Password doesn\'t match!');
             }
         });
     }
@@ -125,42 +153,93 @@ function leaveGame(id) {
     });
 }
 
+function createRulesElement(game) {
+    const ruleContainerRow = createElementWithIdAndClasses('div', null, 'row');
+    const ruleContainerCol = createElementWithIdAndClasses('div', null, 'col');
+    ruleContainerCol.innerText = game.startRound + '-' + game.turnRound + '-' + game.endRound;
+
+    const rules = [];
+
+    if (!game.evenPromisesAllowed) rules.push('no even promises');
+    if (!game.visiblePromiseRound) rules.push('hidden promise round');
+    if (game.onlyTotalPromise) rules.push('only total promise visible');
+    if (!game.freeTrump) rules.push('must trump');
+    if (game.hiddenTrump) rules.push('hidden trump');
+    if (game.speedPromise) rules.push('speed promise');
+    if (game.privateSpeedGame) rules.push('speed game');
+    if (game.opponentPromiseCardValue) rules.push('promise hand value');
+    if (game.opponentGameCardValue) rules.push('game hand value');
+    if (game.hiddenCardsMode == 1) rules.push('show only card in charge');
+    if (game.hiddenCardsMode == 2) rules.push('show card in charge and winning card');
+    
+    if (rules.length > 0) {
+        const ulList = createElementWithIdAndClasses('ul', null);
+        for (i = 0; i < rules.length; i++) {
+            const liItem = createElementWithIdAndClasses('li', null);
+            liItem.innerText = rules[i];
+            ulList.appendChild(liItem);
+        }
+        ruleContainerCol.appendChild(ulList);
+    }
+
+    ruleContainerRow.appendChild(ruleContainerCol);
+    return ruleContainerRow;
+}
+
 function showGames(gameList) {
     const gameListContainer = document.getElementById('joinGameCollapse');
     var firstId = '';
     gameList.forEach(function (game) {
         if (firstId ==  '') firstId = game.id;
         const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
-        var ruleStr = game.startRound + '-' + game.turnRound + '-' + game.endRound;
-        if (!game.evenPromisesAllowed) ruleStr+= ', no even promises';
-        if (!game.visiblePromiseRound) ruleStr+= ', hidden promise round';
-        if (game.onlyTotalPromise) ruleStr+= ', only total promise visible';
-        if (!game.freeTrump) ruleStr+= ', must trump';
-        if (game.hiddenTrump) ruleStr+= ', hidden trump';
-        if (game.speedPromise) ruleStr+= ', speed promise';
-        if (game.privateSpeedGame) ruleStr+= ', speed game';
-        if (game.opponentPromiseCardValue) ruleStr+= ', promise hand value';
-        if (game.opponentGameCardValue) ruleStr+= ', game hand value';
-        if (game.hiddenCardsMode == 1) ruleStr+= ', show only card in charge';
-        if (game.hiddenCardsMode == 2) ruleStr+= ', show card in charge and winning card';
         const ruleDiv = createElementWithIdAndClasses('div', null, 'col-2');
-        ruleDiv.innerText = ruleStr;
+        const rulesElement = createRulesElement(game);
+        ruleDiv.appendChild(rulesElement);
         gameContainerDiv.appendChild(ruleDiv);
 
-        const playersDiv = createElementWithIdAndClasses('div', 'gamePlayers' + game.id, 'col-3');
-        playersDiv.innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null);
+        const playersDiv = createElementWithIdAndClasses('div', 'gamePlayers' + game.id, 'col-1');
+        playersDiv.appendChild(gamePlayersToDiv(game.humanPlayers, game.humanPlayersCount));
         gameContainerDiv.appendChild(playersDiv);
 
-        const myNameDiv = createElementWithIdAndClasses('div', null, 'col-2');
-        const myNameInput = createElementWithIdAndClasses('input', 'myName'+game.id, 'newGameMyNameInput', {type: 'text'});
+        const myNameDiv = createElementWithIdAndClasses('div', null, 'col-3 form-floating');
+        const myNameInput = createElementWithIdAndClasses('input', 'myName'+game.id, 'newGameMyNameInput form-control', {type: 'text', placeholder: 'name'});
+        const myNameLabel = createElementWithIdAndClasses('label', null, null, {for: 'myName'+game.id});
+        myNameLabel.innerText = '(Nick)name';
         if (game.imInThisGame) myNameInput.disabled = true;
         myNameDiv.appendChild(myNameInput);
+        myNameDiv.appendChild(myNameLabel);
         gameContainerDiv.appendChild(myNameDiv);
 
-        const passwordDiv = createElementWithIdAndClasses('div', null, 'col-2');
-        const passwordInput = createElementWithIdAndClasses('input', 'password'+game.id, null, {type: 'text'});
+        const myPassDiv = createElementWithIdAndClasses('div', null, 'col-3');
+        const myPassDivRow1 = createElementWithIdAndClasses('div', null, 'row');
+        const myPassDivCol1 = createElementWithIdAndClasses('div', null, 'col form-floating');
+        const myPassDivRow2 = createElementWithIdAndClasses('div', null, 'row');
+        const myPassDivCol2 = createElementWithIdAndClasses('div', null, 'col form-floating');
+        const myPassInput1 = createElementWithIdAndClasses('input', 'myPass1'+game.id, 'newGameMyNameInput form-control', {type: 'password', placeholder: 'password'});
+        const myPassLabel1 = createElementWithIdAndClasses('label', null, null, {for: 'myPass1'+game.id});
+        myPassLabel1.innerText = 'Password';
+        const myPassInput2 = createElementWithIdAndClasses('input', 'myPass2'+game.id, 'newGameMyNameInput form-control', {type: 'password', placeholder: 'password'});
+        const myPassLabel2 = createElementWithIdAndClasses('label', null, null, {for: 'myPass2'+game.id});
+        myPassLabel2.innerText = 'Re-type password if first time user';
+        if (game.imInThisGame) myPassInput1.disabled = true;
+        if (game.imInThisGame) myPassInput2.disabled = true;
+        myPassDivCol1.appendChild(myPassInput1);
+        myPassDivCol1.appendChild(myPassLabel1);
+        myPassDivCol2.appendChild(myPassInput2);
+        myPassDivCol2.appendChild(myPassLabel2);
+        myPassDivRow1.appendChild(myPassDivCol1);
+        myPassDivRow2.appendChild(myPassDivCol2);
+        myPassDiv.appendChild(myPassDivRow1);
+        myPassDiv.appendChild(myPassDivRow2);
+        gameContainerDiv.appendChild(myPassDiv);
+
+        const passwordDiv = createElementWithIdAndClasses('div', null, 'col-2 form-floating');
+        const passwordInput = createElementWithIdAndClasses('input', 'password'+game.id, 'form-control', {type: 'text', placeholder: 'password'});
+        const myPasswordLabel = createElementWithIdAndClasses('label', null, null, {for: 'myPass1'+game.id});
+        myPasswordLabel.innerText = 'Game password';
         passwordInput.disabled = true;
         passwordDiv.appendChild(passwordInput);
+        passwordDiv.appendChild(myPasswordLabel);
         gameContainerDiv.appendChild(passwordDiv);
 
         const joinGameButton = createElementWithIdAndClasses('button', 'joinGameButton' + game.id, 'btn btn-primary joinThisGameButton');
@@ -170,8 +249,9 @@ function showGames(gameList) {
             joinGame(game.id);
         });
         const joinGameBtnDiv = createElementWithIdAndClasses('div', null, 'col-1');
-        joinGameBtnDiv.appendChild(joinGameButton);
-        gameContainerDiv.appendChild(joinGameBtnDiv);
+        // joinGameBtnDiv.appendChild(joinGameButton);
+        //gameContainerDiv.appendChild(joinGameBtnDiv);
+        
         
         const leaveGameButton = createElementWithIdAndClasses('button', 'leaveGameButton' + game.id, 'btn btn-primary leaveThisGameButton');
         if (!game.imInThisGame) leaveGameButton.disabled = true;
@@ -179,9 +259,14 @@ function showGames(gameList) {
         leaveGameButton.addEventListener('click', function() {
             leaveGame(game.id);
         });
-        const leaveGameBtnDiv = createElementWithIdAndClasses('div', null, 'col-1');
-        leaveGameBtnDiv.appendChild(leaveGameButton);
-        gameContainerDiv.appendChild(leaveGameBtnDiv);
+        // const leaveGameBtnDiv = createElementWithIdAndClasses('div', null, 'col-1');
+        // leaveGameBtnDiv.appendChild(leaveGameButton);
+        const buttonsDiv = createElementWithIdAndClasses('div', null, 'btn-group', {role: 'group'});
+        buttonsDiv.appendChild(joinGameButton);
+        buttonsDiv.appendChild(leaveGameButton);
+        joinGameBtnDiv.appendChild(buttonsDiv);
+        gameContainerDiv.appendChild(joinGameBtnDiv);
+        // gameContainerDiv.appendChild(leaveGameBtnDiv);
 
         gameListContainer.appendChild(gameContainerDiv);
 
