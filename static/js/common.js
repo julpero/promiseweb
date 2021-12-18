@@ -9,6 +9,25 @@ function gamePlayersToStr(players, totalHumans, totalComputers, winnerName) {
     return retStr;
 }
 
+function gamePlayersToDiv(players, totalHumans) {
+    const retDiv = createElementWithIdAndClasses('div', null, 'row');
+    const playerCol = createElementWithIdAndClasses('div', null, 'col');
+    const playerList = createElementWithIdAndClasses('ul', null, 'list-unstyled');
+    players.forEach(function (player) {
+        const playerItem = createElementWithIdAndClasses('li', null);
+        playerItem.innerText = player.name;
+        playerList.appendChild(playerItem);
+    });
+    for (i = players.length; i < totalHumans; i++) {
+        const emptyPlayerItem = createElementWithIdAndClasses('li', null);
+        emptyPlayerItem.innerText = '{}';
+        playerList.appendChild(emptyPlayerItem);
+    }
+    playerCol.appendChild(playerList);
+    retDiv.appendChild(playerCol);
+    return retDiv;
+}
+
 // function color2(str) {
 //     let rgb = [];
 //     // Changing non-hexadecimal characters to 0
