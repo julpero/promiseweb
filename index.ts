@@ -1953,6 +1953,49 @@ try {
                 fn(retObj);
             });
     
+            socket.on('reset user password', async (resetObj, fn) => {
+                const userToReset = resetObj.userToReset;
+                const retObj = {
+                    passOk: true,
+                    deleteOk: false
+                }
+                const database = mongoUtil.getDb();
+                const adminUserName = 'ju-ha';
+                if (userToReset == adminUserName) {
+                    retObj.passOk = false;
+                    fn(retObj);
+                    return;
+                }
+
+                const secretConfig = require(__dirname + '/secret.config.js');
+                const uCollection = database.collection(userCollection);
+                const uQuery = {
+                    playerName: { $eq: adminUserName }
+                };
+                const userDoc = await uCollection.findOne(uQuery);
+                if (userDoc == null) {
+                    retObj.passOk = false;
+                } else {
+                    // check if password matches
+                    const passStr = resetObj.adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
+                    const passOk = await bcrypt.compare(passStr, userDoc.passHash);
+                    if (!passOk) {
+                        retObj.passOk = false;
+                    }
+                }
+                if (retObj.passOk) {
+                    const deleteQuery = {
+                        playerName: { $eq: userToReset }
+                    }
+                    const deleteResult = await uCollection.deleteOne(deleteQuery);
+                    if (deleteResult.deletedCount == 1) {
+                        console.log('user '+ userToReset + 'password reseted')
+                        retObj.deleteOk = true;
+                    }
+                }
+                fn(retObj);
+            });
+    
         });
     });
 } catch (error) {
