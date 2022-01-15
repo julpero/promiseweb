@@ -1917,6 +1917,42 @@ try {
                 fn();
             });
             
+            socket.on('show players with password', async (getObj, fn) => {
+                const retObj = {
+                    passOk: true,
+                    playersWithPassword: []
+                }
+                const database = mongoUtil.getDb();
+                const adminUserName = 'ju-ha';
+
+                const secretConfig = require(__dirname + '/secret.config.js');
+                const uCollection = database.collection(userCollection);
+                const uQuery = {
+                    playerName: { $eq: adminUserName }
+                };
+                const userDoc = await uCollection.findOne(uQuery);
+                if (userDoc == null) {
+                    retObj.passOk = false;
+                } else {
+                    // check if password matches
+                    const passStr = getObj.adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
+                    const passOk = await bcrypt.compare(passStr, userDoc.passHash);
+                    if (!passOk) {
+                        retObj.passOk = false;
+                    }
+                }
+                if (retObj.passOk) {
+                    const usersQuery = {
+                        playerName: { $ne: adminUserName }
+                    }
+                    const usersCusrsor = await uCollection.find(usersQuery);
+                    await usersCusrsor.forEach(function(val) {
+                        retObj.playersWithPassword.push(val.playerName);
+                    });
+                }
+                fn(retObj);
+            });
+    
         });
     });
 } catch (error) {
