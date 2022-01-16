@@ -1919,13 +1919,13 @@ try {
             
             socket.on('show players with password', async (getObj, fn) => {
                 const retObj = {
-                    passOk: true,
+                    passOk: false,
                     playersWithPassword: []
                 }
                 const database = mongoUtil.getDb();
-                const adminUserName = 'ju-ha';
-
                 const secretConfig = require(__dirname + '/secret.config.js');
+                const adminUserName = secretConfig.adminUserName;
+
                 const uCollection = database.collection(userCollection);
                 const uQuery = {
                     playerName: { $eq: adminUserName }
@@ -1937,8 +1937,8 @@ try {
                     // check if password matches
                     const passStr = getObj.adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
                     const passOk = await bcrypt.compare(passStr, userDoc.passHash);
-                    if (!passOk) {
-                        retObj.passOk = false;
+                    if (passOk) {
+                        retObj.passOk = true;
                     }
                 }
                 if (retObj.passOk) {
@@ -1956,18 +1956,18 @@ try {
             socket.on('reset user password', async (resetObj, fn) => {
                 const userToReset = resetObj.userToReset;
                 const retObj = {
-                    passOk: true,
+                    passOk: false,
                     deleteOk: false
                 }
                 const database = mongoUtil.getDb();
-                const adminUserName = 'ju-ha';
-                if (userToReset == adminUserName) {
+                const secretConfig = require(__dirname + '/secret.config.js');
+                const adminUserName = secretConfig.adminUserName;
+                if (adminUserName == null || adminUserName == '' || userToReset == adminUserName) {
                     retObj.passOk = false;
                     fn(retObj);
                     return;
                 }
 
-                const secretConfig = require(__dirname + '/secret.config.js');
                 const uCollection = database.collection(userCollection);
                 const uQuery = {
                     playerName: { $eq: adminUserName }
@@ -1979,8 +1979,8 @@ try {
                     // check if password matches
                     const passStr = resetObj.adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
                     const passOk = await bcrypt.compare(passStr, userDoc.passHash);
-                    if (!passOk) {
-                        retObj.passOk = false;
+                    if (passOk) {
+                        retObj.passOk = true;
                     }
                 }
                 if (retObj.passOk) {
