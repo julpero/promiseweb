@@ -346,36 +346,27 @@ function initLeavingButtons() {
 }
 
 function initChatButton() {
-    document.getElementById('sendChatButton').addEventListener('click', function() {
-        const newLine = document.getElementById('newChatLine').value.trim();
-        const myName = document.getElementById('myName').value.trim();
-        if (newLine.length > 0) {
-            const chatObj = {
-                gameId: document.getElementById('currentGameId').value,
-                chatLine: newLine,
-                myName: myName,
-            }
-            socket.emit('write chat', chatObj, function() {
-                document.getElementById('newChatLine').value = '';
-            });
-        }
-    });
+    document.getElementById('sendChatButton').addEventListener('click', sendChat);
     document.getElementById('newChatLine').addEventListener('keypress', function(e) {
         if (e.which == 13) {
-            const newLine = document.getElementById('newChatLine').value.trim();
-            const myName = document.getElementById('myName').value.trim();
-            if (newLine.length > 0) {
-                const chatObj = {
-                    gameId: document.getElementById('currentGameId').value,
-                    chatLine: newLine,
-                    myName: myName,
-                }
-                socket.emit('write chat', chatObj, function() {
-                    document.getElementById('newChatLine').value = '';
-                });
-            }
+            sendChat();
         }
     });
+}
+
+function sendChat() {
+    const newLine = document.getElementById('newChatLine').value.trim();
+    const myName = document.getElementById('myName').value.trim();
+    if (newLine.length > 0) {
+        const chatObj = {
+            gameId: document.getElementById('currentGameId').value,
+            chatLine: newLine,
+            myName: myName,
+        }
+        socket.emit('write chat', chatObj, function() {
+            document.getElementById('newChatLine').value = '';
+        });
+    }
 }
 
 function initShowReportButton() {

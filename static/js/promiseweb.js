@@ -668,7 +668,10 @@ function highlightWinningCard(myRound) {
     const playedCards = myRound.cardsPlayed[myRound.cardsPlayed.length-1]; // last is current
     if (playedCards.length == 0) return;
 
-    const winnerName = myRound.playerGoingToWinThisPlay ?? winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
+    var winnerName = myRound.playerGoingToWinThisPlay;
+    if (winnerName == null || winnerName == undefined) {
+        winnerName = winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
+    }
 
     for (var i = 0; i < playedCards.length; i++) {
         const playerIndex = mapPlayerNameToTable(playedCards[i].name);
@@ -693,7 +696,10 @@ function showPlayedCards(myRound) {
     const playedCards = myRound.cardsPlayed[myRound.cardsPlayed.length-1]; // last is current
     if (playedCards.length == 0) return;
 
-    const winnerName = myRound.playerGoingToWinThisPlay ?? winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
+    var winnerName = myRound.playerGoingToWinThisPlay;
+    if (winnerName == null || winnerName == undefined) {
+        winnerName = winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
+    }
     var dummyCardIndex = 0;
 
     for (var i = 0; i < playedCards.length; i++) {
@@ -779,7 +785,10 @@ function showWonCards(myRound) {
     for (var i = 0; i < myRound.cardsPlayed.length; i++) {
         const playedCards = myRound.cardsPlayed[i];
         if (playedCards.length == playerCount) {
-            const winnerName = myRound.playerGoingToWinThisPlay ?? winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
+            var winnerName = myRound.playerGoingToWinThisPlay;
+            if (winnerName == null || winnerName == undefined) {
+                winnerName = winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
+            }
             const playerIndex = mapPlayerNameToTable(winnerName);
             const wonIndex = getNextFreeCardWonDiv(playerIndex);
             const $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
