@@ -28,7 +28,7 @@
         "chartjs-plugin-annotation": "^1.2.2",
         "deck-of-cards": "^0.1.8",
         "express": "^4.17.2",
-        "mongodb": "^4.3.0",
+        "mongodb": "^4.3.1",
         "node-cache": "^5.1.2",
         "object-hash": "^2.2.0",
         "sanitize-filename": "^1.6.3",
