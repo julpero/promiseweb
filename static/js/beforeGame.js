@@ -440,9 +440,98 @@ function spurterToHtml(spurtingGame) {
     return 'On '+new Date(spurtingGame.createDateTime).toDateString()+' '+spurtingGame.gameStatistics.winnerName+' was '+spurtingGame.gameStatistics.spurtAndMelt.spurtGap+' points behind the leader. Nevertheless '+spurtingGame.gameStatistics.winnerName+' won the game!';
 }
 
+class dataObj {
+    games = undefined;
+    keepP = undefined;
+    avgPoints = undefined;
+    totalPoints = undefined;
+    scorePoints = undefined;
+    wons = undefined;
+    winP = undefined;
+}
+
+function generateTabulatorData(reportData) {
+    const dataMap = new Map();
+    for (i = 0; i < reportData.mostGamesPlayed.length; i++) {
+        const name = reportData.mostGamesPlayed[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).games = reportData.mostGamesPlayed[i].count;
+    }
+    for (i = 0; i < reportData.avgKeepPercentagePerPlayer.length; i++) {
+        const name = reportData.avgKeepPercentagePerPlayer[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).keepP = reportData.avgKeepPercentagePerPlayer[i].avgKeepPercentage;
+    }
+    for (i = 0; i < reportData.avgPointsPerPlayer.length; i++) {
+        const name = reportData.avgPointsPerPlayer[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).avgPoints = reportData.avgPointsPerPlayer[i].avgPoints;
+    }
+    for (i = 0; i < reportData.avgScorePointsPerPlayer.length; i++) {
+        const name = reportData.avgScorePointsPerPlayer[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).scorePoints = reportData.avgScorePointsPerPlayer[i].playerAvgScorePoints;
+    }
+    for (i = 0; i < reportData.playerTotalWins.length; i++) {
+        const name = reportData.playerTotalWins[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).wons = reportData.playerTotalWins[i].playerTotalWins;
+    }
+    for (i = 0; i < reportData.playerWinPercentage.length; i++) {
+        const name = reportData.playerWinPercentage[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).winP = reportData.playerWinPercentage[i].winPercentage;
+    }
+    console.log(dataMap);
+    const retArr = [];
+    let count = 1;
+    dataMap.forEach((v, k) => {
+        console.log(k);
+        console.log(v);
+        const retVal = {
+            id: count,
+            name: k,
+            games: v.games,
+            keepP: v.keepP,
+            avgPoints: v.avgPoints,
+            scorePoints: v.scorePoints,
+            scorePoints: v.scorePoints,
+            wons: v.wons,
+            winP: v.winP
+        }
+        retArr.push(retVal);
+        count++;
+    });
+    console.log(retArr);
+    return retArr;
+}
+
+function showTabulatorReport(reportData) {
+    const columnDefs = [
+        { title:"Name", field:"name", sorter:"string" },
+        { title:"Games", field:"games", sorter:"number" },
+        { title:"Keep-%", field:"keepP", sorter:"number" },
+        { title:"AvgPoints", field:"avgPoints", sorter:"number" },
+        { title:"TotalPoints", field:"totalPoints", sorter:"number" },
+        { title:"ScorePoints", field:"scorePoints", sorter:"number" },
+        { title:"Wons", field:"wons", sorter:"number" },
+        { title:"Win-%", field:"winP", sorter:"number" },
+    ];
+    
+    const tabledata = generateTabulatorData(reportData);
+
+    const table = new Tabulator("#tabulatorRepotrGrid", {
+        height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+        data:tabledata, //assign data to table
+        layout:"fitColumns", //fit columns to width of table (optional)
+        columns:columnDefs,
+    });
+}
+
 function getReportData() {
     socket.emit('get report data', null, function(response) {
         console.log(response);
+        showTabulatorReport(response);
         initShowFrontPageBarsModal(response);
         const tooltipTemplate = '<div class="tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-wide"></div></div>';
 

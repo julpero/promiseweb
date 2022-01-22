@@ -22,6 +22,7 @@ app.use(express.static('node_modules/deck-of-cards/dist'))
 app.use(express.static('node_modules/chart.js'))
 app.use(express.static('node_modules/chartjs-plugin-annotation'))
 app.use(express.static('node_modules/velocity-animate'))
+app.use(express.static('node_modules/tabulator-tables/dist'))
 
 const pf = require(__dirname + '/promiseFunctions.js');
 const rf = require(__dirname + '/reportFunctions.js');
