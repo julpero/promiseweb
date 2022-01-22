@@ -97,12 +97,16 @@ module.exports = {
             }
         }
 
+        const roundsPlayed = getRoundsPlayed(game.rounds)
+
         return {
             generated: new Date().getTime(),
             playersStatistics: playersStatistics,
             winnerName: gameIsPlayed ? playersStatistics[0].playerName : '',
             winnerPoints: gameIsPlayed ? playersStatistics[0].totalPoints : '',
-            roundsPlayed: getRoundsPlayed(game.rounds),
+            roundsPlayed: roundsPlayed.bigRounds + roundsPlayed.smallRounds,
+            bigRoundsPlayed: roundsPlayed.bigRounds,
+            smallRoundsPlayed: roundsPlayed.smallRounds,
             cardsHit: cardsHitInGame(game.rounds),
             spurtAndMelt: spurtAndMelt,
         }
@@ -250,13 +254,19 @@ function getPlayerStatistics(game) {
     game.playerOrder.forEach(function (player) {
         const playerName = player.name != null ? player.name : player;
         const totalPoints = module.exports.getGamePoints(game, playerName);
-        const totalKeeps = getGameKeeps(game, playerName);
-        const pointsPerKeeps = totalKeeps == 0 ? 0 : totalPoints/totalKeeps;
+        const gameInfo = getPlayerGameInfoForStats(game, playerName);
+        const pointsPerKeeps = gameInfo.totalKeeps == 0 ? 0 : totalPoints/gameInfo.totalKeeps;
         const cards = countHandCards(game, playerName);
         players.push({
             playerName: playerName,
             totalPoints: totalPoints,
-            totalKeeps: totalKeeps,
+            totalKeeps: gameInfo.totalKeeps,
+            bigPointsByZero: gameInfo.bigPointsByZero,
+            bigZeroKeepPromisesCount: gameInfo.bigZeroFailPromisesCount,
+            bigZeroFailPromisesCount: gameInfo.bigZeroFailPromisesCount,
+            smallPointsNotZero: gameInfo.smallPointsNotZero,
+            smallNotZeroKeepPromisesCount: gameInfo.smallNotZeroKeepPromisesCount,
+            smallNotZeroFailPromisesCount: gameInfo.smallNotZeroFailPromisesCount,
             pointsPerKeeps: pointsPerKeeps,
             position: null,
             scorePoints: null,
@@ -276,19 +286,58 @@ function getRoundPoints(roundPlayers, playerName) {
     return 0;
 }
 
-function getRoundKeeps(roundPlayers, playerName) {
-    for (var i = 0; i < roundPlayers.length; i++) {
-        if (roundPlayers[i].name == playerName) return roundPlayers[i].promise == roundPlayers[i].keeps ? 1 : 0;
+function getPlayerRoundInfoForStats(roundPlayers, playerName) {
+    const roundInfo = {
+        keeps: 0,
+        promise: 0,
+        points: 0
     }
-    return 0;
+    for (var i = 0; i < roundPlayers.length; i++) {
+        if (roundPlayers[i].name == playerName) {
+            roundInfo.keeps = roundPlayers[i].keeps;
+            roundInfo.promise = roundPlayers[i].promise;
+            roundInfo.points = roundPlayers[i].points;
+            return roundInfo;
+        }
+    }
+    return roundInfo;
 }
 
-function getGameKeeps(game, playerName) {
-    var keeps = 0;
+function getPlayerGameInfoForStats(game, playerName) {
+    const gameInfo = {
+        totalKeeps: 0,
+        bigPointsByZero: 0,
+        bigZeroKeepPromisesCount: 0,
+        bigZeroFailPromisesCount: 0,
+        smallPointsNotZero: 0,
+        smallNotZeroKeepPromisesCount: 0,
+        smallNotZeroFailPromisesCount: 0
+    }
     game.rounds.forEach(function(round) {
-        keeps+= getRoundKeeps(round.roundPlayers, playerName);
+        const roundInfo = getPlayerRoundInfoForStats(round.roundPlayers, playerName);
+        const roundKept = roundInfo.keeps == roundInfo.promise;
+        if (roundKept) gameInfo.totalKeeps++;
+        if (round.cardsInRound > 5) {
+            if (roundInfo.promise == 0) {
+                if (roundKept) {
+                    gameInfo.bigZeroKeepPromisesCount++;
+                    gameInfo.bigPointsByZero+= roundInfo.points;
+                } else {
+                    gameInfo.bigZeroFailPromisesCount++;
+                }
+            }
+        } else {
+            if (roundInfo.promise > 0) {
+                if (roundKept) {
+                    gameInfo.smallNotZeroKeepPromisesCount++;
+                    gameInfo.smallPointsNotZero+= roundInfo.points;
+                } else {
+                    gameInfo.smallNotZeroFailPromisesCount++;
+                }
+            }
+        }
     });
-    return keeps;
+    return gameInfo;
 }
 
 function sortPlayerStatistics(a, b) {
@@ -300,10 +349,17 @@ function sortPlayerStatistics(a, b) {
 }
 
 function getRoundsPlayed(rounds) {
-    var roundsPlayed = 0;
+    const roundsPlayed = {
+        bigRounds: 0,
+        smallRounds: 0
+    }
     rounds.forEach(function (round) {
         if (round.roundStatus == 2) {
-            roundsPlayed++;
+            if (round.cardsInRound > 5) {
+                roundsPlayed.bigRounds++;
+            } else {
+                roundsPlayed.smallRounds;
+            }
         }
     });
     return roundsPlayed;
