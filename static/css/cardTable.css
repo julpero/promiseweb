@@ -149,6 +149,9 @@ html {
 .gamePromiseUnder {
     color: olive;
 }
+.avgHistory {
+    color: green;
+}
 .chatTextBox {
     font-size: small;
 }
