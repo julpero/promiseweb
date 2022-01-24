@@ -97,7 +97,7 @@ module.exports = {
             }
         }
 
-        const roundsPlayed = getRoundsPlayed(game.rounds)
+        const roundsPlayed = getRoundsPlayed(game.rounds);
 
         return {
             generated: new Date().getTime(),
@@ -262,7 +262,7 @@ function getPlayerStatistics(game) {
             totalPoints: totalPoints,
             totalKeeps: gameInfo.totalKeeps,
             bigPointsByZero: gameInfo.bigPointsByZero,
-            bigZeroKeepPromisesCount: gameInfo.bigZeroFailPromisesCount,
+            bigZeroKeepPromisesCount: gameInfo.bigZeroKeepPromisesCount,
             bigZeroFailPromisesCount: gameInfo.bigZeroFailPromisesCount,
             smallPointsNotZero: gameInfo.smallPointsNotZero,
             smallNotZeroKeepPromisesCount: gameInfo.smallNotZeroKeepPromisesCount,
@@ -358,7 +358,7 @@ function getRoundsPlayed(rounds) {
             if (round.cardsInRound > 5) {
                 roundsPlayed.bigRounds++;
             } else {
-                roundsPlayed.smallRounds;
+                roundsPlayed.smallRounds++;
             }
         }
     });

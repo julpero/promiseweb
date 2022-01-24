@@ -22,6 +22,7 @@ app.use(express.static('node_modules/deck-of-cards/dist'))
 app.use(express.static('node_modules/chart.js'))
 app.use(express.static('node_modules/chartjs-plugin-annotation'))
 app.use(express.static('node_modules/velocity-animate'))
+app.use(express.static('node_modules/tabulator-tables/dist'))
 
 const pf = require(__dirname + '/promiseFunctions.js');
 const rf = require(__dirname + '/reportFunctions.js');
@@ -1118,6 +1119,7 @@ try {
                     mostGamesPlayed: null,
                     playerTotalWins: null,
                     avgPointsPerPlayer: null,
+                    avgZerosPerPlayer: null,
                     avgScorePointsPerPlayer: null,
                     // avgKeepsPerPlayer: null,
                     avgKeepPercentagePerPlayer: null,
@@ -1202,7 +1204,8 @@ try {
                 const aggregationAvgPoints = [{$match: {
                     gameStatus: {
                       $eq: 2
-                    }
+                    },
+                    "gameStatistics.roundsPlayed": {$eq: 19}
                   }}, {$unwind: {
                     path: "$gameStatistics.playersStatistics",
                     preserveNullAndEmptyArrays: false
@@ -1223,6 +1226,68 @@ try {
                     avgPointsPerPlayer.push(val);
                 });
                 retObj.avgPointsPerPlayer = avgPointsPerPlayer;
+                // ********
+
+                // bigZero and smallNotZero
+                console.log('get report data - report data - average points per player');
+                const aggregationZeros = [
+                    {
+                      '$match': {
+                        'gameStatus': {
+                          '$eq': 2
+                        }
+                      }
+                    }, {
+                      '$unwind': {
+                        'path': '$gameStatistics.playersStatistics', 
+                        'preserveNullAndEmptyArrays': false
+                      }
+                    }, {
+                      '$group': {
+                        '_id': '$gameStatistics.playersStatistics.playerName', 
+                        'playerTotalGames': {
+                          '$sum': 1
+                        }, 
+                        'totalBigZeroPoints': {
+                          '$sum': '$gameStatistics.playersStatistics.bigPointsByZero'
+                        }, 
+                        'totalBigZeroKeeps': {
+                          '$sum': '$gameStatistics.playersStatistics.bigZeroKeepPromisesCount'
+                        }, 
+                        'totalBigZeroFails': {
+                          '$sum': '$gameStatistics.playersStatistics.bigZeroFailPromisesCount'
+                        }, 
+                        'totalBigRounds': {
+                          '$sum': '$gameStatistics.bigRoundsPlayed'
+                        }, 
+                        'totalSmallNotZeroPoints': {
+                          '$sum': '$gameStatistics.playersStatistics.smallPointsNotZero'
+                        }, 
+                        'totalSmallNotZeroKeeps': {
+                          '$sum': '$gameStatistics.playersStatistics.smallNotZeroKeepPromisesCount'
+                        }, 
+                        'totalSmallNotZeroFails': {
+                          '$sum': '$gameStatistics.playersStatistics.smallNotZeroFailPromisesCount'
+                        }, 
+                        'totalSmallRounds': {
+                          '$sum': '$gameStatistics.smallRoundsPlayed'
+                        }
+                      }
+                    }, {
+                      '$match': {
+                        'playerTotalGames': {
+                          '$gte': minGamesToReport
+                        }
+                      }
+                    }
+                  ];
+
+                const cursorZeros = await collection.aggregate(aggregationZeros);
+                const avgZerosPerPlayer = [];
+                await cursorZeros.forEach(function(val) {
+                    avgZerosPerPlayer.push(val);
+                });
+                retObj.avgZerosPerPlayer = avgZerosPerPlayer;
                 // ********
 
                 // average keep percentage per player
@@ -1379,7 +1444,8 @@ try {
                 const aggregationPlayerPercentagePointsTotal = [{$match: {
                     gameStatus: {
                       $eq: 2
-                    }
+                    },
+                    "gameStatistics.winnerPoints": {$gt: 0}
                   }}, {$unwind: {
                     path: "$gameStatistics.playersStatistics",
                     preserveNullAndEmptyArrays: false
