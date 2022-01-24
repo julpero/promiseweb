@@ -262,7 +262,7 @@ function getPlayerStatistics(game) {
             totalPoints: totalPoints,
             totalKeeps: gameInfo.totalKeeps,
             bigPointsByZero: gameInfo.bigPointsByZero,
-            bigZeroKeepPromisesCount: gameInfo.bigZeroFailPromisesCount,
+            bigZeroKeepPromisesCount: gameInfo.bigZeroKeepPromisesCount,
             bigZeroFailPromisesCount: gameInfo.bigZeroFailPromisesCount,
             smallPointsNotZero: gameInfo.smallPointsNotZero,
             smallNotZeroKeepPromisesCount: gameInfo.smallNotZeroKeepPromisesCount,
