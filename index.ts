@@ -1203,7 +1203,8 @@ try {
                 const aggregationAvgPoints = [{$match: {
                     gameStatus: {
                       $eq: 2
-                    }
+                    },
+                    "gameStatistics.roundsPlayed": {$eq: 19}
                   }}, {$unwind: {
                     path: "$gameStatistics.playersStatistics",
                     preserveNullAndEmptyArrays: false

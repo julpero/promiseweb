@@ -97,7 +97,7 @@ module.exports = {
             }
         }
 
-        const roundsPlayed = getRoundsPlayed(game.rounds)
+        const roundsPlayed = getRoundsPlayed(game.rounds);
 
         return {
             generated: new Date().getTime(),
@@ -358,7 +358,7 @@ function getRoundsPlayed(rounds) {
             if (round.cardsInRound > 5) {
                 roundsPlayed.bigRounds++;
             } else {
-                roundsPlayed.smallRounds;
+                roundsPlayed.smallRounds++;
             }
         }
     });
