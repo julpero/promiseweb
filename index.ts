@@ -1276,7 +1276,7 @@ try {
                     }, {
                       '$match': {
                         'playerTotalGames': {
-                          '$gte': 3
+                          '$gte': minGamesToReport
                         }
                       }
                     }
