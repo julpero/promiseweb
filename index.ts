@@ -2190,58 +2190,6 @@ async function getPlayerAvgPoints(playerName, roundsInGame) {
     return stats.map(v => v/gameStats.length);
 }
 
-async function getPlayerPreviousStats(playerName, equalObj) {
-    const stats = [];
-
-    const evenPromisesAllowed = equalObj == null || equalObj.evenPromisesAllowed ? [true, null] : [false];
-    const visiblePromiseRound = equalObj == null || equalObj.visiblePromiseRound ? [true, null] : [false];
-    const onlyTotalPromise = equalObj == null || !equalObj.onlyTotalPromise ? [false, null] : [true];
-    const freeTrump = equalObj == null || equalObj.freeTrump ? [true, null] : [false];
-    const hiddenTrump = equalObj == null || !equalObj.hiddenTrump ? [false, null] : [true];
-    const speedPromise = equalObj == null || !equalObj.speedPromise ? [false, null] : [true];
-    const privateSpeedGame = equalObj == null || !equalObj.privateSpeedGame ? [false, null] : [true];
-    const opponentPromiseCardValue = equalObj == null || !equalObj.opponentPromiseCardValue ? [false, null] : [true];
-    const opponentGameCardValue = equalObj == null || !equalObj.opponentGameCardValue ? [false, null] : [true];
-    const hiddenCardsMode = equalObj == null || equalObj.hiddenCardsMode == null || equalObj.hiddenCardsMode == 0 ? [0, null] : [equalObj.hiddenCardsMode];
-
-    const database = mongoUtil.getDb();
-    const collection = database.collection(promisewebCollection);
-    const match = equalObj == null
-    ? {
-        gameStatus: {$eq: 2},
-        "humanPlayers.name": {$eq: playerName}
-    }
-    : {
-        gameStatus: {$eq: 2},
-        "humanPlayers.name": {$eq: playerName},
-        humanPlayersCount: {$eq: equalObj.humanPlayersCount},
-        startRound: {$eq: equalObj.startRound},
-        turnRound: {$eq: equalObj.turnRound},
-        endRound: {$eq: equalObj.endRound},
-        evenPromisesAllowed: {$in: evenPromisesAllowed},
-        visiblePromiseRound: {$in: visiblePromiseRound},
-        onlyTotalPromise: {$in: onlyTotalPromise},
-        freeTrump: {$in: freeTrump},
-        hiddenTrump: {$in: hiddenTrump},
-        speedPromise: {$in: speedPromise},
-        privateSpeedGame: {$in: privateSpeedGame},
-        opponentPromiseCardValue: {$in: opponentPromiseCardValue},
-        opponentGameCardValue: {$in: opponentGameCardValue},
-        hiddenCardsMode: {$in: hiddenCardsMode},
-    };
-    const aggregationA = [{$match: match
-    }, {$sort: {
-        "createDateTime": -1,
-      }}, {$limit: 10}
-    ];
-    const cursor = await collection.aggregate(aggregationA);
-    await cursor.forEach(function(gameInDb) {
-        stats.push(rf.getGamePoints(gameInDb.game, playerName));
-    });
-    return stats;
-}
-
-
 function createAvgStatsArr(pStats, statCount) {
     const statArr = [];
     for (var i = 0; i < pStats.length; i++) {
@@ -2336,8 +2284,6 @@ async function getStatistics(gameInDb) {
 async function getGamesStatistics(gameInDb, playerName) {
     const equalObj = parseEqualObj(gameInDb);
     const statsGamesObj = {
-        playersAllGames: await getPlayerPreviousStats(playerName, null),
-        playersEqualGames: await getPlayerPreviousStats(playerName, equalObj),
         playerAvgPointsInRounds: await getPlayerAvgPoints(playerName, (gameInDb.startRound-gameInDb.turnRound+1)+(gameInDb.endRound-gameInDb.turnRound))
     }
     return statsGamesObj;

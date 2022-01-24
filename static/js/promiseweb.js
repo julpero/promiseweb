@@ -501,7 +501,6 @@ function getPromise(myRound, evenPromisesAllowed, speedPromise, opponentPromiseC
         showWhoIsPromising(myRound);
         dimMyCards(myRound, 0.7);
     }
-    showLiveStats(myRound);
 }
 
 function amIStarterOfPlay(myRound) {
@@ -916,12 +915,6 @@ function showPlayerKeepStats(playerKeeps) {
     });
 }
 
-function showLiveStats(myRound) {
-    if (myRound.statistics == null || myRound.statistics.statsAvgObj == null) return;
-    liveStats1Graph(myRound.statistics.statsAvgObj);
-    liveStats2Graph(myRound.statistics.statsAvgObj);
-}
-
 function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
     checkSmall(myRound.players.length);
     hideThinkings();
@@ -942,7 +935,6 @@ function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) 
         showWhoIsPlaying(myRound);
         dimMyCards(myRound, 0.8);
     }
-    showLiveStats(myRound);
 }
 
 function getCardFromDiv(divStr) {
@@ -1252,84 +1244,6 @@ function checkSmall(playerCount) {
     }
 }
 
-function printPointStats(players) {
-    const node = document.getElementById('pointsStats');
-
-    if (node.children.length > 0) return;
-
-    const inGameReportCanvasName = 'averagesReportCanvas';
-    const reportCanvas = createElementWithIdAndClasses('canvas', inGameReportCanvasName);
-    node.appendChild(reportCanvas);
-    const inGameReportOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: {
-                ticks: {
-                    beginAtZero: true,
-                }
-            },
-        },
-        plugins: {
-            title: {
-                display: false,
-            },
-            legend: {
-                display: false,
-            },
-        },
-    };
-
-    const datasetsData = [];
-    const playersArr = [];
-    const allArr = [];
-    const equalArr = [];
-    for (var i = 0; i < players.length; i++) {
-        playersArr.push(players[i].name);
-        const allGamesSum = players[i].playerStats.playersAllGames.reduce((a, b) => a + b, 0);
-        const allGamesCount = players[i].playerStats.playersAllGames.length;
-        const allGamesAvg = allGamesSum/allGamesCount;
-        const equalGamesSum = players[i].playerStats.playersEqualGames.reduce((a, b) => a + b, 0);
-        const equalGamesCount = players[i].playerStats.playersEqualGames.length;
-        const equalGamesAvg = equalGamesSum/equalGamesCount;
-        const allGamesTooltip = 'avg points  '+ (allGamesAvg).toFixed(1) +'\nin all previous '+ allGamesCount +' games';
-        const equalGamesTooltip = 'avg points  '+ (equalGamesAvg).toFixed(1) +'\nin all previous '+ equalGamesCount +' equal games';
-        allArr.push(allGamesAvg);
-        equalArr.push(equalGamesAvg);
-        // reportDataArr.push([players[i].name, allGamesAvg, allGamesTooltip, equalGamesAvg, equalGamesTooltip]);
-    }
-    datasetsData.push({
-        label: 'all games',
-        data: allArr,
-        borderWidth: 1,
-        backgroundColor: 'rgba(66,133,244,1.0)',
-        borderWidth: 3,
-    });
-    datasetsData.push({
-        label: 'equal games',
-        data: equalArr,
-        borderWidth: 1,
-        backgroundColor: 'rgba(233,66,66,1.0)',
-        borderWidth: 3,
-    });
-    const barData = {
-        labels: playersArr,
-        datasets: datasetsData,
-    };
-
-    Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.chart.canvas.id == inGameReportCanvasName) instance.destroy();
-    });
-
-    const ctx = document.getElementById(inGameReportCanvasName);
-    const inGameReportChart = new Chart(ctx, {
-        type: 'bar',
-        data: barData,
-        options: inGameReportOptions,
-    });
-
-}
-
 async function cardPlayedCallback(gameInfo) {
     document.getElementById('currentGameId').value = gameInfo.id;
     console.log('card played', gameInfo);
@@ -1415,7 +1329,6 @@ function browserReload(myRound, speedPromise) {
     showPlayedCards(myRound);
     showWonCards(myRound);
     checkSmall(myRound.players.length);
-    printPointStats(myRound.players)
 }
 
 function appendToChat(text) {
