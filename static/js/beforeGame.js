@@ -460,7 +460,7 @@ function generateTabulatorData(reportData) {
     for (i = 0; i < reportData.avgKeepPercentagePerPlayer.length; i++) {
         const name = reportData.avgKeepPercentagePerPlayer[i]._id;
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
-        dataMap.get(name).keepP = reportData.avgKeepPercentagePerPlayer[i].avgKeepPercentage;
+        dataMap.get(name).keepP = reportData.avgKeepPercentagePerPlayer[i].avgKeepPercentage*100;
     }
     for (i = 0; i < reportData.avgPointsPerPlayer.length; i++) {
         const name = reportData.avgPointsPerPlayer[i]._id;
@@ -472,6 +472,11 @@ function generateTabulatorData(reportData) {
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
         dataMap.get(name).scorePoints = reportData.avgScorePointsPerPlayer[i].playerAvgScorePoints;
     }
+    for (i = 0; i < reportData.totalPointsPerPlayer.length; i++) {
+        const name = reportData.totalPointsPerPlayer[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).totalPoints = reportData.totalPointsPerPlayer[i].playersTotalPoints;
+    }
     for (i = 0; i < reportData.playerTotalWins.length; i++) {
         const name = reportData.playerTotalWins[i]._id;
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
@@ -480,7 +485,7 @@ function generateTabulatorData(reportData) {
     for (i = 0; i < reportData.playerWinPercentage.length; i++) {
         const name = reportData.playerWinPercentage[i]._id;
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
-        dataMap.get(name).winP = reportData.playerWinPercentage[i].winPercentage;
+        dataMap.get(name).winP = reportData.playerWinPercentage[i].winPercentage*100;
     }
     console.log(dataMap);
     const retArr = [];
@@ -494,7 +499,7 @@ function generateTabulatorData(reportData) {
             games: v.games,
             keepP: v.keepP,
             avgPoints: v.avgPoints,
-            scorePoints: v.scorePoints,
+            totalPoints: v.totalPoints,
             scorePoints: v.scorePoints,
             wons: v.wons,
             winP: v.winP
@@ -506,16 +511,136 @@ function generateTabulatorData(reportData) {
     return retArr;
 }
 
+function getPercentageColor(value){
+    //value from 0 to 1
+    var hue=((value)*120).toString(10);
+    return ["hsl(",hue,",100%,50%)"].join("");
+}
+
+function getMaxValuesFromReportData(reportData) {
+    const maxValues = {
+        games: 0,
+        avgPoints: 0,
+        totalPoints: 0,
+        scorePoints: 0,
+        wons: 0,
+        winP: 0
+    }
+    for (i = 0; i < reportData.mostGamesPlayed.length; i++) {
+        maxValues.games = Math.max(maxValues.games, reportData.mostGamesPlayed[i].count);
+    }
+    for (i = 0; i < reportData.avgPointsPerPlayer.length; i++) {
+        maxValues.avgPoints = Math.max(maxValues.avgPoints, reportData.avgPointsPerPlayer[i].avgPoints);
+    }
+    for (i = 0; i < reportData.avgScorePointsPerPlayer.length; i++) {
+        maxValues.scorePoints = Math.max(maxValues.scorePoints, reportData.avgScorePointsPerPlayer[i].playerAvgScorePoints);
+    }
+    for (i = 0; i < reportData.totalPointsPerPlayer.length; i++) {
+        maxValues.totalPoints = Math.max(maxValues.totalPoints, reportData.totalPointsPerPlayer[i].playersTotalPoints);
+    }
+    for (i = 0; i < reportData.playerTotalWins.length; i++) {
+        maxValues.wons = Math.max(maxValues.wons, reportData.playerTotalWins[i].playerTotalWins);
+    }
+    for (i = 0; i < reportData.playerWinPercentage.length; i++) {
+        maxValues.winP = Math.max(maxValues.winP, reportData.playerWinPercentage[i].winPercentage*100);
+    }
+    return maxValues;
+}
+
 function showTabulatorReport(reportData) {
+    const maxValues = getMaxValuesFromReportData(reportData);
+    const colorArr = [
+        '#FF0000',
+        '#FF1100',
+        '#FF2200',
+        '#FF3300',
+        '#FF4400',
+        '#FF5500',
+        '#FF6600',
+        '#FF7700',
+        '#FF8800',
+        '#FF9900',
+        '#FFAA00',
+        '#FFBB00',
+        '#FFCC00',
+        '#FFDD00',
+        '#FFEE00',
+        '#FFFF00',
+        '#EEFF00',
+        '#DDFF00',
+        '#CCFF00',
+        '#BBFF00',
+        '#AAFF00',
+        '#99FF00',
+        '#88FF00',
+        '#77FF00',
+        '#66FF00',
+        '#55FF00',
+        '#44FF00',
+        '#33FF00',
+        '#22FF00',
+        '#11FF00',
+        '#00FF00'
+    ]
+    console.log(maxValues);
     const columnDefs = [
-        { title:"Name", field:"name", sorter:"string" },
-        { title:"Games", field:"games", sorter:"number" },
-        { title:"Keep-%", field:"keepP", sorter:"number" },
-        { title:"AvgPoints", field:"avgPoints", sorter:"number" },
-        { title:"TotalPoints", field:"totalPoints", sorter:"number" },
-        { title:"ScorePoints", field:"scorePoints", sorter:"number" },
-        { title:"Wons", field:"wons", sorter:"number" },
-        { title:"Win-%", field:"winP", sorter:"number" },
+        { title:"(Nick)Name", field:"name", sorter:"string" },
+        { title:"Games", field:"games", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: maxValues.games,
+            color: colorArr,
+            legend: function (val) { return val; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"Keep-%", field:"keepP", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: 100,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(1)+"%"; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"AvgPoints", field:"avgPoints", sorter:"number", formatter:"progress", formatterParams: {
+            min: 90,
+            max: maxValues.avgPoints,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(1); },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"TotalPoints", field:"totalPoints", sorter:"number", formatter:"progress", formatterParams: {
+            min: 90,
+            max: maxValues.totalPoints,
+            color: colorArr,
+            legend: function (val) { return val; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"ScorePoints", field:"scorePoints", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: maxValues.scorePoints,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(3); },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"Wons", field:"wons", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: maxValues.wons,
+            color: colorArr,
+            legend: function (val) { return val; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"Win-%", field:"winP", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: maxValues.winP,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(1)+"%"; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
     ];
     
     const tabledata = generateTabulatorData(reportData);
