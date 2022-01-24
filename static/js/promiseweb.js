@@ -875,6 +875,14 @@ function initPrivateSpeedTimer(cardsAbleToPlay, myRound) {
     intervaller = setInterval(privateSpeedGamer, intervalTime, myRound);
 }
 
+function avgRoundPoints(playersArr) {
+    const avgRoundPoints = [];
+    for (let i = 0; i < playersArr.length; i++) {
+        avgRoundPoints.push(playersArr[i].playerStats.playerAvgPointsInRounds);
+    }
+    return avgRoundPoints;
+}
+
 function findMinMaxPoints(arr) {
     let min = arr[0].avgPoints, max = arr[0].avgPoints;
   
@@ -1174,7 +1182,7 @@ function initPromiseTable(promiseTable) {
     }
 }
 
-function initScoreBoard(promiseTable, gameOver) {
+function initScoreBoard(promiseTable, gameOver, avgStats) {
     if (document.getElementById('scoreboard').children.length == 0) createScoreboard(promiseTable);
     
     const totalPoints = [];
@@ -1182,19 +1190,22 @@ function initScoreBoard(promiseTable, gameOver) {
         var playerPoints = 0;
         for (var j = 0; j < promiseTable.promisesByPlayers[i].length; j++) {
             const currentPoints = promiseTable.promisesByPlayers[i][j].points;
+            const avgPoints = avgStats[i][j+1];
+            const playerPointsEl = document.getElementById('player'+i+'Points'+j);
             if (currentPoints != null) {
+                playerPointsEl.classList.remove('avgHistory');
                 const speedPromisePoints = promiseTable.promisesByPlayers[i][j].speedPromisePoints;
                 const speedPromiseTotal = promiseTable.promisesByPlayers[i][j].speedPromiseTotal;
                 var tooltipStr = 'Total '+currentPoints;
-                const playerPointsEl = document.getElementById('player'+i+'Points'+j);
                 if (currentPoints != 0) {
                     playerPoints+= currentPoints;
                     playerPointsEl.innerText = playerPoints;
-                    playerPointsEl.classList.add('hasPoints')
+                    playerPointsEl.classList.add('hasPoints');
                 } else {
                     playerPointsEl.innerText = '-';
-                    playerPointsEl.classList.add('zeroPoints')
+                    playerPointsEl.classList.add('zeroPoints');
                 }
+
                 if (speedPromisePoints == 1) {
                     playerPointsEl.classList.add('speedPromiseBonus');
                     tooltipStr+= (currentPoints > 0) ? ', including '+ speedPromiseTotal +' promise bonus' : ', missed promise bonus';
@@ -1202,7 +1213,13 @@ function initScoreBoard(promiseTable, gameOver) {
                     playerPointsEl.classList.add('speedPromisePenalty');
                     tooltipStr+= ', including '+ speedPromiseTotal +' promise penalty'
                 }
+
+                tooltipStr+=  ' = '+parseFloat(playerPoints - avgPoints).toFixed(1) + ' points in average';
+
                 const playerPointsTooltip = new bootstrap.Tooltip(playerPointsEl, {title: tooltipStr});
+            } else {
+                playerPointsEl.classList.add('avgHistory');
+                playerPointsEl.innerText = parseFloat(avgPoints).toFixed(1);
             }
         }
         totalPoints.push(playerPoints);
@@ -1359,7 +1376,7 @@ async function cardPlayedCallback(gameInfo) {
         if (myRound.gameOver) {
             showPlayerPromises(myRound, true, gameInfo.speedPromise);
             initPromiseTable(myRound.promiseTable);
-            initScoreBoard(myRound.promiseTable, myRound.gameOver);
+            initScoreBoard(myRound.promiseTable, myRound.gameOver, avgRoundPoints(myRound.players));
             document.getElementById('showGameReportCollapse').classList.add('show');
             getOneGameReport(gameInfo.id);
             return;
@@ -1393,7 +1410,7 @@ function browserReload(myRound, speedPromise) {
     initCardTable(myRound);
     initOtherPlayers(myRound);
     initPromiseTable(myRound.promiseTable);
-    initScoreBoard(myRound.promiseTable, myRound.gameOver);
+    initScoreBoard(myRound.promiseTable, myRound.gameOver, avgRoundPoints(myRound.players));
     drawCards(myRound, speedPromise);
     showPlayedCards(myRound);
     showWonCards(myRound);

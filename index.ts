@@ -2126,6 +2126,70 @@ async function startRound(gameInfo, roundInd) {
     console.log('startRound - round '+roundInd+' started', gameIdStr);
 }
 
+async function getPlayerAvgPoints(playerName, roundsInGame) {
+    const gameStats = [];
+    const stats = [];
+    const database = mongoUtil.getDb();
+    const collection = database.collection(promisewebCollection);
+
+    const aggregationA = [
+        {
+          '$match': {
+            'gameStatus': {
+              '$eq': 2
+            }, 
+            "humanPlayers.name": {$eq: playerName},
+            '$expr': {
+              '$eq': [
+                {
+                  '$sum': [
+                    {
+                      '$subtract': [
+                        '$startRound', '$turnRound'
+                      ]
+                    }, {
+                      '$subtract': [
+                        '$endRound', '$turnRound'
+                      ]
+                    }, 1
+                  ]
+                }, roundsInGame
+              ]
+            }
+          }
+        }, {
+          '$addFields': {
+            'rounds': {
+              '$sum': [
+                {
+                  '$subtract': [
+                    '$startRound', '$turnRound'
+                  ]
+                }, {
+                  '$subtract': [
+                    '$endRound', '$turnRound'
+                  ]
+                }, 1
+              ]
+            }
+          }
+        }
+    ];
+    const cursor = await collection.aggregate(aggregationA);
+    await cursor.forEach(function(gameInDb) {
+        gameStats.push(rf.getGameReport(gameInDb.game, gameInDb.gameStatistics.playersStatistics, playerName));
+    });
+    for (let i = 0; i < gameStats.length; i++) {
+        for (let j = 0; j < gameStats[i].points[0].length; j++) {
+            if (i == 0) {
+                stats[j] = 0;
+            }
+            stats[j]+= gameStats[i].points[0][j];
+        }
+    }
+    return stats.map(v => v/gameStats.length);
+}
+
 async function getPlayerPreviousStats(playerName, equalObj) {
     const stats = [];
 
@@ -2274,6 +2338,7 @@ async function getGamesStatistics(gameInDb, playerName) {
     const statsGamesObj = {
         playersAllGames: await getPlayerPreviousStats(playerName, null),
         playersEqualGames: await getPlayerPreviousStats(playerName, equalObj),
+        playerAvgPointsInRounds: await getPlayerAvgPoints(playerName, (gameInDb.startRound-gameInDb.turnRound+1)+(gameInDb.endRound-gameInDb.turnRound))
     }
     return statsGamesObj;
 }

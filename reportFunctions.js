@@ -112,7 +112,7 @@ module.exports = {
         }
     },
 
-    getGameReport: function (game, playersStatistics) {
+    getGameReport: function (game, playersStatistics, onlyName) {
         const retObj = {
             players: null,
             points: null,
@@ -143,6 +143,7 @@ module.exports = {
         const otherCardsArr = [];
         for (var i = 0; i < game.playerOrder.length; i++) {
             const playerName = game.playerOrder[i].name == null ? game.playerOrder[i] : game.playerOrder[i].name;
+            if (onlyName !== undefined && onlyName !== playerName) continue;
             players.push(playerName);
             startPointsArr.push(0);
             keepsBigArr.push(0);
