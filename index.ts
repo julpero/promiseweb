@@ -1037,6 +1037,30 @@ try {
                 fn(games);
             });
 
+            socket.on('get ongoing games', async (data, fn) => {
+                console.log('get games - start to get games');
+                const myId = data.myId;
+                const database = mongoUtil.getDb();
+                const collection = database.collection(promisewebCollection);
+                const query = {
+                    gameStatus: 1,
+                };
+                const cursor = await collection.find(query);
+    
+                const games = [];
+                await cursor.forEach(function(val) {
+                    games.push({
+                        id: val._id.toString(),
+                        humanPlayers: pf.parsedHumanPlayers(val.humanPlayers),
+                        created: val.createDateTime,
+                        hasPassword: val.password.length > 0,
+                        imInThisGame: pf.imInThisGame(val.humanPlayers, myId)
+                    });
+                });
+    
+                fn(games);
+            });
+
             /* reporting functions */
 
             socket.on('get games for report', async (data, fn) => {

@@ -252,7 +252,6 @@ function showGames(gameList) {
         // joinGameBtnDiv.appendChild(joinGameButton);
         //gameContainerDiv.appendChild(joinGameBtnDiv);
         
-        
         const leaveGameButton = createElementWithIdAndClasses('button', 'leaveGameButton' + game.id, 'btn btn-primary leaveThisGameButton');
         if (!game.imInThisGame) leaveGameButton.disabled = true;
         leaveGameButton.innerText = 'Leave';
@@ -270,7 +269,6 @@ function showGames(gameList) {
 
         gameListContainer.appendChild(gameContainerDiv);
 
-
         console.log(game);
         if (firstId !==  '') document.getElementById('myName'+firstId).focus();
     });
@@ -280,17 +278,78 @@ function showGames(gameList) {
     }
 }
 
+function showOnGoingGames(gameList) {
+    console.log(gameList);
+    const onGoingGameListContainer = document.getElementById('observeGameCollapse');
+
+    const loginRow = createElementWithIdAndClasses('div', null, 'row');
+    const loginCol1 = createElementWithIdAndClasses('div', null, 'col form-floating');
+    const loginInputText = createElementWithIdAndClasses('input', 'observerName', 'form-control', { type: 'text', placeholder: 'observerPH'});
+    const loginInputLabel = createElementWithIdAndClasses('label', null, null, { for: 'observerName' });
+    loginInputLabel.innerText = 'login name';
+    loginCol1.appendChild(loginInputText);
+    loginCol1.appendChild(loginInputLabel);
+    loginRow.appendChild(loginCol1);
+    const loginCol2 = createElementWithIdAndClasses('div', null, 'col form-floating');
+    const loginInputPass = createElementWithIdAndClasses('input', 'observerPass', 'form-control', { type: 'password', placeholder: 'observerPW'});
+    const loginInputPassLabel = createElementWithIdAndClasses('label', null, null, { for: 'observerPass' });
+    loginInputPassLabel.innerText = 'password';
+    loginCol2.appendChild(loginInputPass);
+    loginCol2.appendChild(loginInputPassLabel);
+    loginRow.appendChild(loginCol2);
+    onGoingGameListContainer.appendChild(loginRow);
+
+    const dateformatoptions = {
+        year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false,
+    };
+    gameList.forEach(function (game) {
+        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
+        const gameStarted = new Date(game.created).getTime();
+        const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
+        const reportDateDiv = createElementWithIdAndClasses('div', null, 'col-2 report-date');
+        reportDateDiv.innerText = dateStr;
+        gameContainerDiv.appendChild(reportDateDiv);
+
+        const playersContainer = createElementWithIdAndClasses('div', 'gamePlayers' + game.id, 'col-4 report-players');
+        playersContainer.innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null);
+        gameContainerDiv.appendChild(playersContainer);
+
+        const btnId = 'showGameButton' + game.id;
+        const showGameButton = createElementWithIdAndClasses('button', btnId, 'btn btn-primary reportGameButton', { value: game.id });
+        showGameButton.innerText = 'Show report';
+        showGameButton.addEventListener('click', function() {
+            getOneGameReport(this.value);
+        });
+        const showGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
+        showGameButtonContainer.appendChild(showGameButton);
+        gameContainerDiv.appendChild(showGameButtonContainer);
+
+        onGoingGameListContainer.appendChild(gameContainerDiv);
+    });
+}
+
+
 function initGameListEvent() {
     document.getElementById('joinGameCollapse').addEventListener('shown.bs.collapse', function () {
         socket.emit('get games', {myId: window.localStorage.getItem('uUID')}, function (response) {
-            console.log(response);
             showGames(response);
         });
     });
 
     document.getElementById('joinGameCollapse').addEventListener('hidden.bs.collapse', function () {
-        const node = document.getElementById('joinGameCollapse');
-        node.innerHTML = '';
+        emptyElementById('joinGameCollapse');
+    });
+}
+
+function initOnGoingGameListEvent() {
+    document.getElementById('observeGameCollapse').addEventListener('shown.bs.collapse', function () {
+        socket.emit('get ongoing games', {myId: window.localStorage.getItem('uUID')}, function (response) {
+            showOnGoingGames(response);
+        });
+    });
+
+    document.getElementById('observeGameCollapse').addEventListener('hidden.bs.collapse', function () {
+        emptyElementById('observeGameCollapse');
     });
 }
 
@@ -407,6 +466,7 @@ function initShowFrontPageBarsModal(reportData) {
 
 function initEvents() {
     initGameListEvent();
+    initOnGoingGameListEvent();
 }
 
 function usedRulesToHtml(usedRulesCount) {
