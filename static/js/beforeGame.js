@@ -314,15 +314,25 @@ function showOnGoingGames(gameList) {
         playersContainer.innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null);
         gameContainerDiv.appendChild(playersContainer);
 
-        const btnId = 'showGameButton' + game.id;
-        const showGameButton = createElementWithIdAndClasses('button', btnId, 'btn btn-primary reportGameButton', { value: game.id });
-        showGameButton.innerText = 'Show report';
-        showGameButton.addEventListener('click', function() {
-            getOneGameReport(this.value);
+        const btnId = 'observeGameButton' + game.id;
+        const observeGameButton = createElementWithIdAndClasses('button', btnId, 'btn btn-primary observeGameButton', { value: game.id });
+        observeGameButton.innerText = 'Oberve game';
+        observeGameButton.addEventListener('click', function() {
+            observeGame(this.value);
         });
-        const showGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
-        showGameButtonContainer.appendChild(showGameButton);
-        gameContainerDiv.appendChild(showGameButtonContainer);
+        const observeGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
+        observeGameButtonContainer.appendChild(observeGameButton);
+        gameContainerDiv.appendChild(observeGameButtonContainer);
+
+        const deleteBtnId = 'deleteGameButton' + game.id;
+        const deleteGameButton = createElementWithIdAndClasses('button', deleteBtnId, 'btn btn-primary deleteGameButton', { value: game.id });
+        deleteGameButton.innerText = 'Delete game';
+        deleteGameButton.addEventListener('click', function() {
+            deleteGame(this.value);
+        });
+        const deleteGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
+        deleteGameButtonContainer.appendChild(deleteGameButton);
+        gameContainerDiv.appendChild(deleteGameButtonContainer);
 
         onGoingGameListContainer.appendChild(gameContainerDiv);
     });
