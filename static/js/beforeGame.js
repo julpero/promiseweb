@@ -341,7 +341,7 @@ function showOnGoingGames(gameList) {
 
         const btnId = 'observeGameButton' + game.id;
         const observeGameButton = createElementWithIdAndClasses('button', btnId, 'btn btn-primary observeGameButton', { value: game.id });
-        observeGameButton.innerText = 'Oberve game';
+        observeGameButton.innerText = 'Observe game';
         observeGameButton.addEventListener('click', function() {
             observeGame(this.value);
         });

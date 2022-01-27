@@ -519,6 +519,10 @@ try {
                     }
                 }
             });
+
+            socket.on('observe game', async (observeGameOptions, fn) => {
+                console.log(observeGameOptions);
+            });
     
             socket.on('create game', async (gameOptions, fn) => {
                 let okToCreate = true;
