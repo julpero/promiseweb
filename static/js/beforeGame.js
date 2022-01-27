@@ -174,7 +174,7 @@ function createRulesElement(game) {
     
     if (rules.length > 0) {
         const ulList = createElementWithIdAndClasses('ul', null);
-        for (i = 0; i < rules.length; i++) {
+        for (let i = 0; i < rules.length; i++) {
             const liItem = createElementWithIdAndClasses('li', null);
             liItem.innerText = rules[i];
             ulList.appendChild(liItem);
@@ -188,7 +188,7 @@ function createRulesElement(game) {
 
 function showGames(gameList) {
     const gameListContainer = document.getElementById('joinGameCollapse');
-    var firstId = '';
+    let firstId = '';
     gameList.forEach(function (game) {
         if (firstId ==  '') firstId = game.id;
         const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
@@ -457,47 +457,47 @@ class dataObj {
 
 function generateTabulatorData(reportData) {
     const dataMap = new Map();
-    for (i = 0; i < reportData.mostGamesPlayed.length; i++) {
+    for (let i = 0; i < reportData.mostGamesPlayed.length; i++) {
         const name = reportData.mostGamesPlayed[i]._id;
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
         dataMap.get(name).games = reportData.mostGamesPlayed[i].count;
     }
-    for (i = 0; i < reportData.avgKeepPercentagePerPlayer.length; i++) {
+    for (let i = 0; i < reportData.avgKeepPercentagePerPlayer.length; i++) {
         const name = reportData.avgKeepPercentagePerPlayer[i]._id;
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
         dataMap.get(name).keepP = reportData.avgKeepPercentagePerPlayer[i].avgKeepPercentage*100;
     }
-    for (i = 0; i < reportData.avgPointsPerPlayer.length; i++) {
+    for (let i = 0; i < reportData.avgPointsPerPlayer.length; i++) {
         const name = reportData.avgPointsPerPlayer[i]._id;
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
         dataMap.get(name).avgPoints = reportData.avgPointsPerPlayer[i].avgPoints;
     }
-    for (i = 0; i < reportData.avgPercentagePoints.length; i++) {
+    for (let i = 0; i < reportData.avgPercentagePoints.length; i++) {
         const name = reportData.avgPercentagePoints[i]._id;
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
         dataMap.get(name).winningPP = reportData.avgPercentagePoints[i].playerAvgPercentPoints*100;
     }
-    for (i = 0; i < reportData.avgScorePointsPerPlayer.length; i++) {
+    for (let i = 0; i < reportData.avgScorePointsPerPlayer.length; i++) {
         const name = reportData.avgScorePointsPerPlayer[i]._id;
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
         dataMap.get(name).scorePoints = reportData.avgScorePointsPerPlayer[i].playerAvgScorePoints;
     }
-    for (i = 0; i < reportData.totalPointsPerPlayer.length; i++) {
+    for (let i = 0; i < reportData.totalPointsPerPlayer.length; i++) {
         const name = reportData.totalPointsPerPlayer[i]._id;
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
         dataMap.get(name).totalPoints = reportData.totalPointsPerPlayer[i].playersTotalPoints;
     }
-    for (i = 0; i < reportData.playerTotalWins.length; i++) {
+    for (let i = 0; i < reportData.playerTotalWins.length; i++) {
         const name = reportData.playerTotalWins[i]._id;
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
         dataMap.get(name).wons = reportData.playerTotalWins[i].playerTotalWins;
     }
-    for (i = 0; i < reportData.playerWinPercentage.length; i++) {
+    for (let i = 0; i < reportData.playerWinPercentage.length; i++) {
         const name = reportData.playerWinPercentage[i]._id;
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
         dataMap.get(name).winP = reportData.playerWinPercentage[i].winPercentage*100;
     }
-    for (i = 0; i < reportData.avgZerosPerPlayer.length; i++) {
+    for (let i = 0; i < reportData.avgZerosPerPlayer.length; i++) {
         const name = reportData.avgZerosPerPlayer[i]._id;
         if (!dataMap.has(name)) dataMap.set(name, new dataObj());
         dataMap.get(name).bigZeroTryP = (reportData.avgZerosPerPlayer[i].totalBigZeroKeeps+reportData.avgZerosPerPlayer[i].totalBigZeroFails)*100/reportData.avgZerosPerPlayer[i].totalBigRounds;
@@ -534,12 +534,6 @@ function generateTabulatorData(reportData) {
     return retArr;
 }
 
-function getPercentageColor(value){
-    //value from 0 to 1
-    var hue=((value)*120).toString(10);
-    return ["hsl(",hue,",100%,50%)"].join("");
-}
-
 function getMaxValuesFromReportData(reportData) {
     const maxValues = {
         games: 0,
@@ -549,22 +543,22 @@ function getMaxValuesFromReportData(reportData) {
         wons: 0,
         winP: 0,
     }
-    for (i = 0; i < reportData.mostGamesPlayed.length; i++) {
+    for (let i = 0; i < reportData.mostGamesPlayed.length; i++) {
         maxValues.games = Math.max(maxValues.games, reportData.mostGamesPlayed[i].count);
     }
-    for (i = 0; i < reportData.avgPointsPerPlayer.length; i++) {
+    for (let i = 0; i < reportData.avgPointsPerPlayer.length; i++) {
         maxValues.avgPoints = Math.max(maxValues.avgPoints, reportData.avgPointsPerPlayer[i].avgPoints);
     }
-    for (i = 0; i < reportData.avgScorePointsPerPlayer.length; i++) {
+    for (let i = 0; i < reportData.avgScorePointsPerPlayer.length; i++) {
         maxValues.scorePoints = Math.max(maxValues.scorePoints, reportData.avgScorePointsPerPlayer[i].playerAvgScorePoints);
     }
-    for (i = 0; i < reportData.totalPointsPerPlayer.length; i++) {
+    for (let i = 0; i < reportData.totalPointsPerPlayer.length; i++) {
         maxValues.totalPoints = Math.max(maxValues.totalPoints, reportData.totalPointsPerPlayer[i].playersTotalPoints);
     }
-    for (i = 0; i < reportData.playerTotalWins.length; i++) {
+    for (let i = 0; i < reportData.playerTotalWins.length; i++) {
         maxValues.wons = Math.max(maxValues.wons, reportData.playerTotalWins[i].playerTotalWins);
     }
-    for (i = 0; i < reportData.playerWinPercentage.length; i++) {
+    for (let i = 0; i < reportData.playerWinPercentage.length; i++) {
         maxValues.winP = Math.max(maxValues.winP, reportData.playerWinPercentage[i].winPercentage*100);
     }
     return maxValues;
