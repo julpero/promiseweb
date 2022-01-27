@@ -1,0 +1,77 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es2021": true,
+        "node": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "rules": {
+        "@typescript-eslint/no-var-requires": 0
+    },
+    "globals": {
+        "gameId":"writable",
+        "speedPromise":"writable",
+        "possibleCards":"writable",
+        "intervaller":"writable",
+        "usedTime":"writable",
+        "timerTime":"writable",
+        "safeMs":"readonly",
+        "intervalTime":"readonly",
+        "promiseBonusTickTime":"readonly",
+        "promiseNormalTickTime":"readonly",
+        "promisePenaltyTickTime":"readonly",
+        "socket":true,
+        "bootstrap":true,
+        "Deck":true,
+        "Chart":true,
+        "Tabulator":true,
+        "colorize":true,
+        "uuidv4":true,
+        "showNickChanger":true,
+        "doPromise":true,
+        "mainInit":true,
+        "appendToChat":true,
+        "showGames":true,
+        "showAverages":true,
+        "getOneGameReport":true,
+        "gamePlayersToStr":true,
+        "initCardTable":true,
+        "gamePlayersToDiv":true,
+        "initOtherPlayers":true,
+        "initRuleList":true,
+        "initSpeedBar":true,
+        "deleteIntervaller":true,
+        "getCurrentRoundInd":true,
+        "createPromiseTable":true,
+        "createScoreboard":true,
+        "getSelectValue":true,
+        "removeCardEvents":true,
+        "disableButtonsByClass":true,
+        "emptyElementById":true,
+        "emptyElementByClass":true,
+        "removeElementById":true,
+        "removeEventByClass":true,
+        "createElementWithIdAndClasses":true,
+        "removeClassByClass":true,
+        "playedGamesGraph":true,
+        "avgKeepPercentageGraph":true,
+        "avgPointsGraph":true,
+        "totalPointsGraph":true,
+        "totalWinsGraph":true,
+        "winPercentagesGraph":true,
+        "scoreGraph":true,
+        "avgPercentagePointsGraph":true,
+        "cardsInHandGraph":true
+    }
+}

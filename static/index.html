@@ -26,6 +26,8 @@
         <link rel="stylesheet" href="/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="/css/cardGallery.css">
         <link rel="stylesheet" type="text/css" href="/css/cardTable.css">
+        <link href="/css/tabulator.min.css" rel="stylesheet">
+        <script type="text/javascript" src="/js/tabulator.min.js"></script>
     </head>
     <body data-bs-no-jquery>
         
@@ -419,6 +421,7 @@
             </div>
         </div>
 
+        
         <div class="container-fluid" id="gameReportContainer">
             <div class="row">
                 <div class="col-12" id="gamesPlayedInfo"></div>
@@ -426,45 +429,7 @@
             <div class="row">
                 <div class="col-1"></div><div class="col-11" id="playersTotalInfo"></div>
             </div>
-            <div class="row">
-                <div class="col-6"></div><div class="col-6" id="mostGamesPlayed1"></div>
-            </div>
-            <div class="row">
-                <div class="col-7" id="avgKeepPercentagePerPlayer1"></div><div class="col-5" id="mostGamesPlayed2"></div>
-            </div>
-            <div class="row">
-                <div class="col-1"></div><div class="col-7" id="avgKeepPercentagePerPlayer2"></div><div class="col-4" id="mostGamesPlayed3"></div>
-            </div>
-            <div class="row">
-                <div class="col-2">&nbsp;</div><div class="col-4" id="avgKeepPercentagePerPlayer3"></div>
-            </div>
-            <div class="row">
-                <div class="col-5"></div><div class="col-7" id="avgPointsPerPlayer1"></div>
-            </div>
-            <div class="row">
-                <div class="col-6" id="totalPointsPerPlayer1"></div><div class="col-6" id="avgPointsPerPlayer2"></div>
-            </div>
-            <div class="row">
-                <div class="col-7" id="totalPointsPerPlayer2"></div><div class="col-5" id="avgPointsPerPlayer3"></div>
-            </div>
-            <div class="row">
-                <div class="col-4" id="totalPointsPerPlayer3"></div>
-            </div>
-            <div class="row">
-                <div class="col-4"></div><div class="col-5" id="playerAvgScorePoints1"></div>
-            </div>
-            <div class="row">
-                <div class="col-3"></div><div class="col-5" id="playerAvgScorePoints2"></div>
-            </div>
-            <div class="row">
-                <div class="col-2"></div><div class="col-5" id="playerAvgScorePoints3"></div><div class="col-4" id="playerTotalWins1" style="text-align: right;"></div>
-            </div>
-            <div class="row">
-                <div class="col-1"></div><div class="col-7" id="playerAvgScorePointsInfo" style="font-size: smaller;"></div><div class="col-3" id="playerTotalWins2" style="text-align: right;"></div>
-            </div>
-            <div class="row">
-                <div class="col-1"></div><div class="col-6" style="font-size: smaller;"></div><div class="col-4" id="playerTotalWins3" style="text-align: right;"></div>
-            </div>
+            <div class="tabulator-report-grid" id="tabulatorRepotrGrid"></div>
 
             <div class="row">
                 <div class="col" id="vanillaGames"></div>
@@ -472,12 +437,6 @@
             <div class="row">
                 <div class="col-4" id="usedRules" style="font-size: smaller;"></div>
                 <div class="col-4">
-                    <div class="row">
-                        <div class="col-12" id="playersWinPercentage1"></div>
-                        <div class="col-12" id="playersWinPercentage2"></div>
-                        <div class="col-12" id="playersWinPercentage3"></div>
-                        <div class="col-12">&nbsp;</div>
-                    </div>
                     <div class="row">
                         <div class="col-12" id="playerCount"></div>
                     </div>
@@ -487,11 +446,6 @@
                         <div class="col-12" id="melterInfo" style="font-size: smaller;"></div>
                         <div class="col-12" id="spurterInfo" style="font-size: smaller;"></div>
                         <div class="col-12">&nbsp;</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12" id="playersPercentagePoints1"></div>
-                        <div class="col-12" id="playersPercentagePoints2"></div>
-                        <div class="col-12" id="playersPercentagePoints3"></div>
                     </div>
                 </div>
             </div>

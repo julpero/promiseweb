@@ -174,7 +174,7 @@ function createRulesElement(game) {
     
     if (rules.length > 0) {
         const ulList = createElementWithIdAndClasses('ul', null);
-        for (i = 0; i < rules.length; i++) {
+        for (let i = 0; i < rules.length; i++) {
             const liItem = createElementWithIdAndClasses('li', null);
             liItem.innerText = rules[i];
             ulList.appendChild(liItem);
@@ -188,7 +188,7 @@ function createRulesElement(game) {
 
 function showGames(gameList) {
     const gameListContainer = document.getElementById('joinGameCollapse');
-    var firstId = '';
+    let firstId = '';
     gameList.forEach(function (game) {
         if (firstId ==  '') firstId = game.id;
         const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
@@ -440,99 +440,287 @@ function spurterToHtml(spurtingGame) {
     return 'On '+new Date(spurtingGame.createDateTime).toDateString()+' '+spurtingGame.gameStatistics.winnerName+' was '+spurtingGame.gameStatistics.spurtAndMelt.spurtGap+' points behind the leader. Nevertheless '+spurtingGame.gameStatistics.winnerName+' won the game!';
 }
 
+class dataObj {
+    games = undefined;
+    keepP = undefined;
+    avgPoints = undefined;
+    totalPoints = undefined;
+    scorePoints = undefined;
+    wons = undefined;
+    winP = undefined;
+    bigZeroTryP = undefined;
+    bigZeroKeepP = undefined;
+    smallNotZeroTryP = undefined;
+    smallNotZeroKeepP = undefined;
+    winningPP = undefined;
+}
+
+function generateTabulatorData(reportData) {
+    const dataMap = new Map();
+    for (let i = 0; i < reportData.mostGamesPlayed.length; i++) {
+        const name = reportData.mostGamesPlayed[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).games = reportData.mostGamesPlayed[i].count;
+    }
+    for (let i = 0; i < reportData.avgKeepPercentagePerPlayer.length; i++) {
+        const name = reportData.avgKeepPercentagePerPlayer[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).keepP = reportData.avgKeepPercentagePerPlayer[i].avgKeepPercentage*100;
+    }
+    for (let i = 0; i < reportData.avgPointsPerPlayer.length; i++) {
+        const name = reportData.avgPointsPerPlayer[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).avgPoints = reportData.avgPointsPerPlayer[i].avgPoints;
+    }
+    for (let i = 0; i < reportData.avgPercentagePoints.length; i++) {
+        const name = reportData.avgPercentagePoints[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).winningPP = reportData.avgPercentagePoints[i].playerAvgPercentPoints*100;
+    }
+    for (let i = 0; i < reportData.avgScorePointsPerPlayer.length; i++) {
+        const name = reportData.avgScorePointsPerPlayer[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).scorePoints = reportData.avgScorePointsPerPlayer[i].playerAvgScorePoints;
+    }
+    for (let i = 0; i < reportData.totalPointsPerPlayer.length; i++) {
+        const name = reportData.totalPointsPerPlayer[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).totalPoints = reportData.totalPointsPerPlayer[i].playersTotalPoints;
+    }
+    for (let i = 0; i < reportData.playerTotalWins.length; i++) {
+        const name = reportData.playerTotalWins[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).wons = reportData.playerTotalWins[i].playerTotalWins;
+    }
+    for (let i = 0; i < reportData.playerWinPercentage.length; i++) {
+        const name = reportData.playerWinPercentage[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).winP = reportData.playerWinPercentage[i].winPercentage*100;
+    }
+    for (let i = 0; i < reportData.avgZerosPerPlayer.length; i++) {
+        const name = reportData.avgZerosPerPlayer[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).bigZeroTryP = (reportData.avgZerosPerPlayer[i].totalBigZeroKeeps+reportData.avgZerosPerPlayer[i].totalBigZeroFails)*100/reportData.avgZerosPerPlayer[i].totalBigRounds;
+        dataMap.get(name).bigZeroKeepP = reportData.avgZerosPerPlayer[i].totalBigZeroKeeps*100/(reportData.avgZerosPerPlayer[i].totalBigZeroKeeps+reportData.avgZerosPerPlayer[i].totalBigZeroFails);
+        dataMap.get(name).smallNotZeroTryP = (reportData.avgZerosPerPlayer[i].totalSmallNotZeroKeeps+reportData.avgZerosPerPlayer[i].totalSmallNotZeroFails)*100/reportData.avgZerosPerPlayer[i].totalSmallRounds;
+        dataMap.get(name).smallNotZeroKeepP = reportData.avgZerosPerPlayer[i].totalSmallNotZeroKeeps*100/(reportData.avgZerosPerPlayer[i].totalSmallNotZeroKeeps+reportData.avgZerosPerPlayer[i].totalSmallNotZeroFails);
+    }
+    console.log(dataMap);
+    const retArr = [];
+    let count = 1;
+    dataMap.forEach((v, k) => {
+        console.log(k);
+        console.log(v);
+        const retVal = {
+            id: count,
+            name: k,
+            games: v.games,
+            keepP: v.keepP,
+            avgPoints: v.avgPoints,
+            totalPoints: v.totalPoints,
+            winningPP: v.winningPP,
+            scorePoints: v.scorePoints,
+            wons: v.wons,
+            winP: v.winP,
+            bigZeroTryP: v.bigZeroTryP,
+            bigZeroKeepP: v.bigZeroKeepP,
+            smallNotZeroTryP: v.smallNotZeroTryP,
+            smallNotZeroKeepP: v.smallNotZeroKeepP,
+        }
+        retArr.push(retVal);
+        count++;
+    });
+    console.log(retArr);
+    return retArr;
+}
+
+function getMaxValuesFromReportData(reportData) {
+    const maxValues = {
+        games: 0,
+        avgPoints: 0,
+        totalPoints: 0,
+        scorePoints: 0,
+        wons: 0,
+        winP: 0,
+    }
+    for (let i = 0; i < reportData.mostGamesPlayed.length; i++) {
+        maxValues.games = Math.max(maxValues.games, reportData.mostGamesPlayed[i].count);
+    }
+    for (let i = 0; i < reportData.avgPointsPerPlayer.length; i++) {
+        maxValues.avgPoints = Math.max(maxValues.avgPoints, reportData.avgPointsPerPlayer[i].avgPoints);
+    }
+    for (let i = 0; i < reportData.avgScorePointsPerPlayer.length; i++) {
+        maxValues.scorePoints = Math.max(maxValues.scorePoints, reportData.avgScorePointsPerPlayer[i].playerAvgScorePoints);
+    }
+    for (let i = 0; i < reportData.totalPointsPerPlayer.length; i++) {
+        maxValues.totalPoints = Math.max(maxValues.totalPoints, reportData.totalPointsPerPlayer[i].playersTotalPoints);
+    }
+    for (let i = 0; i < reportData.playerTotalWins.length; i++) {
+        maxValues.wons = Math.max(maxValues.wons, reportData.playerTotalWins[i].playerTotalWins);
+    }
+    for (let i = 0; i < reportData.playerWinPercentage.length; i++) {
+        maxValues.winP = Math.max(maxValues.winP, reportData.playerWinPercentage[i].winPercentage*100);
+    }
+    return maxValues;
+}
+
+function showTabulatorReport(reportData) {
+    const maxValues = getMaxValuesFromReportData(reportData);
+    const colorArr = [
+        '#FF0000',
+        '#FF1100',
+        '#FF2200',
+        '#FF3300',
+        '#FF4400',
+        '#FF5500',
+        '#FF6600',
+        '#FF7700',
+        '#FF8800',
+        '#FF9900',
+        '#FFAA00',
+        '#FFBB00',
+        '#FFCC00',
+        '#FFDD00',
+        '#FFEE00',
+        '#FFFF00',
+        '#EEFF00',
+        '#DDFF00',
+        '#CCFF00',
+        '#BBFF00',
+        '#AAFF00',
+        '#99FF00',
+        '#88FF00',
+        '#77FF00',
+        '#66FF00',
+        '#55FF00',
+        '#44FF00',
+        '#33FF00',
+        '#22FF00',
+        '#11FF00',
+        '#00FF00'
+    ]
+    console.log(maxValues);
+    const columnDefs = [
+        { title:"(Nick)Name", field:"name", sorter:"string" },
+        { title:"Games", field:"games", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: maxValues.games,
+            color: colorArr,
+            legend: function (val) { return val; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"Keep-%", field:"keepP", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: 100,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(1)+"%"; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"AvgPoints", field:"avgPoints", sorter:"number", formatter:"progress", formatterParams: {
+            min: 90,
+            max: maxValues.avgPoints,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(1); },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"TotalPoints", field:"totalPoints", sorter:"number", formatter:"progress", formatterParams: {
+            min: 90,
+            max: maxValues.totalPoints,
+            color: colorArr,
+            legend: function (val) { return val; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"ScorePoints", field:"scorePoints", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: maxValues.scorePoints,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(3); },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"Wons", field:"wons", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: maxValues.wons,
+            color: colorArr,
+            legend: function (val) { return val; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"Win-%", field:"winP", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: maxValues.winP,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(1)+"%"; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"% of winning points", field:"winningPP", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: 100,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(1)+"%"; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"Tries Big 0", field:"bigZeroTryP", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: 100,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(1)+"%"; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"Keeps Big 0", field:"bigZeroKeepP", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: 100,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(1)+"%"; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"Tries Small not 0", field:"smallNotZeroTryP", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: 100,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(1)+"%"; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"Keeps Small not 0", field:"smallNotZeroKeepP", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: 100,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(1)+"%"; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+    ];
+    
+    const tabledata = generateTabulatorData(reportData);
+
+    const table = new Tabulator("#tabulatorRepotrGrid", {
+        //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+        data:tabledata, //assign data to table
+        layout:"fitColumns", //fit columns to width of table (optional)
+        columns:columnDefs,
+    });
+}
+
 function getReportData() {
     socket.emit('get report data', null, function(response) {
         console.log(response);
+        showTabulatorReport(response);
         initShowFrontPageBarsModal(response);
         const tooltipTemplate = '<div class="tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-wide"></div></div>';
 
         document.getElementById("gamesPlayedInfo").innerHTML = 'Total of '+response.gamesPlayed+' games and '+ response.roundsPlayed +' rounds played so far...';
         document.getElementById("playersTotalInfo").innerHTML = ' ... and '+response.playersTotal+' players hit '+ response.totalCardsHit +' cards in those games.';
 
-        document.getElementById("mostGamesPlayed1").innerHTML = response.mostGamesPlayed[0]._id+' has played in '+response.mostGamesPlayed[0].count+' of those games,';
-        document.getElementById("mostGamesPlayed2").innerHTML = response.mostGamesPlayed[1]._id+' attended '+response.mostGamesPlayed[1].count+' times';
-        document.getElementById("mostGamesPlayed3").innerHTML = 'and '+response.mostGamesPlayed[2]._id+' '+response.mostGamesPlayed[2].count+' times.';
-        var restMostGamesPlayedStr = '';
-        for (var i = 3; i < response.mostGamesPlayed.length; i++) {
-            restMostGamesPlayedStr+= response.mostGamesPlayed[i]._id+' '+response.mostGamesPlayed[i].count+', ';
-        }
-        const mostGamesPlayed3El = document.getElementById('mostGamesPlayed3');
-        const mostGamesPlayed3Tooltip = new bootstrap.Tooltip(mostGamesPlayed3El, {title: restMostGamesPlayedStr, template: tooltipTemplate, placement: 'bottom'});
-
-        document.getElementById("avgKeepPercentagePerPlayer1").innerHTML = 'Best keep-% belongs to '+response.avgKeepPercentagePerPlayer[0]._id+' and it is '+(100*response.avgKeepPercentagePerPlayer[0].avgKeepPercentage).toFixed(1)+'.';
-        document.getElementById("avgKeepPercentagePerPlayer2").innerHTML = response.avgKeepPercentagePerPlayer[1]._id+' comes to second with '+(100*response.avgKeepPercentagePerPlayer[1].avgKeepPercentage).toFixed(1)+'% of keeps';
-        document.getElementById("avgKeepPercentagePerPlayer3").innerHTML = 'and '+response.avgKeepPercentagePerPlayer[2]._id+' has '+(100*response.avgKeepPercentagePerPlayer[2].avgKeepPercentage).toFixed(1)+' keep-%.';
-        var restKeepPercentagePerPlayerStr = '';
-        for (var i = 3; i < response.avgKeepPercentagePerPlayer.length; i++) {
-            restKeepPercentagePerPlayerStr+= response.avgKeepPercentagePerPlayer[i]._id+' '+(100*response.avgKeepPercentagePerPlayer[i].avgKeepPercentage).toFixed(1)+'%, ';
-        }
-        const avgKeepPercentagePerPlayer3El = document.getElementById('avgKeepPercentagePerPlayer3');
-        const avgKeepPercentagePerPlayer3Tooltip = new bootstrap.Tooltip(avgKeepPercentagePerPlayer3El, {title: restKeepPercentagePerPlayerStr, template: tooltipTemplate, placement: 'bottom'});
-
-        document.getElementById("totalPointsPerPlayer1").innerHTML = response.totalPointsPerPlayer[0]._id+' has gathered total of '+response.totalPointsPerPlayer[0].playersTotalPoints+' points in all games.';
-        document.getElementById("totalPointsPerPlayer2").innerHTML = response.totalPointsPerPlayer[1]._id+'\'s points are '+response.totalPointsPerPlayer[1].playersTotalPoints;
-        document.getElementById("totalPointsPerPlayer3").innerHTML = 'and '+response.totalPointsPerPlayer[2]._id+' comes as third with '+response.totalPointsPerPlayer[2].playersTotalPoints+' points.';
-        var restPointsPerPlayerStr = '';
-        for (var i = 3; i < response.totalPointsPerPlayer.length; i++) {
-            restPointsPerPlayerStr+= response.totalPointsPerPlayer[i]._id+' '+response.totalPointsPerPlayer[i].playersTotalPoints+', ';
-        }
-        const totalPointsPerPlayer3El = document.getElementById('totalPointsPerPlayer3');
-        const totalPointsPerPlayer3Tooltip = new bootstrap.Tooltip(totalPointsPerPlayer3El, {title: restPointsPerPlayerStr, template: tooltipTemplate, placement: 'bottom'});
-
-        document.getElementById("avgPointsPerPlayer1").innerHTML = response.avgPointsPerPlayer[0]._id+' played '+response.avgPointsPerPlayer[0].playerTotalGames+' games with avegare of '+response.avgPointsPerPlayer[0].avgPoints.toFixed(1)+' points.';
-        document.getElementById("avgPointsPerPlayer2").innerHTML = 'After '+response.avgPointsPerPlayer[1].playerTotalGames+' games '+response.avgPointsPerPlayer[1]._id+'\'s average points are '+response.avgPointsPerPlayer[1].avgPoints.toFixed(1)+'.';
-        document.getElementById("avgPointsPerPlayer3").innerHTML = response.avgPointsPerPlayer[2]._id+'\'s average points '+response.avgPointsPerPlayer[2].avgPoints.toFixed(1)+' comes from '+response.avgPointsPerPlayer[2].playerTotalGames+' played games.';
-        var restPlayersAvgPointsPerPlayerStr = '';
-        for (var i = 3; i < response.avgPointsPerPlayer.length; i++) {
-            restPlayersAvgPointsPerPlayerStr+= response.avgPointsPerPlayer[i]._id+' '+response.avgPointsPerPlayer[i].avgPoints.toFixed(1)+', ';
-        }
-        const avgPointsPerPlayer3El = document.getElementById('avgPointsPerPlayer3');
-        const avgPointsPerPlayer3Tooltip = new bootstrap.Tooltip(avgPointsPerPlayer3El, {title: restPlayersAvgPointsPerPlayerStr, template: tooltipTemplate, placement: 'bottom'});
-
-        document.getElementById("playerAvgScorePoints1").innerHTML = response.avgScorePointsPerPlayer[0]._id+' is the best player with score points '+response.avgScorePointsPerPlayer[0].playerAvgScorePoints.toFixed(3)+'.';
-        document.getElementById("playerAvgScorePoints2").innerHTML = response.avgScorePointsPerPlayer[1]._id+'\'s '+response.avgScorePointsPerPlayer[1].playerAvgScorePoints.toFixed(3)+' score points is enough for the second place.';
-        document.getElementById("playerAvgScorePoints3").innerHTML = 'Third but not least is '+response.avgScorePointsPerPlayer[2]._id+'\'s score points '+response.avgScorePointsPerPlayer[2].playerAvgScorePoints.toFixed(3)+'.';
-        var restPlayersAvgScorePointsStr = '';
-        for (var i = 3; i < response.avgScorePointsPerPlayer.length; i++) {
-            restPlayersAvgScorePointsStr+= response.avgScorePointsPerPlayer[i]._id+' '+response.avgScorePointsPerPlayer[i].playerAvgScorePoints.toFixed(3)+', ';
-        }
-        const playerAvgScorePoints3El = document.getElementById('playerAvgScorePoints3');
-        const playerAvgScorePoints3Tooltip = new bootstrap.Tooltip(playerAvgScorePoints3El, {title: restPlayersAvgScorePointsStr, template: tooltipTemplate, placement: 'bottom'});
-        document.getElementById('playerAvgScorePointsInfo').innerHTML = 'Score point is calculated: (players in game - your rank in game) / (players in game)';
-
-        document.getElementById("playerTotalWins1").innerHTML = response.playerTotalWins[0]._id+' has won '+response.playerTotalWins[0].playerTotalWins+' games.';
-        document.getElementById("playerTotalWins2").innerHTML = response.playerTotalWins[1]._id+' has won '+response.playerTotalWins[1].playerTotalWins+' times';
-        document.getElementById("playerTotalWins3").innerHTML = 'and '+response.playerTotalWins[2].playerTotalWins+' games ended to '+response.playerTotalWins[2]._id+'\'s celebrations.';
-        var restPlayersTotalWinsStr = '';
-        for (var i = 3; i < response.playerTotalWins.length; i++) {
-            restPlayersTotalWinsStr+= response.playerTotalWins[i]._id+' '+response.playerTotalWins[i].playerTotalWins+', ';
-        }
-        const playerTotalWins3El = document.getElementById('playerTotalWins3');
-        const playerTotalWins3Tooltip = new bootstrap.Tooltip(playerTotalWins3El, {title: restPlayersTotalWinsStr, template: tooltipTemplate, placement: 'bottom'});
-
-        document.getElementById("playersWinPercentage1").innerHTML = response.playerWinPercentage[0]._id+' has the best winning percentage of '+(100*response.playerWinPercentage[0].winPercentage).toFixed(1)+'%.';
-        document.getElementById("playersWinPercentage2").innerHTML = response.playerWinPercentage[1]._id+'\'s winning percentage is '+(100*response.playerWinPercentage[1].winPercentage).toFixed(1)+'%';
-        document.getElementById("playersWinPercentage3").innerHTML = 'and '+response.playerWinPercentage[2]._id+' comes as third by winning '+(100*response.playerWinPercentage[2].winPercentage).toFixed(1)+'% of games.';
-        var restPlayersWinPercentageStr = '';
-        for (var i = 3; i < response.playerWinPercentage.length; i++) {
-            restPlayersWinPercentageStr+= response.playerWinPercentage[i]._id+' '+(100*response.playerWinPercentage[i].winPercentage).toFixed(1)+'%, ';
-        }
-        const playersWinPercentage3El = document.getElementById('playersWinPercentage3');
-        const playersWinPercentage3Tooltip = new bootstrap.Tooltip(playersWinPercentage3El, {title: restPlayersWinPercentageStr, template: tooltipTemplate, placement: 'bottom'});
-
-        if (response.avgPercentagePoints != null && response.avgPercentagePoints.length >= 3) {
-            document.getElementById("playersPercentagePoints1").innerHTML = response.avgPercentagePoints[0]._id+' gathers average of '+(100*response.avgPercentagePoints[0].playerAvgPercentPoints).toFixed(1)+'% of games winning points.';
-            document.getElementById("playersPercentagePoints2").innerHTML = response.avgPercentagePoints[1]._id+'\'s points are '+(100*response.avgPercentagePoints[1].playerAvgPercentPoints).toFixed(1)+'% of winner\'s points';
-            document.getElementById("playersPercentagePoints3").innerHTML = 'and '+response.avgPercentagePoints[2]._id+' comes as third by gathering '+(100*response.avgPercentagePoints[2].playerAvgPercentPoints).toFixed(1)+'% of points needed to win games.';
-            var restPlayersAvgPercentPointsStr = '';
-            for (var i = 3; i < response.avgPercentagePoints.length; i++) {
-                restPlayersAvgPercentPointsStr+= response.avgPercentagePoints[i]._id+' '+(100*response.avgPercentagePoints[i].playerAvgPercentPoints).toFixed(1)+'%, ';
-            }
-            const playersPercentagePoints3El = document.getElementById('playersPercentagePoints3');
-            const playersPercentagePoints3Tooltip = new bootstrap.Tooltip(playersPercentagePoints3El, {title: restPlayersAvgPercentPointsStr, template: tooltipTemplate, placement: 'bottom'});
-        }
-
-        document.getElementById('vanillaGames').innerHTML = response.vanillaGamesCount+' games played with original rules, rules were used:';
+        document.getElementById('vanillaGames').innerHTML = response.vanillaGamesCount+' games played with original rules, otherwise rules were used:';
         document.getElementById('usedRules').innerHTML = usedRulesToHtml(response.usedRulesCount);
         
         document.getElementById('playerCount').innerHTML = playerCountToHtml(response.playerCount);

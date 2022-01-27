@@ -18,7 +18,11 @@
         "start": "node index.ts"
     },
     "devDependencies": {
-        "@types/node": "^17.0.8"
+        "@types/express": "^4.17.13",
+        "@types/node": "^17.0.12",
+        "@typescript-eslint/eslint-plugin": "^5.10.1",
+        "@typescript-eslint/parser": "^5.10.1",
+        "eslint": "^8.7.0"
     },
     "dependencies": {
         "bcrypt": "^5.0.1",
@@ -28,11 +32,12 @@
         "chartjs-plugin-annotation": "^1.2.2",
         "deck-of-cards": "^0.1.8",
         "express": "^4.17.2",
-        "mongodb": "^4.3.0",
+        "mongodb": "^4.3.1",
         "node-cache": "^5.1.2",
         "object-hash": "^2.2.0",
         "sanitize-filename": "^1.6.3",
         "socket.io": "^4.4.1",
+        "tabulator-tables": "^5.0.10",
         "velocity-animate": "^2.0.6"
     }
 }

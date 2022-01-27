@@ -29,7 +29,7 @@ function playedGamesGraph(reportData) {
     const datasetsData = [];
     const colors = [];
 
-    for (var i = 0; i < reportData.length; i++) {
+    for (let i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push(reportData[i].count);
@@ -90,7 +90,7 @@ function avgKeepPercentageGraph(reportData) {
     const datasetsData = [];
     const colors = [];
 
-    for (var i = 0; i < reportData.length; i++) {
+    for (let i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push((100*(reportData[i].avgKeepPercentage)).toFixed(1));
@@ -151,7 +151,7 @@ function avgPointsGraph(reportData) {
     const datasetsData = [];
     const colors = [];
 
-    for (var i = 0; i < reportData.length; i++) {
+    for (let i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push((reportData[i].avgPoints).toFixed(1));
@@ -212,7 +212,7 @@ function totalPointsGraph(reportData) {
     const datasetsData = [];
     const colors = [];
 
-    for (var i = 0; i < reportData.length; i++) {
+    for (let i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push(reportData[i].playersTotalPoints);
@@ -273,7 +273,7 @@ function totalWinsGraph(reportData) {
     const datasetsData = [];
     const colors = [];
 
-    for (var i = 0; i < reportData.length; i++) {
+    for (let i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push(reportData[i].playerTotalWins);
@@ -335,7 +335,7 @@ function winPercentagesGraph(reportData) {
     const datasetsData = [];
     const colors = [];
 
-    for (var i = 0; i < reportData.length; i++) {
+    for (let i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push((100*reportData[i].winPercentage).toFixed(1));
@@ -397,7 +397,7 @@ function avgPercentagePointsGraph(reportData) {
     const datasetsData = [];
     const colors = [];
 
-    for (var i = 0; i < reportData.length; i++) {
+    for (let i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push((100*reportData[i].playerAvgPercentPoints).toFixed(1));
@@ -452,7 +452,7 @@ function cardsInHandGraph(reportData) {
             tooltip: {
                 callbacks: {
                     afterTitle: function(context) {
-                        var totalKeeps = 0;
+                        let totalKeeps = 0;
                         context.forEach(function (row) {
                             totalKeeps+= row.raw;
                         });
@@ -470,7 +470,7 @@ function cardsInHandGraph(reportData) {
     const otherData = [];
     const colors = [];
 
-    for (var i = 0; i < reportData.length; i++) {
+    for (let i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
         labelsData.push(name);
         trumpData.push((100*reportData[i].trumpPercentage).toFixed(1));
@@ -553,7 +553,7 @@ function scoreGraph(reportData) {
     const datasetsData = [];
     const colors = [];
 
-    for (var i = 0; i < reportData.length; i++) {
+    for (let i = 0; i < reportData.length; i++) {
         const name = reportData[i]._id;
         labelsData.push(name);
         valuesData.push((reportData[i].playerAvgScorePoints).toFixed(3));
@@ -601,15 +601,15 @@ function liveStats1Graph(reportData) {
     const labelsData = [];
     const datasetsData = [];
 
-    for (var i = 0; i < statsRounds; i++) {
+    for (let i = 0; i < statsRounds; i++) {
         labelsData.push(i);
     }
 
-    for (var i = 0; i < statsData.length; i++) {
+    for (let i = 0; i < statsData.length; i++) {
         const name = statsData[i].name;
         const playerKeepPercentage = [];
             
-        for (var j = 0; j < statsRounds; j++) {
+        for (let j = 0; j < statsRounds; j++) {
             playerKeepPercentage.push(statsData[i] && statsData[i].stats[j] ? statsData[i].stats[j].kPerc : 0);
         }
         const color = colorize(name);
@@ -693,15 +693,15 @@ function liveStats2Graph(reportData) {
     const labelsData = [];
     const datasetsData = [];
 
-    for (var i = 0; i < statsRounds; i++) {
+    for (let i = 0; i < statsRounds; i++) {
         labelsData.push(i);
     }
 
-    for (var i = 0; i < statsData.length; i++) {
+    for (let i = 0; i < statsData.length; i++) {
         const name = statsData[i].name;
         const playerAvgPoints = [];
             
-        for (var j = 0; j < statsRounds; j++) {
+        for (let j = 0; j < statsRounds; j++) {
             playerAvgPoints.push(statsData[i] && statsData[i].stats[j] ? statsData[i].stats[j].avgPoints : 0);
         }
         const color = colorize(name);
