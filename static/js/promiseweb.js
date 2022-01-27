@@ -1,7 +1,7 @@
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var rnd = window.crypto.getRandomValues(new Uint32Array(1))[0];
-        var r = rnd * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        let rnd = window.crypto.getRandomValues(new Uint32Array(1))[0];
+        let r = rnd * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
 }
@@ -15,7 +15,7 @@ function suitToInt(suit) {
 }
 
 function getCardIndex(cards, myCard) {
-    var index = null;
+    let index = null;
     cards.forEach(function (card, idx) {
         if (suitToInt(myCard.suit) == card.suit && myCard.rank == (card.rank == 1 ? 14 : card.rank)) {
             index = idx;
@@ -32,9 +32,9 @@ function drawCards(myRound) {
 }
 
 function playerHasPlayedCards(playerName, cardsPlayed) {
-    var retVal = 0;
-    for (var i = 0; i < cardsPlayed.length; i++) {
-        for (var j = 0; j < cardsPlayed[i].length; j++) {
+    let retVal = 0;
+    for (let i = 0; i < cardsPlayed.length; i++) {
+        for (let j = 0; j < cardsPlayed[i].length; j++) {
             if (cardsPlayed[i][j].name == playerName) retVal++;
         }
     }
@@ -42,12 +42,12 @@ function playerHasPlayedCards(playerName, cardsPlayed) {
 }
 
 function drawOtherPlayerCards(players, cardsInRound, cardsPlayed) {
-    for (var i = 0; i < players.length; i++) {
+    for (let i = 0; i < players.length; i++) {
         const deck = Deck();
         if (!players[i].thisIsMe) {
             const playerName = players[i].name;
             const tableIndex = otherPlayerMapper(i, players);
-            for (j = 0; j < cardsInRound - playerHasPlayedCards(playerName, cardsPlayed); j++) {
+            for (let j = 0; j < cardsInRound - playerHasPlayedCards(playerName, cardsPlayed); j++) {
                 const $deckDiv = document.getElementById('player'+tableIndex+'CardCol'+j);
                 const card = deck.cards[j];
                 card.mount($deckDiv);
@@ -91,7 +91,7 @@ function drawTrumpCard(myRound) {
     const $deckDiv = document.getElementById('trumpDiv');
 
     const dummyDeck = Deck();
-    for (var i = 52; i > cardsToPlayers; i--) {
+    for (let i = 52; i > cardsToPlayers; i--) {
         const dummyCard = dummyDeck.cards[i-1];
         dummyCard.mount($deckDiv);
         dummyCard.animateTo({
@@ -111,7 +111,7 @@ function drawTrumpCard(myRound) {
 function drawMyCards(myRound, speedPromise) {
     const deck = Deck();
     if (speedPromise && myRound.myCards.length == 0) {
-        for (var i = 0; i < myRound.cardsInRound; i++) {
+        for (let i = 0; i < myRound.cardsInRound; i++) {
             const $container = document.getElementById('player0CardCol'+i);
             const card = deck.cards[i];
             card.mount($container);
@@ -166,7 +166,7 @@ function otherPlayerMapper(idFrom, players) {
     // and then first player on my left is position 1 and so on
 
     // first find me
-    var me = 0;
+    let me = 0;
     players.forEach(function (player, idx) {
         if (player.thisIsMe) {
             me = idx;
@@ -184,8 +184,8 @@ function otherPlayerMapper(idFrom, players) {
 }
 
 function isMyPlayTurn(myRound) {
-    for (var i = 0; i < myRound.players.length; i++) {
-        var chkPos = i + myRound.playerInCharge;
+    for (let i = 0; i < myRound.players.length; i++) {
+        let chkPos = i + myRound.playerInCharge;
         if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
         if (myRound.players[chkPos].cardPlayed == null) {
             // this is next player to play
@@ -197,8 +197,8 @@ function isMyPlayTurn(myRound) {
 }
 
 function isMyPromiseTurn(myRound) {
-    for (var i = 0; i < myRound.players.length; i++) {
-        var chkPos = i + myRound.dealerPositionIndex + 1; // next from dealer
+    for (let i = 0; i < myRound.players.length; i++) {
+        let chkPos = i + myRound.dealerPositionIndex + 1; // next from dealer
         if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
         if (myRound.players[chkPos].promise == null) {
             // this is next player to promise
@@ -229,8 +229,8 @@ function hideThinkings() {
 }
 
 function showWhoIsPromising(myRound) {
-    for (var i = 0; i < myRound.players.length; i++) {
-        var chkPos = i + myRound.dealerPositionIndex + 1; // next from dealer
+    for (let i = 0; i < myRound.players.length; i++) {
+        let chkPos = i + myRound.dealerPositionIndex + 1; // next from dealer
         if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
         if (myRound.players[chkPos].promise == null) {
             // this is next player to promise
@@ -242,8 +242,8 @@ function showWhoIsPromising(myRound) {
 }
 
 function showWhoIsPlaying(myRound) {
-    for (var i = 0; i < myRound.players.length; i++) {
-        var chkPos = i + myRound.playerInCharge;
+    for (let i = 0; i < myRound.players.length; i++) {
+        let chkPos = i + myRound.playerInCharge;
         if (chkPos >= myRound.players.length) chkPos-= myRound.players.length;
         if (myRound.players[chkPos].cardPlayed == null) {
             // this player is playing
@@ -255,15 +255,15 @@ function showWhoIsPlaying(myRound) {
 }
 
 function roundPromised(myRound) {
-    for (var i = 0; i < myRound.players.length; i++) {
+    for (let i = 0; i < myRound.players.length; i++) {
         if (myRound.players[i].promise == null) return false;
     }
     return true;
 }
 
 function isEvenPromise(myRound, promise) {
-    var totalPromise = 0;
-    for (var i = 0; i < myRound.players.length; i++) {
+    let totalPromise = 0;
+    for (let i = 0; i < myRound.players.length; i++) {
         const player = myRound.players[i];
         if (!player.thisIsMe && player.promise == null) return false;
         if (player.promise != null) totalPromise+= player.promise;
@@ -278,7 +278,7 @@ function speedPromiseTimerTick(speedPromiseValue) {
 }
 
 function mySpeedPromisePoints(myRound) {
-    for (var i = 0; i < myRound.players.length; i++) {
+    for (let i = 0; i < myRound.players.length; i++) {
         const player = myRound.players[i];
         if (player.thisIsMe) return player.speedPromisePoints;
     }
@@ -357,7 +357,7 @@ function initPromise(myRound, evenPromisesAllowed, speedPromise) {
     emptyElementById('myPromiseCol');
     const node = document.getElementById('myPromiseCol');
 
-    for (var i = 0; i < myRound.cardsInRound + 1; i++) {
+    for (let i = 0; i < myRound.cardsInRound + 1; i++) {
         const promiseButton = createElementWithIdAndClasses('button', 'makePromiseButton'+i, 'btn btn-primary makePromiseButton');
         promiseButton.value = i;
         promiseButton.innerText = i;
@@ -389,7 +389,7 @@ function drawSpeedBar(max, now) {
     emptyElementById('speedProgressBar');
     const progressMain = document.getElementById('speedProgressBar');
     const width = (now/max)*100;
-    var classStr = "bg-success";
+    let classStr = "bg-success";
     if (width < 60 && width > 35) {
         classStr = "bg-info";
     } else if (width <= 35 && width > 15) {
@@ -508,7 +508,7 @@ function amIStarterOfPlay(myRound) {
 }
 
 function iHaveSuitInMyHand(suitInCharge, myHand) {
-    for (var i = 0; i < myHand.length; i++) {
+    for (let i = 0; i < myHand.length; i++) {
         if (myHand[i].suit == suitInCharge) return true;
     }
     return false;
@@ -525,7 +525,7 @@ function showPromisesNow(gameInfo, myRound) {
 function cardToClassMapper(card) {
     // note: ace has rank 1 in ui but 14 in server
     const rank = card.rank == 14 ? 1 : card.rank;
-    var retStr = '.card.';
+    let retStr = '.card.';
     retStr+= card.suit + '.rank' + rank;
     return retStr;
 }
@@ -544,7 +544,7 @@ function toCard(suit, rank) {
 }
 
 function classToCardMapper(classStr) {
-    var classes = classStr.split(/\s+/);
+    let classes = classStr.split(/\s+/);
     if (classes[1] && classes[2]) {
         return {
             suit: classes[1],
@@ -601,9 +601,9 @@ function cardClickEvent() {
 
 function initCardEvents(myRound, onlySuit) {
     removeCardEvents();
-    var cardsAbleToPlay = 0;
+    let cardsAbleToPlay = 0;
     possibleCards = [];
-    for (var i = 0; i < myRound.myCards.length; i++) {
+    for (let i = 0; i < myRound.myCards.length; i++) {
         const card = myRound.myCards[i];
         const cardMapperStr = cardToClassMapper(card);
         const cardMapperStrDiv = 'div'+cardMapperStr;
@@ -628,7 +628,7 @@ function initCardEvents(myRound, onlySuit) {
 }
 
 function dimMyCards(myRound, visibility) {
-    var bgColor = "ffffff";
+    let bgColor = "ffffff";
     switch (visibility) {
         case 1.0: bgColor = "ffffff"; break;
         case 0.8: bgColor = "dddddd"; break;
@@ -636,7 +636,7 @@ function dimMyCards(myRound, visibility) {
         case 0.6: bgColor = "bbbbbb"; break;
         default: break;
     }
-    for (var i = 0; i < myRound.myCards.length; i++) {
+    for (let i = 0; i < myRound.myCards.length; i++) {
         const cardMapperStr = 'div'+cardToClassMapper(myRound.myCards[i]);
         document.querySelector(cardMapperStr).velocity({backgroundColor: "#"+bgColor}, 400);
     }
@@ -667,15 +667,15 @@ function highlightWinningCard(myRound) {
     const playedCards = myRound.cardsPlayed[myRound.cardsPlayed.length-1]; // last is current
     if (playedCards.length == 0) return;
 
-    var winnerName = myRound.playerGoingToWinThisPlay;
+    let winnerName = myRound.playerGoingToWinThisPlay;
     if (winnerName == null || winnerName == undefined) {
         winnerName = winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
     }
 
-    for (var i = 0; i < playedCards.length; i++) {
+    for (let i = 0; i < playedCards.length; i++) {
         const playerIndex = mapPlayerNameToTable(playedCards[i].name);
         
-        var cardPlayedDivs = document.getElementById('player'+playerIndex+'CardPlayedDiv').children;
+        let cardPlayedDivs = document.getElementById('player'+playerIndex+'CardPlayedDiv').children;
         if (cardPlayedDivs.length == 1) {
             const cardPlayedDiv = cardPlayedDivs[0];
             if (i == 0) {
@@ -695,13 +695,13 @@ function showPlayedCards(myRound) {
     const playedCards = myRound.cardsPlayed[myRound.cardsPlayed.length-1]; // last is current
     if (playedCards.length == 0) return;
 
-    var winnerName = myRound.playerGoingToWinThisPlay;
+    let winnerName = myRound.playerGoingToWinThisPlay;
     if (winnerName == null || winnerName == undefined) {
         winnerName = winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
     }
-    var dummyCardIndex = 0;
+    let dummyCardIndex = 0;
 
-    for (var i = 0; i < playedCards.length; i++) {
+    for (let i = 0; i < playedCards.length; i++) {
         const playerIndex = mapPlayerNameToTable(playedCards[i].name);
         const cardPlayed = playedCards[i].card;
         
@@ -738,7 +738,7 @@ function showPlayedCards(myRound) {
 function showOnlyTotalPromiseInfo(round, show, players) {
     if (show) {
         emptyElementById("totalPromiseInfo");
-        var keptSoFar = 0;
+        let keptSoFar = 0;
         players.forEach(function (player) {
             keptSoFar+= player.keeps;
         });
@@ -749,10 +749,10 @@ function showOnlyTotalPromiseInfo(round, show, players) {
 }
 
 function winnerOfSinglePlay(cardsPlayed, trumpSuit) {
-    var winner = cardsPlayed[0].name;
-    var winningCard = cardsPlayed[0].card;
-    for (var i = 1; i < cardsPlayed.length; i++) {
-        var wins = false;
+    let winner = cardsPlayed[0].name;
+    let winningCard = cardsPlayed[0].card;
+    for (let i = 1; i < cardsPlayed.length; i++) {
+        let wins = false;
         const currentCard = cardsPlayed[i].card;
         if (winningCard.suit == trumpSuit) {
             // has to be bigger trump to win
@@ -780,18 +780,18 @@ function clearWonCards() {
 function showWonCards(myRound) {
     const deck = Deck();
     const playerCount = myRound.players.length;
-    var cardCount = 0;
-    for (var i = 0; i < myRound.cardsPlayed.length; i++) {
+    let cardCount = 0;
+    for (let i = 0; i < myRound.cardsPlayed.length; i++) {
         const playedCards = myRound.cardsPlayed[i];
         if (playedCards.length == playerCount) {
-            var winnerName = myRound.playerGoingToWinThisPlay;
+            let winnerName = myRound.playerGoingToWinThisPlay;
             if (winnerName == null || winnerName == undefined) {
                 winnerName = winnerOfSinglePlay(playedCards, myRound.trumpCard.suit);
             }
             const playerIndex = mapPlayerNameToTable(winnerName);
             const wonIndex = getNextFreeCardWonDiv(playerIndex);
             const $containerTo = document.getElementById('player'+playerIndex+'CardsWon'+wonIndex+'Div');
-            for (var j = 0; j < playerCount; j++) {
+            for (let j = 0; j < playerCount; j++) {
                 const card = deck.cards[cardCount];
                 card.mount($containerTo);
                 card.animateTo({
@@ -882,37 +882,10 @@ function avgRoundPoints(playersArr) {
     return avgRoundPoints;
 }
 
-function findMinMaxPoints(arr) {
-    let min = arr[0].avgPoints, max = arr[0].avgPoints;
-  
-    for (let i = 1, len=arr.length; i < len; i++) {
-        let v = arr[i].avgPoints;
-        min = (v < min) ? v : min;
-        max = (v > max) ? v : max;
-    }
-    return [min, max];
-}
-
-function showPlayerAvgPoints(playerInd, playerAvgPoints, min, max) {
-    const reportColName = 'player'+playerInd+'StatsCol2';
-    document.getElementById(''+reportColName).innerText = 'avg: '+playerAvgPoints.toFixed(2);
-}
-
-function showPlayerKeepPrecent(playerInd, keeps, total) {
-    const reportColName = 'player'+playerInd+'StatsCol3';
-    const keepPercent = 100 * (keeps / total);
-    document.getElementById(''+reportColName).innerText = 'kp: '+keepPercent.toFixed(1)+'%';
-}
-
-function showPlayerKeepStats(playerKeeps) {
-    const minMaxPoints = findMinMaxPoints(playerKeeps);
-    const minAvgPoints = Math.min(0, minMaxPoints[0]);
-    const maxAvgPoints = minMaxPoints[1];
-    playerKeeps.forEach(function (playerKeep) {
-        const playerInd = mapPlayerNameToTable(playerKeep._id);
-        showPlayerAvgPoints(playerInd, playerKeep.avgPoints, minAvgPoints, maxAvgPoints);
-        showPlayerKeepPrecent(playerInd, playerKeep.keeps, playerKeep.total);
-    });
+function showLiveStats(myRound) {
+    if (myRound.statistics == null || myRound.statistics.statsAvgObj == null) return;
+    liveStats1Graph(myRound.statistics.statsAvgObj);
+    liveStats2Graph(myRound.statistics.statsAvgObj);
 }
 
 function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
@@ -938,7 +911,7 @@ function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) 
 }
 
 function getCardFromDiv(divStr) {
-    var div = document.getElementById('' + divStr).children;
+    const div = document.getElementById('' + divStr).children;
     if (div.length == 1) {
         const classStr = div[0].className;
         return classToCardMapper(classStr);
@@ -947,7 +920,7 @@ function getCardFromDiv(divStr) {
 }
 
 function getNextFreeCardWonDiv(playerIndex) {
-    for (var i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i++) {
         if (document.getElementById('player'+playerIndex+'CardsWon'+i+'Div').children.length == 0) return i;
     }
     return 0;
@@ -964,10 +937,10 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
     const delay = 400;
     const duration = 900;
     const movingCards = [];
-    var cardLooper = 0;
-    var cardReadyLooper = 0;
+    let cardLooper = 0;
+    let cardReadyLooper = 0;
 
-    for (var i = 0; i < players.length; i++) {
+    for (let i = 0; i < players.length; i++) {
         const divIdStr = 'player'+i+'CardPlayedDiv';
         const containerFromPosition = document.getElementById(divIdStr).getBoundingClientRect();
         const cardToCheck = getCardFromDiv(divIdStr);
@@ -1012,7 +985,7 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
 }
 
 function getLastCardContainer(playerIndex) {
-    for (var i = 9; i >= 0; i--) {
+    for (let i = 9; i >= 0; i--) {
         const el = document.getElementById('player'+playerIndex+'CardCol'+i);
         if (el != null && el.children.length > 0) return i;
     }
@@ -1021,7 +994,7 @@ function getLastCardContainer(playerIndex) {
 
 function getCurrentCardContainer(card) {
     const cardClassStr = cardToClassMapper(card);
-    for (var i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i++) {
         const cardCol = document.getElementById('player0CardCol'+i);
         if (cardCol.querySelectorAll(cardClassStr).length == 1) return i;
         // if (.find(cardClassStr).length == 1) return i;
@@ -1036,7 +1009,7 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
     // this is used when last card of play is hit, reveal all played cards
     if (cardsInThisPlay != null) {
         console.log('moveCardFromHandToTable, cardsInThisPlay:', cardsInThisPlay);
-        for (var i = 0; i < cardsInThisPlay.length; i++) {
+        for (let i = 0; i < cardsInThisPlay.length; i++) {
             if (playerName == cardsInThisPlay[i].name) continue; // animate this player card
     
             const thisPlayerIndex = mapPlayerNameToTable(cardsInThisPlay[i].name);
@@ -1117,11 +1090,11 @@ function initPromiseTable(promiseTable) {
         console.log('all tooltips disposed');
     }
 
-    for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
-        var playerKept = 0;
-        var playerOver = 0;
-        var playerUnder = 0;
-        for (var j = 0; j < promiseTable.rounds.length; j++) {
+    for (let i = 0; i < promiseTable.promisesByPlayers.length; i++) {
+        let playerKept = 0;
+        let playerOver = 0;
+        let playerUnder = 0;
+        for (let j = 0; j < promiseTable.rounds.length; j++) {
             const cardsInRound = promiseTable.rounds[j].cardsInRound;
             const totalPromise = promiseTable.rounds[j].totalPromise;
             if (totalPromise != null) {
@@ -1152,7 +1125,7 @@ function initPromiseTable(promiseTable) {
             playerPromEl.innerHTML = promiseStr;
             if (promise.points != null) {
                 playerPromEl.classList.add('promTooltip');
-                var tooltipStr = "";
+                let tooltipStr = "";
                 if (promise.keep == promise.promise) {
                     playerPromEl.classList.add('promiseKept');
                     playerKept++;
@@ -1178,9 +1151,9 @@ function initScoreBoard(promiseTable, gameOver, avgStats) {
     if (document.getElementById('scoreboard').children.length == 0) createScoreboard(promiseTable);
     
     const totalPoints = [];
-    for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
-        var playerPoints = 0;
-        for (var j = 0; j < promiseTable.promisesByPlayers[i].length; j++) {
+    for (let i = 0; i < promiseTable.promisesByPlayers.length; i++) {
+        let playerPoints = 0;
+        for (let j = 0; j < promiseTable.promisesByPlayers[i].length; j++) {
             const currentPoints = promiseTable.promisesByPlayers[i][j].points;
             const avgPoints = avgStats[i][j+1];
             const playerPointsEl = document.getElementById('player'+i+'Points'+j);
@@ -1188,7 +1161,7 @@ function initScoreBoard(promiseTable, gameOver, avgStats) {
                 playerPointsEl.classList.remove('avgHistory');
                 const speedPromisePoints = promiseTable.promisesByPlayers[i][j].speedPromisePoints;
                 const speedPromiseTotal = promiseTable.promisesByPlayers[i][j].speedPromiseTotal;
-                var tooltipStr = 'Total '+currentPoints;
+                let tooltipStr = 'Total '+currentPoints;
                 if (currentPoints != 0) {
                     playerPoints+= currentPoints;
                     playerPointsEl.innerText = playerPoints;
@@ -1248,8 +1221,8 @@ async function cardPlayedCallback(gameInfo) {
     document.getElementById('currentGameId').value = gameInfo.id;
     console.log('card played', gameInfo);
     hideThinkings();
-    var newRound = false;
-    var gameOver = false;
+    let newRound = false;
+    let gameOver = false;
 
     if (gameInfo.eventInfo != null) {
         console.log('card played, eventInfoType: '+gameInfo.eventInfo.eventInfoType);
@@ -1268,12 +1241,12 @@ async function cardPlayedCallback(gameInfo) {
     }
 
     const doReloadInit = gameInfo.reloaded;
-    var getRoundIndex = gameInfo.currentRound;
+    let getRoundIndex = gameInfo.currentRound;
     if (newRound && !gameOver) {
         getRoundIndex++;
     }
 
-    var getRound = {
+    let getRound = {
         gameId: gameInfo.id,
         myId: window.localStorage.getItem('uUID'),
         round: getRoundIndex,

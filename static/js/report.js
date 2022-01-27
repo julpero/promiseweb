@@ -156,7 +156,6 @@ function showGamesPlayed(reportObject) {
     datasetsData.push({
         label: 'played games',
         data: playedGamesArr,
-        borderWidth: 1,
         backgroundColor: 'rgba(66,133,244,1.0)',
         borderColor: 'blue',
         borderWidth: 3,
@@ -213,7 +212,6 @@ function showAveragePointsPerGames(reportObject) {
     datasetsData.push({
         label: 'all games',
         data: avgAllArr,
-        borderWidth: 1,
         backgroundColor: 'rgba(66,133,244,1.0)',
         borderColor: 'blue',
         borderWidth: 3,
@@ -221,7 +219,6 @@ function showAveragePointsPerGames(reportObject) {
     datasetsData.push({
         label: 'regular games',
         data: avgRegularArr,
-        borderWidth: 1,
         backgroundColor: 'rgba(233,66,66,1.0)',
         borderColor: 'darkred',
         borderWidth: 3,

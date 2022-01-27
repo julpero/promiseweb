@@ -1,4 +1,4 @@
-var doc = require('card-deck');
+const doc = require('card-deck');
 
 const speedPromiseMultiplierEven = 0.4;
 const speedPromiseMultiplierNotEven = 0.6;
@@ -37,8 +37,8 @@ module.exports = {
 
     takeCardOut: function (hand, cardPlayed) {
         const newHand = [];
-        var takenOutIndex = null;
-        for (var i = 0; i < hand.length; i++) {
+        let takenOutIndex = null;
+        for (let i = 0; i < hand.length; i++) {
             if (hand[i].suit == cardPlayed.suit && hand[i].rank == cardPlayed.rank)
             {
                 takenOutIndex = i;
@@ -53,7 +53,7 @@ module.exports = {
     },
 
     getPlayerNameById: function (id, players) {
-        var playerName = null;
+        let playerName = null;
         players.forEach(function(player) {
             if (player.playerId == id) playerName = player.name;
         });
@@ -99,7 +99,7 @@ module.exports = {
     },
     
     getPlayerIndexByName: function (name, players) {
-        var playerIndex = null;
+        let playerIndex = null;
         players.forEach(function(player, idx) {
             if (player.name == name) playerIndex = idx;
             return;
@@ -109,10 +109,10 @@ module.exports = {
                     
     winnerOfPlay: function (cardsPlayedInPlay, trumpSuit) {
         if (cardsPlayedInPlay.length == 0) return null;
-        var winner = cardsPlayedInPlay[0].name;
-        var winningCard = cardsPlayedInPlay[0].card;
-        for (var i = 1; i < cardsPlayedInPlay.length; i++) {
-            var wins = false;
+        let winner = cardsPlayedInPlay[0].name;
+        let winningCard = cardsPlayedInPlay[0].card;
+        for (let i = 1; i < cardsPlayedInPlay.length; i++) {
+            let wins = false;
             const currentCard = cardsPlayedInPlay[i].card;
             if (winningCard.suit == trumpSuit) {
                 // has to be bigger trump to win
@@ -138,18 +138,18 @@ module.exports = {
     },
 
     getCurrentRoundIndex: function (thisGame) {
-        for (var i = 0; i < thisGame.game.rounds.length; i++) {
+        for (let i = 0; i < thisGame.game.rounds.length; i++) {
             if (thisGame.game.rounds[i].roundStatus == 1) return i;
         }
         return null;
     },
     
     okToPlayCard: function (playedCard, playerName, gameInDb) {
-        var cardInHand = false;
-        var playerCards = null;
+        let cardInHand = false;
+        let playerCards = null;
         const currentRoundIndex = this.getCurrentRoundIndex(gameInDb);
         const currentRound = gameInDb.game.rounds[currentRoundIndex];
-        for (var i = 0; i < currentRound.roundPlayers.length; i++) {
+        for (let i = 0; i < currentRound.roundPlayers.length; i++) {
             if (currentRound.roundPlayers[i].name == playerName) {
                 playerCards = currentRound.roundPlayers[i].cards;
                 cardInHand = isCardInHand(playedCard, playerCards);
@@ -174,12 +174,12 @@ module.exports = {
     
     initRounds: function (gameInfo, players) {
         const rounds = [];
-        var roundIndex = 0;
-        for (var i = gameInfo.startRound; i >= gameInfo.turnRound; i--) {
+        let roundIndex = 0;
+        for (let i = gameInfo.startRound; i >= gameInfo.turnRound; i--) {
             rounds.push(initRound(roundIndex, i, players, gameInfo.speedPromise));
             roundIndex++;
         }
-        for (var i = gameInfo.turnRound+1; i <= gameInfo.endRound; i++) {
+        for (let i = gameInfo.turnRound+1; i <= gameInfo.endRound; i++) {
             rounds.push(initRound(roundIndex, i, players, gameInfo.speedPromise));
             roundIndex++;
         }
@@ -187,8 +187,8 @@ module.exports = {
     },
 
     isLastPromiser: function (round) {
-        var promisesMade = 0;
-        for (var i = 0; i < round.roundPlayers.length; i++) {
+        let promisesMade = 0;
+        for (let i = 0; i < round.roundPlayers.length; i++) {
             if (round.roundPlayers[i].promise != null) promisesMade++;
         }
         return promisesMade == round.roundPlayers.length - 1;
@@ -215,7 +215,7 @@ module.exports = {
     },
 
     imInThisGame: function (humanPlayers, myId) {
-        var retVal = false;
+        let retVal = false;
         humanPlayers.forEach(function (player) {
             if (player.playerId == myId) {
                 retVal = true;
@@ -226,7 +226,7 @@ module.exports = {
     },
 
     speedPromiseSolver: function (round, i) {
-        var speedPromiseTotal = 0;
+        let speedPromiseTotal = 0;
         if (round.roundPlayers[i].speedPromisePoints == 1) {
             // player has made speed promise
             if (round.roundPlayers[i].promise == round.roundPlayers[i].keeps) {
@@ -236,7 +236,7 @@ module.exports = {
             } else {
                 // speed promise went wrong
                 // penalty is half of it what player may have got if speed promise is kept, including bonus
-                var pointsIfKept = 0;
+                let pointsIfKept = 0;
                 if (round.roundPlayers[i].promise == 0) {
                     if (round.cardsInRound > 5) {
                         pointsIfKept = Math.ceil(15 * (isEvenRound(round) ? 1 + speedPromiseMultiplierEven : 1 + speedPromiseMultiplierNotEven));
@@ -305,14 +305,6 @@ function isEvenRound(round) {
     return round.totalPromise == round.cardsInRound;
 }
 
-function isOverPromisedRound(round) {
-    return round.totalPromise > round.cardsInRound;
-}
-
-function isUnderPromisedRound(round) {
-    return round.totalPromise < round.cardsInRound;
-}
-
 function showTrumpCard(thisGame, roundInd) {
     return (!thisGame.hiddenTrump || isRoundPromised(thisGame.game.rounds[roundInd]));
 }
@@ -320,12 +312,12 @@ function showTrumpCard(thisGame, roundInd) {
 function getCardsPlayed(cardsPlayed, playerCount, play, playerName, hiddenCardsMode, playerGoingToWinThisPlay) {
     if (hiddenCardsMode == null || hiddenCardsMode == 0) return cardsPlayed;
     const retArr = [];
-    for (var i = 0; i < cardsPlayed.length; i++) {
+    for (let i = 0; i < cardsPlayed.length; i++) {
         if (i != play || cardsPlayed[i].length == playerCount) {
             retArr.push(cardsPlayed[i]);
         } else {
             const playArr = [];
-            for (var j = 0; j < cardsPlayed[i].length; j++) {
+            for (let j = 0; j < cardsPlayed[i].length; j++) {
                 if ((j == 0) || (cardsPlayed[i][j].name == playerName) || (hiddenCardsMode == 2 && cardsPlayed[i][j].name == playerGoingToWinThisPlay)) { // show card in charge and winning card
                     playArr.push({
                         name: cardsPlayed[i][j].name,
@@ -348,16 +340,16 @@ function getCardsPlayed(cardsPlayed, playerCount, play, playerName, hiddenCardsM
 }
 
 function getHandValues(thisGame, roundInd) {
-    var showHandValue = false;
+    let showHandValue = false;
     
     if (thisGame.opponentPromiseCardValue && !isRoundPromised(thisGame.game.rounds[roundInd])) showHandValue = true;
     if (thisGame.opponentGameCardValue && isRoundPromised(thisGame.game.rounds[roundInd])) showHandValue = true;
 
     if (showHandValue) {
         const values = [];
-        for (var i = 0; i < thisGame.game.rounds[roundInd].roundPlayers.length; i++) {
-            var playerValues = 0;
-            for (var j = 0; j < thisGame.game.rounds[roundInd].roundPlayers[i].cards.length; j++) {
+        for (let i = 0; i < thisGame.game.rounds[roundInd].roundPlayers.length; i++) {
+            let playerValues = 0;
+            for (let j = 0; j < thisGame.game.rounds[roundInd].roundPlayers[i].cards.length; j++) {
                 playerValues+= thisGame.game.rounds[roundInd].roundPlayers[i].cards[j].rank;
             }
             values.push({
@@ -376,7 +368,7 @@ function getCurrentCardInCharge(cardsPlayed) {
 }
 
 function getPlayerCards(name, round, speedPromise) {
-    var cards = [];
+    let cards = [];
     if (!speedPromise || isRoundPromised(round) || isMyPromiseTurn(round, name) || iHavePromised(round, name)) {
         round.roundPlayers.forEach(function (roundPlayer) {
             if (roundPlayer.name == name) cards = roundPlayer.cards;
@@ -387,14 +379,14 @@ function getPlayerCards(name, round, speedPromise) {
 
 function getPlayerPlayedCard(playerName, cardsPlayed, returnCard) {
     const currentPlay = cardsPlayed[cardsPlayed.length-1];
-    for (var i = 0; i < currentPlay.length; i++) {
+    for (let i = 0; i < currentPlay.length; i++) {
         if (currentPlay[i].name == playerName) return returnCard ? currentPlay[i].card : { suit: 'dummy', rank: 0 };
     }
     return null;
 }
 
 function parsePlayerStats(playersStats, playerName) {
-    for (var i = 0; i < playersStats.length; i++) {
+    for (let i = 0; i < playersStats.length; i++) {
         if (playersStats[i].name == playerName) return playersStats[i].playerStats;
     }
     return null;
@@ -439,7 +431,7 @@ function isRoundPlayed (round) {
 }
 
 function isRoundPromised (round) {
-    for (var i = 0; i < round.roundPlayers.length; i++) {
+    for (let i = 0; i < round.roundPlayers.length; i++) {
         if (round.roundPlayers[i].promise == null) return false;
     }
     return true;
@@ -462,8 +454,8 @@ function showPromisesNow(type, thisGame, roundInd) {
 }
 
 function iHavePromised(round, myName) {
-    for (var i = 0; i < round.roundPlayers.length; i++) {
-        var chkPos = i + round.starterPositionIndex;
+    for (let i = 0; i < round.roundPlayers.length; i++) {
+        let chkPos = i + round.starterPositionIndex;
         if (chkPos >= round.roundPlayers.length) chkPos-= round.roundPlayers.length;
         if (round.roundPlayers[chkPos].promise != null && round.roundPlayers[chkPos].name == myName) {
             return true;
@@ -473,8 +465,8 @@ function iHavePromised(round, myName) {
 }
 
 function isMyPromiseTurn(round, myName) {
-    for (var i = 0; i < round.roundPlayers.length; i++) {
-        var chkPos = i + round.starterPositionIndex;
+    for (let i = 0; i < round.roundPlayers.length; i++) {
+        let chkPos = i + round.starterPositionIndex;
         if (chkPos >= round.roundPlayers.length) chkPos-= round.roundPlayers.length;
         if (round.roundPlayers[chkPos].promise == null) {
             // this is next player to promise
@@ -492,13 +484,13 @@ function currentPlayTurnPlayerName(gameInDb) {
     if (currentRoundIndex == 0 && currentPlayIndex == 0 && round.cardsPlayed[currentPlayIndex].length == 0) return getRoundStarterName(round);
     if (round.cardsPlayed[currentPlayIndex].length == 0) return round.roundPlayers[getPlayerInCharge(currentRoundIndex, currentPlayIndex, gameInDb)].name;
 
-    var playerInd = getPlayerInCharge(currentRoundIndex, currentPlayIndex, gameInDb) + round.cardsPlayed[currentPlayIndex].length;
+    let playerInd = getPlayerInCharge(currentRoundIndex, currentPlayIndex, gameInDb) + round.cardsPlayed[currentPlayIndex].length;
     if (playerInd >= round.roundPlayers.length) playerInd-= round.roundPlayers.length;
     return round.roundPlayers[playerInd].name;
 }
 
 function isCardInHand(playedCard, playerCards) {
-    for (var j = 0; j < playerCards.length; j++) {
+    for (let j = 0; j < playerCards.length; j++) {
         if (playerCards[j].suit == playedCard.suit && playerCards[j].rank == playedCard.rank) {
             return true;
         }
@@ -509,8 +501,8 @@ function isCardInHand(playedCard, playerCards) {
 function isCardAvailableToPlay(playedCard, cardInCharge, playerCards, freeTrump, trumpSuit) {
     if (cardInCharge == null) return true;
 
-    var hasSuitInHand = false;
-    for (var i = 0; i < playerCards.length; i++) {
+    let hasSuitInHand = false;
+    for (let i = 0; i < playerCards.length; i++) {
         if (playerCards[i].suit == cardInCharge.suit) hasSuitInHand = true;
     }
 
@@ -518,8 +510,8 @@ function isCardAvailableToPlay(playedCard, cardInCharge, playerCards, freeTrump,
         return !hasSuitInHand || playedCard.suit == cardInCharge.suit;
     } else {
         if (!hasSuitInHand) {
-            var hasTrumpInHand = false;
-            for (var i = 0; i < playerCards.length; i++) {
+            let hasTrumpInHand = false;
+            for (let i = 0; i < playerCards.length; i++) {
                 if (playerCards[i].suit == trumpSuit) hasTrumpInHand = true;
             }
             return !hasTrumpInHand || playedCard.suit == trumpSuit;
@@ -529,20 +521,8 @@ function isCardAvailableToPlay(playedCard, cardInCharge, playerCards, freeTrump,
     }
 }
 
-function getRoundDealerName(round) {
-    return round.roundPlayers[round.dealerPositionIndex].name;
-}
-
 function getRoundStarterName(round) {
     return round.roundPlayers[round.starterPositionIndex].name;
-}
-
-function getPlayerIdByName(name, players) {
-    var playerId = null;
-    players.forEach(function(player) {
-        if (player.name == name) playerId = player.playerId;
-    });
-    return playerId;
 }
 
 function getPlayerInCharge(roundInd, playInd, thisGame) {
@@ -556,7 +536,7 @@ function getPlayerInCharge(roundInd, playInd, thisGame) {
 
 function playersToPromiseTable(playerOrderArr) {
     const retArr = [];
-    for (i = 0; i < playerOrderArr.length; i++) {
+    for (let i = 0; i < playerOrderArr.length; i++) {
         retArr.push(playerOrderArr[i].name);
     }
     return retArr;
@@ -565,9 +545,9 @@ function playersToPromiseTable(playerOrderArr) {
 function getPromiseTable(thisGame) {
     const promisesByPlayers = [];
     const rounds = [];
-    for (var i = 0; i < thisGame.game.playerOrder.length; i++) {
+    for (let i = 0; i < thisGame.game.playerOrder.length; i++) {
         const playerPromises = [];
-        for (var j = 0; j < thisGame.game.rounds.length; j++) {
+        for (let j = 0; j < thisGame.game.rounds.length; j++) {
             playerPromises.push({
                 promise: showPromisesNow('player', thisGame, j) ? thisGame.game.rounds[j].roundPlayers[i].promise : null,
                 keep: thisGame.game.rounds[j].roundPlayers[i].keeps,
@@ -604,7 +584,7 @@ function initRound(roundIndex, cardsInRound, players, speedPromise) {
 
     const roundPlayers = [];
     players.forEach(function (player, idx) {
-        var playerCards = [];
+        let playerCards = [];
         if (cardsInRound == 1) {
             const card = deck.draw(1);
             playerCards.push(card);
@@ -626,7 +606,7 @@ function initRound(roundIndex, cardsInRound, players, speedPromise) {
     });
 
     const dealerPositionIndex = getdealerPositionIndex(roundIndex, players.length);
-    var starterPositionIndex = dealerPositionIndex + 1;
+    let starterPositionIndex = dealerPositionIndex + 1;
     if (starterPositionIndex >= players.length) starterPositionIndex-= players.length;
 
     const cardsPlayed = [];
@@ -646,7 +626,7 @@ function initRound(roundIndex, cardsInRound, players, speedPromise) {
 }
 
 function knuthShuffle(arr) {
-    var rand, temp, i;
+    let rand, temp, i;
  
     for (i = arr.length - 1; i > 0; i -= 1) {
         rand = Math.floor((i + 1) * Math.random()); //get random between zero and i (inclusive)
@@ -661,8 +641,8 @@ function sortCardsDummy(cards) {
     const sortedCards = [];
     const suits = ['hearts', 'diamonds', 'clubs',  'spades'];
     suits.forEach(function (suit) {
-        for (var i = 2; i <= 14; i++) {
-            for (var j = 0; j < cards.length; j++) {
+        for (let i = 2; i <= 14; i++) {
+            for (let j = 0; j < cards.length; j++) {
                 if (cards[j].suit == suit && cards[j].rank == i) sortedCards.push(cards[j]);
             }
         }
@@ -674,7 +654,7 @@ function initDeck() {
     const cards = [];
     const suits = ['hearts', 'diamonds', 'clubs',  'spades'];
     suits.forEach(function (suit) {
-        for (var i = 2; i <= 14; i++) cards.push({
+        for (let i = 2; i <= 14; i++) cards.push({
             suit: suit,
             rank: i
         });
