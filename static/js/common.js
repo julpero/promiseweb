@@ -3,7 +3,7 @@ function gamePlayersToStr(players, totalHumans, totalComputers, winnerName) {
     players.forEach(function (player) {
         retStr+= (player.name == winnerName) ? '<strong>'+player.name + '</strong>, ' : player.name + ', ';
     });
-    for (i = players.length; i < totalHumans; i++) retStr+= '{}, ';
+    for (let i = players.length; i < totalHumans; i++) retStr+= '{}, ';
     if (retStr.length > 2) retStr = retStr.substring(0, retStr.length-2);
     if (totalComputers > 0) retStr+= ' (+'+totalComputers+')';
     return retStr;
@@ -18,7 +18,7 @@ function gamePlayersToDiv(players, totalHumans) {
         playerItem.innerText = player.name;
         playerList.appendChild(playerItem);
     });
-    for (i = players.length; i < totalHumans; i++) {
+    for (let i = players.length; i < totalHumans; i++) {
         const emptyPlayerItem = createElementWithIdAndClasses('li', null);
         emptyPlayerItem.innerText = '{}';
         playerList.appendChild(emptyPlayerItem);
@@ -36,7 +36,7 @@ function gamePlayersToDiv(players, totalHumans) {
 //     while (str.length % 3) str += '0';
 
 //     // Dividing string into 3 equally large arrays
-//     for (i = 0; i < str.length; i += str.length / 3)
+//     for (let i = 0; i < str.length; i += str.length / 3)
 //         rgb.push(str.slice(i, i + str.length / 3));
 
 //     // Formatting a hex color from the first two letters of each portion
@@ -64,71 +64,9 @@ function increase_brightness(hex, percent){
 
 function colorize(str) {
     for (var i = 0, hash = 0; i < str.length; hash = str.charCodeAt(i++) + ((hash << 3) - hash));
-    color = Math.floor(Math.abs((Math.sin(hash) * 10000) % 1 * 16777216)).toString(16);
+    const color = Math.floor(Math.abs((Math.sin(hash) * 10000) % 1 * 16777216)).toString(16);
     return '#' + Array(6 - color.length + 1).join('0') + color;
 }
-
-// function stringToColor(str){
-//     var hash = 0;
-//     for(var i=0; i < str.length; i++) {
-//         hash = str.charCodeAt(i) + ((hash << 3) - hash);
-//     }
-//     var color = Math.abs(hash).toString(16).substring(0, 6);
-  
-//     return "#" + '000000'.substring(0, 6 - color.length) + color;
-//   }
-
-// function pastelToRgb(pastel) {
-//     const rStr = Number(pastel.red).toString(16).padStart(2, '0');
-//     const gStr = Number(pastel.green).toString(16).padStart(2, '0');
-//     const bStr = Number(pastel.blue).toString(16).padStart(2, '0');
-//     return '#'+rStr+gStr+bStr;
-// }
-
-// function pastel_colour(input_str) {
-
-//     //TODO: adjust base colour values below based on theme
-//     var baseRed = 128;
-//     var baseGreen = 128;
-//     var baseBlue = 128;
-
-//     //lazy seeded random hack to get values from 0 - 256
-//     //for seed just take bitwise XOR of first two chars
-//     var seed = input_str.charCodeAt(1) ^ input_str.charCodeAt(2);
-//     var rand_1 = Math.abs((Math.sin(seed++) * 10000)) % 256;
-//     var rand_2 = Math.abs((Math.sin(seed++) * 10000)) % 256;
-//     var rand_3 = Math.abs((Math.sin(seed++) * 10000)) % 256;
-
-//     //build colour
-//     var red = Math.round((rand_1 + baseRed) / 2);
-//     var green = Math.round((rand_2 + baseGreen) / 2);
-//     var blue = Math.round((rand_3 + baseBlue) / 2);
-
-//     return { red: red, green: green, blue: blue };
-// }
-
-// --- //
-// Takes any string and converts it into a #RRGGBB color.
-
-// var StringToColor = (function(){
-//     var instance = null;
-
-//     return {
-//     next: function stringToColor(str) {
-//         if(instance === null) {
-//             instance = {};
-//             instance.stringToColorHash = {};
-//             instance.nextVeryDifferntColorIdx = 0;
-//             instance.veryDifferentColors = ["#000000","#00FF00","#0000FF","#FF0000","#01FFFE","#FFA6FE","#FFDB66","#006401","#010067","#95003A","#007DB5","#FF00F6","#FFEEE8","#774D00","#90FB92","#0076FF","#D5FF00","#FF937E","#6A826C","#FF029D","#FE8900","#7A4782","#7E2DD2","#85A900","#FF0056","#A42400","#00AE7E","#683D3B","#BDC6FF","#263400","#BDD393","#00B917","#9E008E","#001544","#C28C9F","#FF74A3","#01D0FF","#004754","#E56FFE","#788231","#0E4CA1","#91D0CB","#BE9970","#968AE8","#BB8800","#43002C","#DEFF74","#00FFC6","#FFE502","#620E00","#008F9C","#98FF52","#7544B1","#B500FF","#00FF78","#FF6E41","#005F39","#6B6882","#5FAD4E","#A75740","#A5FFD2","#FFB167","#009BFF","#E85EBE"];
-//         }
-
-//         if(!instance.stringToColorHash[str])
-//             instance.stringToColorHash[str] = instance.veryDifferentColors[instance.nextVeryDifferntColorIdx++];
-
-//             return instance.stringToColorHash[str];
-//         }
-//     }
-// })();
 
 function colorizeDatasets(datasets) {
     for (var i = 0; i < datasets.length; i++) {
