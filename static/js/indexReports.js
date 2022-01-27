@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function playedGamesGraph(reportData) {
     const canvasIdStr = 'playedGamesGraph';
     const graphOptions = {
@@ -52,13 +53,14 @@ function playedGamesGraph(reportData) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const graphChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function avgKeepPercentageGraph(reportData) {
     const canvasIdStr = 'avgKeepPercentageGraph';
     const graphOptions = {
@@ -113,13 +115,14 @@ function avgKeepPercentageGraph(reportData) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const graphChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function avgPointsGraph(reportData) {
     const canvasIdStr = 'avgPointsGraph';
     const graphOptions = {
@@ -174,13 +177,14 @@ function avgPointsGraph(reportData) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const graphChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function totalPointsGraph(reportData) {
     const canvasIdStr = 'totalPointsGraph';
     const graphOptions = {
@@ -235,13 +239,14 @@ function totalPointsGraph(reportData) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const graphChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function totalWinsGraph(reportData) {
     const canvasIdStr = 'totalWinsGraph';
     const graphOptions = {
@@ -296,7 +301,7 @@ function totalWinsGraph(reportData) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const graphChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
@@ -304,6 +309,7 @@ function totalWinsGraph(reportData) {
 }
 
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function winPercentagesGraph(reportData) {
     const canvasIdStr = 'winPercentagesGraph';
     const graphOptions = {
@@ -358,7 +364,7 @@ function winPercentagesGraph(reportData) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const graphChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
@@ -366,6 +372,7 @@ function winPercentagesGraph(reportData) {
 }
 
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function avgPercentagePointsGraph(reportData) {
     const canvasIdStr = 'avgPercentagePointsGraph';
     const graphOptions = {
@@ -420,14 +427,14 @@ function avgPercentagePointsGraph(reportData) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const graphChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,
     });
 }
 
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function cardsInHandGraph(reportData) {
     const canvasIdStr = 'cardsInHandGraph';
     const cardsOptions = {
@@ -515,13 +522,14 @@ function cardsInHandGraph(reportData) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const cardsChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: cardsData,
         options: cardsOptions,
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function scoreGraph(reportData) {
     const canvasIdStr = 'scoreGraph';
     const graphOptions = {
@@ -576,7 +584,7 @@ function scoreGraph(reportData) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const graphChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: graphData,
         options: graphOptions,

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         let rnd = window.crypto.getRandomValues(new Uint32Array(1))[0];
@@ -23,6 +24,22 @@ function getCardIndex(cards, myCard) {
         }
     });
     return index;
+}
+
+function getCurrentRoundInd() {
+    const roundIndStr = document.getElementById('currentRoundInd').value;
+    if (roundIndStr != '') return parseInt(roundIndStr, 10);
+    return null;
+}
+
+function initOtherPlayers(myRound) {
+    const bgColor = window.getComputedStyle(document.body, null).getPropertyValue("background-color");
+    myRound.players.forEach(function(player, idx) {
+        const playerNameDiv = document.getElementById('player'+otherPlayerMapper(idx, myRound.players)+'NameCol');
+        playerNameDiv.innerText = player.name;
+        const playerInfoRow = playerNameDiv.parentElement;
+        playerInfoRow.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(player.name)+', '+bgColor+')';
+    });
 }
 
 function drawCards(myRound) {
@@ -219,11 +236,11 @@ function showMyTurn() {
 function hideThinkings() {
     removeElementById('pulsingRow');
     let redDivs = document.getElementsByClassName('thinking-red-div');
-    Array.prototype.forEach.call(redDivs, function(el, i){
+    Array.prototype.forEach.call(redDivs, function(el){
         el.classList.remove('thinking-red-div');
     });
     let greenDivs = document.getElementsByClassName('thinking-green-div');
-    Array.prototype.forEach.call(greenDivs, function(el, i){
+    Array.prototype.forEach.call(greenDivs, function(el){
         el.classList.remove('thinking-green-div');
     });
 }
@@ -882,12 +899,6 @@ function avgRoundPoints(playersArr) {
     return avgRoundPoints;
 }
 
-function showLiveStats(myRound) {
-    if (myRound.statistics == null || myRound.statistics.statsAvgObj == null) return;
-    liveStats1Graph(myRound.statistics.statsAvgObj);
-    liveStats2Graph(myRound.statistics.statsAvgObj);
-}
-
 function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
     checkSmall(myRound.players.length);
     hideThinkings();
@@ -1080,7 +1091,7 @@ function initPromiseTable(promiseTable) {
 
     const tooltippedDivs = document.getElementsByClassName('promTooltip');
     if (tooltippedDivs != null) {
-        Array.prototype.forEach.call(tooltippedDivs, function(el, i) {
+        Array.prototype.forEach.call(tooltippedDivs, function(el) {
                 const tooltip = bootstrap.Tooltip.getInstance(el);
                 if (tooltip != null) {
                     // disposed elements can't have animations
@@ -1116,7 +1127,7 @@ function initPromiseTable(promiseTable) {
                     el.classList.add('promiseUnder');
                     tooltipTitle = 'Under promised, total: ' + totalPromise + '/' + cardsInRound;
                 }
-                const elTootip = new bootstrap.Tooltip(el, {title: tooltipTitle, animation: animate});
+                new bootstrap.Tooltip(el, {title: tooltipTitle, animation: animate});
             }
             const promise = promiseTable.promisesByPlayers[i][j];
             const speedPromiseStr = promise.speedPromisePoints != null && promise.speedPromisePoints != 0 ? (promise.speedPromisePoints == 1 ? '+' : promise.speedPromisePoints) : '';
@@ -1139,11 +1150,11 @@ function initPromiseTable(promiseTable) {
                     playerUnder++;
                 }
                 if (speedPromiseStr != '') tooltipStr+= ' ('+speedPromiseStr+')';
-                const playerPromTooltip = new bootstrap.Tooltip(playerPromEl, {title: tooltipStr, animation: animate});
+                new bootstrap.Tooltip(playerPromEl, {title: tooltipStr, animation: animate});
             }
         }
         const promiseNameEl = document.getElementById('player'+i+'PromiseName');
-        const promiseNameTooltip = new bootstrap.Tooltip(promiseNameEl, {title: "kept: " + playerKept + " / over: " + playerOver + " / under: " + playerUnder, animation: animate});
+        new bootstrap.Tooltip(promiseNameEl, {title: "kept: " + playerKept + " / over: " + playerOver + " / under: " + playerUnder, animation: animate});
     }
 }
 
@@ -1181,7 +1192,7 @@ function initScoreBoard(promiseTable, gameOver, avgStats) {
 
                 tooltipStr+=  ' = '+parseFloat(playerPoints - avgPoints).toFixed(1) + ' points in average';
 
-                const playerPointsTooltip = new bootstrap.Tooltip(playerPointsEl, {title: tooltipStr});
+                new bootstrap.Tooltip(playerPointsEl, {title: tooltipStr});
             } else {
                 playerPointsEl.classList.add('avgHistory');
                 playerPointsEl.innerText = parseFloat(avgPoints).toFixed(1);
@@ -1198,20 +1209,20 @@ function initScoreBoard(promiseTable, gameOver, avgStats) {
 function checkSmall(playerCount) {
     if (playerCount > 4) {
         const htmls = document.getElementsByTagName('html');
-        Array.prototype.forEach.call(htmls, function(el, i){
+        Array.prototype.forEach.call(htmls, function(el){
             el.classList.add('html-sm');
         });
         const els = document.getElementsByClassName('cardCol');
-        Array.prototype.forEach.call(els, function(el, i){
+        Array.prototype.forEach.call(els, function(el){
             el.classList.add('cardCol-sm');
         });
     } else {
         const els1 = document.getElementsByClassName('html-sm');
-        Array.prototype.forEach.call(els1, function(el, i){
+        Array.prototype.forEach.call(els1, function(el){
             el.classList.remove('html-sm');
         });
         const els2 = document.getElementsByClassName('cardCol-sm');
-        Array.prototype.forEach.call(els2, function(el, i){
+        Array.prototype.forEach.call(els2, function(el){
             el.classList.remove('cardCol-sm');
         });
     }
@@ -1304,6 +1315,7 @@ function browserReload(myRound, speedPromise) {
     checkSmall(myRound.players.length);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function appendToChat(text) {
     const currentText = document.getElementById('chatTextArea').value;
     document.getElementById('chatTextArea').value = currentText +'\n'+ text;

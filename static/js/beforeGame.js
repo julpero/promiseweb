@@ -1,3 +1,28 @@
+function getSelectValue(selectName) {
+    const sel = document.getElementById(selectName);
+    return parseInt(sel.options[sel.selectedIndex].value, 10);
+}
+
+function gamePlayersToDiv(players, totalHumans) {
+    const retDiv = createElementWithIdAndClasses('div', null, 'row');
+    const playerCol = createElementWithIdAndClasses('div', null, 'col');
+    const playerList = createElementWithIdAndClasses('ul', null, 'list-unstyled');
+    players.forEach(function (player) {
+        const playerItem = createElementWithIdAndClasses('li', null);
+        playerItem.innerText = player.name;
+        playerList.appendChild(playerItem);
+    });
+    for (let i = players.length; i < totalHumans; i++) {
+        const emptyPlayerItem = createElementWithIdAndClasses('li', null);
+        emptyPlayerItem.innerText = '{}';
+        playerList.appendChild(emptyPlayerItem);
+    }
+    playerCol.appendChild(playerList);
+    retDiv.appendChild(playerCol);
+    return retDiv;
+}
+
+
 function validateNewGame(gameOptions) {
     if (gameOptions.humanPlayersCount + gameOptions.botPlayersCount < 2 || gameOptions.humanPlayersCount + gameOptions.botPlayersCount > 6) {
         alert('Total number of players must be between 2 and 5');
@@ -772,7 +797,7 @@ function showTabulatorReport(reportData) {
     
     const tabledata = generateTabulatorData(reportData);
 
-    const table = new Tabulator("#tabulatorRepotrGrid", {
+    new Tabulator("#tabulatorRepotrGrid", {
         //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
         data:tabledata, //assign data to table
         layout:"fitColumns", //fit columns to width of table (optional)
@@ -785,7 +810,6 @@ function getReportData() {
         console.log(response);
         showTabulatorReport(response);
         initShowFrontPageBarsModal(response);
-        const tooltipTemplate = '<div class="tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-wide"></div></div>';
 
         document.getElementById("gamesPlayedInfo").innerHTML = 'Total of '+response.gamesPlayed+' games and '+ response.roundsPlayed +' rounds played so far...';
         document.getElementById("playersTotalInfo").innerHTML = ' ... and '+response.playersTotal+' players hit '+ response.totalCardsHit +' cards in those games.';
@@ -815,6 +839,7 @@ function getReportData() {
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function mainInit() {
     initEvents();
     initButtons();
