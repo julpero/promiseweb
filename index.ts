@@ -1233,51 +1233,58 @@ try {
                 console.log('get report data - report data - average points per player');
                 const aggregationZeros = [
                     {
-                      '$match': {
-                        'gameStatus': {
-                          '$eq': 2
+                      $match: {
+                        gameStatus: {
+                          $eq: 2
+                        },
+                        'gameStatistics.bigRoundsPlayed': {$gt: 0},
+                        'gameStatistics.smallRoundsPlayed': {$gt: 0},
+                      }
+                    }, {
+                      $unwind: {
+                        path: '$gameStatistics.playersStatistics', 
+                        preserveNullAndEmptyArrays: false
+                      }
+                    }, {
+                        $addFields: {
+                            'gameStatistics.playersStatistics.tBigs': '$gameStatistics.bigRoundsPlayed', 
+                            'gameStatistics.playersStatistics.tSmalls': '$gameStatistics.smallRoundsPlayed'
+                        }
+                    }, {
+                      $group: {
+                        _id: '$gameStatistics.playersStatistics.playerName', 
+                        playerTotalGames: {
+                          $sum: 1
+                        }, 
+                        totalBigZeroPoints: {
+                          $sum: '$gameStatistics.playersStatistics.bigPointsByZero'
+                        }, 
+                        totalBigZeroKeeps: {
+                          $sum: '$gameStatistics.playersStatistics.bigZeroKeepPromisesCount'
+                        }, 
+                        totalBigZeroFails: {
+                          $sum: '$gameStatistics.playersStatistics.bigZeroFailPromisesCount'
+                        }, 
+                        totalBigRounds: {
+                          $sum: '$gameStatistics.playersStatistics.tBigs'
+                        }, 
+                        totalSmallNotZeroPoints: {
+                          $sum: '$gameStatistics.playersStatistics.smallPointsNotZero'
+                        }, 
+                        totalSmallNotZeroKeeps: {
+                          $sum: '$gameStatistics.playersStatistics.smallNotZeroKeepPromisesCount'
+                        }, 
+                        totalSmallNotZeroFails: {
+                          $sum: '$gameStatistics.playersStatistics.smallNotZeroFailPromisesCount'
+                        }, 
+                        totalSmallRounds: {
+                          $sum: '$gameStatistics.playersStatistics.tSmalls'
                         }
                       }
                     }, {
-                      '$unwind': {
-                        'path': '$gameStatistics.playersStatistics', 
-                        'preserveNullAndEmptyArrays': false
-                      }
-                    }, {
-                      '$group': {
-                        '_id': '$gameStatistics.playersStatistics.playerName', 
-                        'playerTotalGames': {
-                          '$sum': 1
-                        }, 
-                        'totalBigZeroPoints': {
-                          '$sum': '$gameStatistics.playersStatistics.bigPointsByZero'
-                        }, 
-                        'totalBigZeroKeeps': {
-                          '$sum': '$gameStatistics.playersStatistics.bigZeroKeepPromisesCount'
-                        }, 
-                        'totalBigZeroFails': {
-                          '$sum': '$gameStatistics.playersStatistics.bigZeroFailPromisesCount'
-                        }, 
-                        'totalBigRounds': {
-                          '$sum': '$gameStatistics.bigRoundsPlayed'
-                        }, 
-                        'totalSmallNotZeroPoints': {
-                          '$sum': '$gameStatistics.playersStatistics.smallPointsNotZero'
-                        }, 
-                        'totalSmallNotZeroKeeps': {
-                          '$sum': '$gameStatistics.playersStatistics.smallNotZeroKeepPromisesCount'
-                        }, 
-                        'totalSmallNotZeroFails': {
-                          '$sum': '$gameStatistics.playersStatistics.smallNotZeroFailPromisesCount'
-                        }, 
-                        'totalSmallRounds': {
-                          '$sum': '$gameStatistics.smallRoundsPlayed'
-                        }
-                      }
-                    }, {
-                      '$match': {
-                        'playerTotalGames': {
-                          '$gte': minGamesToReport
+                      $match: {
+                        playerTotalGames: {
+                          $gte: minGamesToReport
                         }
                       }
                     }
@@ -1285,9 +1292,13 @@ try {
 
                 const cursorZeros = await collection.aggregate(aggregationZeros);
                 const avgZerosPerPlayer = [];
-                await cursorZeros.forEach(function(val) {
-                    avgZerosPerPlayer.push(val);
-                });
+                try {
+                    await cursorZeros.forEach(function(val) {
+                        avgZerosPerPlayer.push(val);
+                    });
+                } catch (e) {
+                    console.log('get report data', e);
+                }
                 retObj.avgZerosPerPlayer = avgZerosPerPlayer;
                 // ********
 
@@ -1527,33 +1538,33 @@ try {
                 console.log('get report data - report data - cards in hand count');
                 const aggregationCardsInHandCount = [
                     {
-                      '$match': {
-                        'gameStatus': {
-                          '$eq': 2
+                      $match: {
+                        gameStatus: {
+                          $eq: 2
                         }
                       }
                     }, {
-                      '$unwind': {
-                        'path': '$gameStatistics.playersStatistics', 
-                        'preserveNullAndEmptyArrays': false
+                      $unwind: {
+                        path: '$gameStatistics.playersStatistics', 
+                        preserveNullAndEmptyArrays: false
                       }
                     }, {
-                      '$group': {
-                        '_id': '$gameStatistics.playersStatistics.playerName', 
-                        'trumps': {
-                          '$sum': '$gameStatistics.playersStatistics.trumpsInGame'
+                      $group: {
+                        _id: '$gameStatistics.playersStatistics.playerName', 
+                        trumps: {
+                          $sum: '$gameStatistics.playersStatistics.trumpsInGame'
                         }, 
-                        'bigs': {
-                          '$sum': '$gameStatistics.playersStatistics.bigsCardsInGame'
+                        bigs: {
+                          $sum: '$gameStatistics.playersStatistics.bigsCardsInGame'
                         }, 
-                        'smalls': {
-                          '$sum': '$gameStatistics.playersStatistics.smallCardsInGame'
+                        smalls: {
+                          $sum: '$gameStatistics.playersStatistics.smallCardsInGame'
                         }, 
-                        'others': {
-                          '$sum': '$gameStatistics.playersStatistics.otherCardsInGame'
+                        others: {
+                          $sum: '$gameStatistics.playersStatistics.otherCardsInGame'
                         }, 
-                        'games': {
-                          '$sum': 1
+                        games: {
+                          $sum: 1
                         }
                       }
                     }
