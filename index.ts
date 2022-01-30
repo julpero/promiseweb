@@ -2146,45 +2146,32 @@ async function getPlayerAvgPoints(playerName, roundsInGame) {
 
     const aggregationA = [
         {
-          '$match': {
-            'gameStatus': {
-              '$eq': 2
+          $match: {
+            gameStatus: {
+              $eq: 2
             }, 
-            "humanPlayers.name": {$eq: playerName},
-            '$expr': {
-              '$eq': [
-                {
-                  '$sum': [
-                    {
-                      '$subtract': [
-                        '$startRound', '$turnRound'
-                      ]
-                    }, {
-                      '$subtract': [
-                        '$endRound', '$turnRound'
-                      ]
-                    }, 1
-                  ]
-                }, roundsInGame
-              ]
-            }
+            "humanPlayers.name": {$eq: playerName}
           }
         }, {
-          '$addFields': {
-            'rounds': {
-              '$sum': [
+          $addFields: {
+            rounds: {
+              $sum: [
                 {
-                  '$subtract': [
+                  $subtract: [
                     '$startRound', '$turnRound'
                   ]
                 }, {
-                  '$subtract': [
+                  $subtract: [
                     '$endRound', '$turnRound'
                   ]
                 }, 1
               ]
             }
           }
+        }, {
+            $match: {
+                rounds: { $eq: roundsInGame}
+            }
         }
     ];
     const cursor = await collection.aggregate(aggregationA);

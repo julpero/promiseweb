@@ -67,7 +67,8 @@ function enableButtons() {
     removeClassByClass('report-button', 'disabled');
 }
 
-function mainInit() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function mainReportInit() {
     initEvents();
     enableButtons();
 }
