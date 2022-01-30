@@ -63,7 +63,8 @@ function enableButtons() {
   removeClassByClass('report-button', 'disabled');
 }
 
-function mainInit() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function mainPasswordInit() {
   initPasswordChangeEvent();
   enableButtons();
 }
