@@ -2,15 +2,15 @@ function showNickChanger(gameList) {
     const gameListContainer = document.getElementById('chooseNickGameCollapse');
     console.log(gameList);
     gameList.forEach(function (game) {
-        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
+        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row game-container-div');
         const gamePlayers = createElementWithIdAndClasses('div', 'gamePlayers' + game.id, 'col-4 report-players');
         gamePlayers.innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null)+showErrorNames(game.playerNameErrors);
         gameContainerDiv.appendChild(gamePlayers);
 
         const oldNameCol = createElementWithIdAndClasses('div', null, 'col-2');
-        const oldNameInput = createElementWithIdAndClasses('input', 'oldName'+game.id, null, { type: 'text' });
+        const oldNameInput = createElementWithIdAndClasses('input', 'oldName'+game.id, 'oldNameInput', { type: 'text' });
         const newNameCol = createElementWithIdAndClasses('div', null, 'col-2');
-        const newNameInput = createElementWithIdAndClasses('input', 'newName'+game.id, null, { type: 'text' });
+        const newNameInput = createElementWithIdAndClasses('input', 'newName'+game.id, 'newNameInput', { type: 'text' });
         oldNameCol.appendChild(oldNameInput);
         gameContainerDiv.appendChild(oldNameCol);
         newNameCol.appendChild(newNameInput);
@@ -96,7 +96,7 @@ function showGames(gameList) {
         year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false,
     };
     gameList.forEach(function (game) {
-        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
+        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row game-container-div');
         const gameStarted = new Date(game.created).getTime();
         const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
         const winnerName = game.gameStatistics.winnerName;

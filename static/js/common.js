@@ -495,3 +495,14 @@ function getSelectValue(selectName) {
     const sel = document.getElementById(selectName);
     return parseInt(sel.options[sel.selectedIndex].value, 10);
 }
+
+function showAlert(divId, alertId, alertText) {
+    const alertContainer = document.getElementById(divId);
+    const alertDiv = createElementWithIdAndClasses('div', alertId, 'alert alert-warning alert-dismissible fade show', { role: 'alert' });
+    const alertCloseButton = createElementWithIdAndClasses('button', null, 'btn-close close-alert-button', { 'data-bs-dismiss': 'alert', 'aria-label': 'Close'  })
+
+    alertDiv.innerText = alertText;
+    alertDiv.appendChild(alertCloseButton);
+    alertContainer.appendChild(alertDiv);
+    new bootstrap.Alert(alertDiv);
+}

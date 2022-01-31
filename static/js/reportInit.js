@@ -37,7 +37,16 @@ function initNickChangeEvent() {
                 adminPass: document.getElementById('adminPass').value
             }
             socket.emit('get games for report', getGamesObj, function (response) {
-                showNickChanger(response.data);
+                emptyElementById('chooseNickGameCollapse');
+                emptyElementById('alertDiv');
+                if (response.passOk) {
+                    showNickChanger(response.data);
+                } else {
+                    console.error('Authentication error');
+                    showAlert('alertDiv', 'authAlertDiv', 'Authentication error');
+                    emptyElementById('chooseNickGameCollapse');
+                    bootstrap.Collapse.getInstance(document.getElementById('chooseNickGameCollapse')).hide();
+                }
             });
         });
     
