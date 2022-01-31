@@ -1042,72 +1042,107 @@ try {
 
             socket.on('get games for report', async (data, fn) => {
                 console.log('get games for report - start to get games for report');
+                const retObj = {
+                    passOk: false,
+                    data: null
+                }
                 const database = mongoUtil.getDb();
+                const dataIsSecure = data.isSecure;
+                const adminUser = dataIsSecure ? data.adminUser : null;
+                const adminPass = dataIsSecure ? data.adminPass : null;
+                if (dataIsSecure) {
+                    const secretConfig = require(__dirname + '/secret.config.js');
+                    const adminUserName = secretConfig.adminUserName;
 
-                const games = [];
-                const gameIds = [];
-                const queryStatsGamesAggregation = [{$group: {
-                    _id: "$game",
-                  }}
-                ];
-                const statsCollection = database.collection(statsCollectionStr);
-                const cursorStatGames = await statsCollection.aggregate(queryStatsGamesAggregation);
-                await cursorStatGames.forEach(function (game) {
-                    const gameIdStr = game._id.toString();
-                    games[gameIdStr] = [];
-                    gameIds.push(gameIdStr);
-                });
-
-                for (let i = 0; i < gameIds.length; i++) {
-                    const gameIdStr = gameIds[i];
-                    const queryStatsGamesPlayersAggregation = [{$match: {
-                        game: gameIdStr,
-                    }},{$group: {
-                        _id: "$name",
-                      }}
-                    ];
-                    const cursorStatGamePlayers = await statsCollection.aggregate(queryStatsGamesPlayersAggregation);
-                    await cursorStatGamePlayers.forEach(function (player) {
-                        games[gameIdStr].push(player._id);
-                    });
+                    if (adminUser == adminUserName) {
+                        const uCollection = database.collection(userCollection);
+                        const uQuery = {
+                            playerName: { $eq: adminUserName }
+                        };
+                        const userDoc = await uCollection.findOne(uQuery);
+                        if (userDoc == null) {
+                            retObj.passOk = false;
+                        } else {
+                            // check if password matches
+                            const passStr = adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
+                            const passOk = await bcrypt.compare(passStr, userDoc.passHash);
+                            if (passOk) {
+                                retObj.passOk = true;
+                            }
+                        }
+                    }
+                } else {
+                    retObj.passOk = true;
                 }
 
-                const collection = database.collection(promisewebCollection);
-                const queryAggregation = [{$match: {
-                    gameStatus: {$eq: 2}
-                  }}, {$sort: {
-                   createDateTime : -1
-                  }}
-                ];
-                const cursor = await collection.aggregate(queryAggregation);
-                const retArr = [];
-                await cursor.forEach(function(val) {
-                    const gameIdStr = val._id.toString();
-                    const statNames = games[gameIdStr] != null ? games[gameIdStr] : [];
-    
-                    retArr.push({
-                        id: gameIdStr,
-                        gameStatistics: val.gameStatistics,
-                        created: val.createDateTime,
-                        startRound: val.startRound,
-                        turnRound: val.turnRound,
-                        endRound: val.endRound,
-                        humanPlayers: pf.parsedHumanPlayers(val.humanPlayers),
-                        evenPromisesAllowed: val.evenPromisesAllowed,
-                        visiblePromiseRound: val.visiblePromiseRound,
-                        onlyTotalPromise: val.onlyTotalPromise,
-                        freeTrump: val.freeTrump,
-                        hiddenTrump: val.hiddenTrump,
-                        speedPromise: val.speedPromise,
-                        privateSpeedGame: val.privateSpeedGame,
-                        opponentPromiseCardValue: val.opponentPromiseCardValue,
-                        opponentGameCardValue: val.opponentGameCardValue,
-                        hiddenCardsMode: val.hiddenCardsMode,
-                        playerNameErrors: pf.checkPlayerNames(val, statNames),
+                if (retObj.passOk) {
+                    const games = [];
+                    const gameIds = [];
+                    const queryStatsGamesAggregation = [{$group: {
+                        _id: "$game",
+                      }}
+                    ];
+                    const statsCollection = database.collection(statsCollectionStr);
+                    const cursorStatGames = await statsCollection.aggregate(queryStatsGamesAggregation);
+                    await cursorStatGames.forEach(function (game) {
+                        const gameIdStr = game._id.toString();
+                        games[gameIdStr] = [];
+                        gameIds.push(gameIdStr);
                     });
-                });
     
-                fn(retArr);
+                    for (let i = 0; i < gameIds.length; i++) {
+                        const gameIdStr = gameIds[i];
+                        const queryStatsGamesPlayersAggregation = [{$match: {
+                            game: gameIdStr,
+                        }},{$group: {
+                            _id: "$name",
+                          }}
+                        ];
+                        const cursorStatGamePlayers = await statsCollection.aggregate(queryStatsGamesPlayersAggregation);
+                        await cursorStatGamePlayers.forEach(function (player) {
+                            games[gameIdStr].push(player._id);
+                        });
+                    }
+    
+                    const collection = database.collection(promisewebCollection);
+                    const queryAggregation = [{$match: {
+                        gameStatus: {$eq: 2}
+                      }}, {$sort: {
+                       createDateTime : -1
+                      }}
+                    ];
+                    const cursor = await collection.aggregate(queryAggregation);
+                    const retArr = [];
+                    await cursor.forEach(function(val) {
+                        const gameIdStr = val._id.toString();
+                        const statNames = games[gameIdStr] != null ? games[gameIdStr] : [];
+        
+                        retArr.push({
+                            id: gameIdStr,
+                            gameStatistics: val.gameStatistics,
+                            created: val.createDateTime,
+                            startRound: val.startRound,
+                            turnRound: val.turnRound,
+                            endRound: val.endRound,
+                            humanPlayers: pf.parsedHumanPlayers(val.humanPlayers),
+                            evenPromisesAllowed: val.evenPromisesAllowed,
+                            visiblePromiseRound: val.visiblePromiseRound,
+                            onlyTotalPromise: val.onlyTotalPromise,
+                            freeTrump: val.freeTrump,
+                            hiddenTrump: val.hiddenTrump,
+                            speedPromise: val.speedPromise,
+                            privateSpeedGame: val.privateSpeedGame,
+                            opponentPromiseCardValue: val.opponentPromiseCardValue,
+                            opponentGameCardValue: val.opponentGameCardValue,
+                            hiddenCardsMode: val.hiddenCardsMode,
+                            playerNameErrors: pf.checkPlayerNames(val, statNames),
+                        });
+                    });
+    
+                    retObj.data = retArr;
+                }
+    
+                fn(retObj);
             });
 
             socket.on('get report data', async (data, fn) => {
@@ -1893,106 +1928,163 @@ try {
 
 
             socket.on('generate game statistics', async (data, fn) => {
-                const gameIdStr = data.gameId;
-                console.log('generate game statistics - start to generate game statistics for %s', gameIdStr, gameIdStr);
-                const ObjectId = require('mongodb').ObjectId;
-                const searchId = new ObjectId(gameIdStr);
+                const retObj = {
+                    passOk: false
+                }
                 const database = mongoUtil.getDb();
-                const collection = database.collection(promisewebCollection);
-                const query = {
-                    _id: searchId,
-                    gameStatus: 2,
-                };
-                const gameInDb = await collection.findOne(query);
-                const gameStatistics = rf.generateGameStatistics(gameInDb.game, true);
-                const options = { upsert: true };
-                const updateDoc = {
-                    $set: {
-                        gameStatistics: gameStatistics,
-                    }
-                };
-                const result = await collection.updateOne(query, updateDoc, options);
+                const adminUser = data.adminUser;
+                const adminPass = data.adminPass;
+                const secretConfig = require(__dirname + '/secret.config.js');
+                const adminUserName = secretConfig.adminUserName;
 
-                fn(gameStatistics);
+                if (adminUser == adminUserName) {
+                    const uCollection = database.collection(userCollection);
+                    const uQuery = {
+                        playerName: { $eq: adminUserName }
+                    };
+                    const userDoc = await uCollection.findOne(uQuery);
+                    if (userDoc == null) {
+                        retObj.passOk = false;
+                    } else {
+                        // check if password matches
+                        const passStr = adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
+                        const passOk = await bcrypt.compare(passStr, userDoc.passHash);
+                        if (passOk) {
+                            retObj.passOk = true;
+                        }
+                    }
+                }
+
+                if (retObj.passOk) {
+                    const gameIdStr = data.gameId;
+                    console.log('generate game statistics - start to generate game statistics for %s', gameIdStr, gameIdStr);
+                    const ObjectId = require('mongodb').ObjectId;
+                    const searchId = new ObjectId(gameIdStr);
+                    const collection = database.collection(promisewebCollection);
+                    const query = {
+                        _id: searchId,
+                        gameStatus: 2,
+                    };
+                    const gameInDb = await collection.findOne(query);
+                    const gameStatistics = rf.generateGameStatistics(gameInDb.game, true);
+                    const options = { upsert: true };
+                    const updateDoc = {
+                        $set: {
+                            gameStatistics: gameStatistics,
+                        }
+                    };
+                    await collection.updateOne(query, updateDoc, options);
+                }
+
+                fn(retObj);
 
             });
 
             socket.on('change nick', async (data, fn) => {
+                const retObj = {
+                    passOk: false
+                }
                 const gameIdStr = data.gameId;
                 console.log('change nick - start to change nick', gameIdStr);
-                const ObjectId = require('mongodb').ObjectId;
-                const oldName = data.oldName;
-                const newName = data.newName;
-
-                console.log('change nick - game database %s to %s', oldName, newName, gameIdStr);
-
-                const searchId = new ObjectId(gameIdStr);
                 const database = mongoUtil.getDb();
-                const collection = database.collection(promisewebCollection);
-                const query = {
-                    _id: searchId,
-                    gameStatus: 2,
-                };
-                const gameInDb = await collection.findOne(query);
-                const newHumanPlayers = gameInDb.humanPlayers;
-                const newGame = gameInDb.game;
-                if (gameInDb != null) {
-                    for (let i = 0; i < newHumanPlayers.length; i++) {
-                        if (newHumanPlayers[i].name == oldName) {
-                            newHumanPlayers[i].name = newName;
-                            break;
+
+                const adminUser = data.adminUser;
+                const adminPass = data.adminPass;
+                const secretConfig = require(__dirname + '/secret.config.js');
+                const adminUserName = secretConfig.adminUserName;
+
+                if (adminUser == adminUserName) {
+                    const uCollection = database.collection(userCollection);
+                    const uQuery = {
+                        playerName: { $eq: adminUserName }
+                    };
+                    const userDoc = await uCollection.findOne(uQuery);
+                    if (userDoc == null) {
+                        retObj.passOk = false;
+                    } else {
+                        // check if password matches
+                        const passStr = adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
+                        const passOk = await bcrypt.compare(passStr, userDoc.passHash);
+                        if (passOk) {
+                            retObj.passOk = true;
                         }
                     }
-                    for (let i = 0; i < newGame.playerOrder.length; i++) {
-                        if (newGame.playerOrder[i] == oldName) {
-                            newGame.playerOrder[i] = newName;
-                        }
-                        if (newGame.playerOrder[i].name && newGame.playerOrder[i].name == oldName) {
-                            newGame.playerOrder[i].name = newName;
-                        }
-                    }
-                    for (let i = 0; i < newGame.rounds.length; i++) {
-                        for (let j = 0; j < newGame.rounds[i].roundPlayers.length; j++) {
-                            if (newGame.rounds[i].roundPlayers[j].name == oldName) {
-                                newGame.rounds[i].roundPlayers[j].name = newName;
+                }
+
+                if (retObj.passOk) {
+                    const ObjectId = require('mongodb').ObjectId;
+                    const oldName = data.oldName;
+                    const newName = data.newName;
+    
+                    console.log('change nick - game database %s to %s', oldName, newName, gameIdStr);
+    
+                    const searchId = new ObjectId(gameIdStr);
+                    const collection = database.collection(promisewebCollection);
+                    const query = {
+                        _id: searchId,
+                        gameStatus: 2,
+                    };
+                    const gameInDb = await collection.findOne(query);
+                    const newHumanPlayers = gameInDb.humanPlayers;
+                    const newGame = gameInDb.game;
+                    if (gameInDb != null) {
+                        for (let i = 0; i < newHumanPlayers.length; i++) {
+                            if (newHumanPlayers[i].name == oldName) {
+                                newHumanPlayers[i].name = newName;
                                 break;
                             }
                         }
-                        for (let j = 0; j < newGame.rounds[i].cardsPlayed.length; j++) {
-                            for (let k = 0; k < newGame.rounds[i].cardsPlayed[j].length; k++) {
-                                if (newGame.rounds[i].cardsPlayed[j][k].name == oldName) {
-                                    newGame.rounds[i].cardsPlayed[j][k].name = newName;
+                        for (let i = 0; i < newGame.playerOrder.length; i++) {
+                            if (newGame.playerOrder[i] == oldName) {
+                                newGame.playerOrder[i] = newName;
+                            }
+                            if (newGame.playerOrder[i].name && newGame.playerOrder[i].name == oldName) {
+                                newGame.playerOrder[i].name = newName;
+                            }
+                        }
+                        for (let i = 0; i < newGame.rounds.length; i++) {
+                            for (let j = 0; j < newGame.rounds[i].roundPlayers.length; j++) {
+                                if (newGame.rounds[i].roundPlayers[j].name == oldName) {
+                                    newGame.rounds[i].roundPlayers[j].name = newName;
                                     break;
+                                }
+                            }
+                            for (let j = 0; j < newGame.rounds[i].cardsPlayed.length; j++) {
+                                for (let k = 0; k < newGame.rounds[i].cardsPlayed[j].length; k++) {
+                                    if (newGame.rounds[i].cardsPlayed[j][k].name == oldName) {
+                                        newGame.rounds[i].cardsPlayed[j][k].name = newName;
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                const options = { upsert: true };
-                const gameStatistics = rf.generateGameStatistics(newGame, true);
-                const updateDoc = {
-                    $set: {
-                        humanPlayers: newHumanPlayers,
-                        game: newGame,
-                        gameStatistics: gameStatistics,
+                    const options = { upsert: true };
+                    const gameStatistics = rf.generateGameStatistics(newGame, true);
+                    const updateDoc = {
+                        $set: {
+                            humanPlayers: newHumanPlayers,
+                            game: newGame,
+                            gameStatistics: gameStatistics,
+                        }
+                    };
+                    await collection.updateOne(query, updateDoc, options);
+                    
+                    console.log('change nick - stats database %s to %s', oldName, newName, gameIdStr);
+                    const updateStatsDocQuery = {
+                            name: oldName,
+                            game: gameIdStr,
                     }
-                };
-                const result = await collection.updateOne(query, updateDoc, options);
+                    const updateStatsDocSet = {
+                        $set: {
+                            name: newName,
+                        }
+                    };
+                    const collectionStats = database.collection(statsCollectionStr);
+                    await collectionStats.updateMany(updateStatsDocQuery, updateStatsDocSet);
+                }
                 
-                console.log('change nick - stats database %s to %s', oldName, newName, gameIdStr);
-                const updateStatsDocQuery = {
-                        name: oldName,
-                        game: gameIdStr,
-                }
-                const updateStatsDocSet = {
-                    $set: {
-                        name: newName,
-                    }
-                };
-                const collectionStats = database.collection(statsCollectionStr);
-                const resultStats = await collectionStats.updateMany(updateStatsDocQuery, updateStatsDocSet);
-
-                fn();
+                fn(retObj);
             });
             
             socket.on('show players with password', async (getObj, fn) => {
@@ -2004,29 +2096,34 @@ try {
                 const secretConfig = require(__dirname + '/secret.config.js');
                 const adminUserName = secretConfig.adminUserName;
 
-                const uCollection = database.collection(userCollection);
-                const uQuery = {
-                    playerName: { $eq: adminUserName }
-                };
-                const userDoc = await uCollection.findOne(uQuery);
-                if (userDoc == null) {
-                    retObj.passOk = false;
-                } else {
-                    // check if password matches
-                    const passStr = getObj.adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
-                    const passOk = await bcrypt.compare(passStr, userDoc.passHash);
-                    if (passOk) {
-                        retObj.passOk = true;
+                const adminUser = getObj.adminUser;
+                const adminPass = getObj.adminPass;
+
+                if (adminUser == adminUserName) {
+                    const uCollection = database.collection(userCollection);
+                    const uQuery = {
+                        playerName: { $eq: adminUserName }
+                    };
+                    const userDoc = await uCollection.findOne(uQuery);
+                    if (userDoc == null) {
+                        retObj.passOk = false;
+                    } else {
+                        // check if password matches
+                        const passStr = adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
+                        const passOk = await bcrypt.compare(passStr, userDoc.passHash);
+                        if (passOk) {
+                            retObj.passOk = true;
+                        }
                     }
-                }
-                if (retObj.passOk) {
-                    const usersQuery = {
-                        playerName: { $ne: adminUserName }
+                    if (retObj.passOk) {
+                        const usersQuery = {
+                            playerName: { $ne: adminUserName }
+                        }
+                        const usersCusrsor = await uCollection.find(usersQuery);
+                        await usersCusrsor.forEach(function(val) {
+                            retObj.playersWithPassword.push(val.playerName);
+                        });
                     }
-                    const usersCusrsor = await uCollection.find(usersQuery);
-                    await usersCusrsor.forEach(function(val) {
-                        retObj.playersWithPassword.push(val.playerName);
-                    });
                 }
                 fn(retObj);
             });

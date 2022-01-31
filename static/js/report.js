@@ -29,12 +29,18 @@ function showNickChanger(gameList) {
                     gameId: this.value,
                     oldName: oldName ,
                     newName: newName,
+                    adminUser: document.getElementById('adminUser').value,
+                    adminPass: document.getElementById('adminPass').value
                 };
-        
                 socket.emit('change nick', nickChangeObj, function() {
-                    socket.emit('get games for report', {}, function (response) {
+                    const getGamesObj = {
+                        isSecure: true,
+                        adminUser: document.getElementById('adminUser').value,
+                        adminPass: document.getElementById('adminPass').value
+                    }
+                    socket.emit('get games for report', getGamesObj, function (response) {
                         emptyElementById('chooseNickGameCollapse');
-                        showNickChanger(response);
+                        showNickChanger(response.data);
                     });
                 });
             } else {
@@ -55,12 +61,19 @@ function showNickChanger(gameList) {
     
             const generateReportObj = {
                 gameId: this.value,
+                adminUser: document.getElementById('adminUser').value,
+                adminPass: document.getElementById('adminPass').value
             };
-            socket.emit('generate game statistics', generateReportObj, function(gameStatistics) {
-                console.log(gameStatistics);
-                socket.emit('get games for report', {}, function (response) {
+            socket.emit('generate game statistics', generateReportObj, function(generateResult) {
+                console.log(generateResult.passOk);
+                const getGamesObj = {
+                    isSecure: true,
+                    adminUser: document.getElementById('adminUser').value,
+                    adminPass: document.getElementById('adminPass').value
+                }
+                socket.emit('get games for report', getGamesObj, function (response) {
                     emptyElementById('chooseNickGameCollapse');
-                    showNickChanger(response);
+                    showNickChanger(response.data);
                 });
             });
         });

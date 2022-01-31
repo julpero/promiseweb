@@ -2,8 +2,8 @@ function initGameListEvent() {
     const chooseGameCollapseEl = document.getElementById('chooseGameCollapse');
     if (chooseGameCollapseEl != null) {
         chooseGameCollapseEl.addEventListener('shown.bs.collapse', function () {
-            socket.emit('get games for report', {}, function (response) {
-                showGames(response);
+            socket.emit('get games for report', { isSecure: false }, function (response) {
+                showGames(response.data);
             });
             chooseGameCollapseEl.addEventListener('hidden.bs.collapse', function () {
                 emptyElementById('chooseGameCollapse');
@@ -31,8 +31,13 @@ function initNickChangeEvent() {
     const chooseNickGameCollapseEl = document.getElementById('chooseNickGameCollapse');
     if (chooseNickGameCollapseEl != null) {
         chooseNickGameCollapseEl.addEventListener('shown.bs.collapse', function () {
-            socket.emit('get games for report', {}, function (response) {
-                showNickChanger(response);
+            const getGamesObj = {
+                isSecure: true,
+                adminUser: document.getElementById('adminUser').value,
+                adminPass: document.getElementById('adminPass').value
+            }
+            socket.emit('get games for report', getGamesObj, function (response) {
+                showNickChanger(response.data);
             });
         });
     
