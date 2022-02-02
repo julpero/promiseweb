@@ -37,7 +37,7 @@
         "object-hash": "^2.2.0",
         "sanitize-filename": "^1.6.3",
         "socket.io": "^4.4.1",
-        "tabulator-tables": "^5.0.10",
+        "tabulator-tables": "^5.1.0",
         "velocity-animate": "^2.0.6"
     }
 }
