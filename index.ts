@@ -1140,6 +1140,8 @@ try {
                     });
     
                     retObj.data = retArr;
+                } else {
+                    console.log("secure data - wrong credentials");
                 }
     
                 fn(retObj);

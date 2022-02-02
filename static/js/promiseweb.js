@@ -490,6 +490,7 @@ function hideCardValues() {
 function getPromise(myRound, evenPromisesAllowed, speedPromise, opponentPromiseCardValue) {
     checkSmall(myRound.players.length);
     hideThinkings();
+    removeClassByClass('activeCardInHand');
     showDealer(myRound);
     if (opponentPromiseCardValue) showCardValues(myRound.handValues);
     if (isMyPromiseTurn(myRound)) {
@@ -585,6 +586,7 @@ function removeCardEvents() {
 }
 
 function cardClickEvent() {
+    removeClassByClass("activeCardInHand");
     removeCardEvents();
     deleteIntervaller();
     const suit = this.getAttribute('cardsuit');
@@ -601,6 +603,7 @@ function cardClickEvent() {
 }
 
 function initCardEvents(myRound, onlySuit) {
+    removeClassByClass('activeCardInHand');
     removeCardEvents();
     let cardsAbleToPlay = 0;
     possibleCards = [];
@@ -617,6 +620,7 @@ function initCardEvents(myRound, onlySuit) {
             thisCard.setAttribute('cardsuit', card.suit);
             thisCard.setAttribute('cardrank', card.rank);
             thisCard.classList.add('activeCard');
+            thisCard.classList.add('activeCardInHand');
             thisCard.velocity({backgroundColor: "#ffffff"}, 300);
             thisCard.addEventListener('click', cardClickEvent, {once: true});
             thisCard.addEventListener('touchstart', cardClickEvent, {once: true});
@@ -906,6 +910,7 @@ function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) 
         const cardsAbleToPlay = initCardsToPlay(myRound, freeTrump);
         if (privateSpeedGame) initPrivateSpeedTimer(cardsAbleToPlay, myRound);
     } else {
+        removeClassByClass('activeCardInHand');
         showWhoIsPlaying(myRound);
         dimMyCards(myRound, 0.8);
     }
@@ -1292,7 +1297,6 @@ function printPointStats(players) {
         data: barData,
         options: inGameReportOptions,
     });
-
 }
 
 async function cardPlayedCallback(gameInfo) {

@@ -42,8 +42,7 @@ function createNewGame(gameOptions) {
         } else {
             console.log('created game with id: '+createdGameId);
             gameId = createdGameId;
-            document.getElementById('createGameCollapse').classList.remove('show');
-            document.getElementById('joinGameCollapse').classList.add('show');
+            document.getElementById('openJoinGameDialogButton').click();
         }
     });
 }
@@ -191,7 +190,7 @@ function showGames(gameList) {
     let firstId = '';
     gameList.forEach(function (game) {
         if (firstId ==  '') firstId = game.id;
-        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
+        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row gameContainerRow');
         const ruleDiv = createElementWithIdAndClasses('div', null, 'col-2');
         const rulesElement = createRulesElement(game);
         ruleDiv.appendChild(rulesElement);
@@ -215,10 +214,10 @@ function showGames(gameList) {
         const myPassDivCol1 = createElementWithIdAndClasses('div', null, 'col form-floating');
         const myPassDivRow2 = createElementWithIdAndClasses('div', null, 'row');
         const myPassDivCol2 = createElementWithIdAndClasses('div', null, 'col form-floating');
-        const myPassInput1 = createElementWithIdAndClasses('input', 'myPass1'+game.id, 'newGameMyNameInput form-control', {type: 'password', placeholder: 'password'});
+        const myPassInput1 = createElementWithIdAndClasses('input', 'myPass1'+game.id, 'newGameMyPass1 form-control', {type: 'password', placeholder: 'password'});
         const myPassLabel1 = createElementWithIdAndClasses('label', null, null, {for: 'myPass1'+game.id});
         myPassLabel1.innerText = 'Password';
-        const myPassInput2 = createElementWithIdAndClasses('input', 'myPass2'+game.id, 'newGameMyNameInput form-control', {type: 'password', placeholder: 'password'});
+        const myPassInput2 = createElementWithIdAndClasses('input', 'myPass2'+game.id, 'newGameMyPass2 form-control', {type: 'password', placeholder: 'password'});
         const myPassLabel2 = createElementWithIdAndClasses('label', null, null, {for: 'myPass2'+game.id});
         myPassLabel2.innerText = 'Re-type password if first time user';
         if (game.imInThisGame) myPassInput1.disabled = true;
@@ -249,9 +248,6 @@ function showGames(gameList) {
             joinGame(game.id);
         });
         const joinGameBtnDiv = createElementWithIdAndClasses('div', null, 'col-1');
-        // joinGameBtnDiv.appendChild(joinGameButton);
-        //gameContainerDiv.appendChild(joinGameBtnDiv);
-        
         
         const leaveGameButton = createElementWithIdAndClasses('button', 'leaveGameButton' + game.id, 'btn btn-primary leaveThisGameButton');
         if (!game.imInThisGame) leaveGameButton.disabled = true;
@@ -259,17 +255,13 @@ function showGames(gameList) {
         leaveGameButton.addEventListener('click', function() {
             leaveGame(game.id);
         });
-        // const leaveGameBtnDiv = createElementWithIdAndClasses('div', null, 'col-1');
-        // leaveGameBtnDiv.appendChild(leaveGameButton);
         const buttonsDiv = createElementWithIdAndClasses('div', null, 'btn-group', {role: 'group'});
         buttonsDiv.appendChild(joinGameButton);
         buttonsDiv.appendChild(leaveGameButton);
         joinGameBtnDiv.appendChild(buttonsDiv);
         gameContainerDiv.appendChild(joinGameBtnDiv);
-        // gameContainerDiv.appendChild(leaveGameBtnDiv);
 
         gameListContainer.appendChild(gameContainerDiv);
-
 
         console.log(game);
         if (firstId !==  '') document.getElementById('myName'+firstId).focus();
@@ -282,6 +274,7 @@ function showGames(gameList) {
 
 function initGameListEvent() {
     document.getElementById('joinGameCollapse').addEventListener('shown.bs.collapse', function () {
+        emptyElementById('joinGameCollapse');
         socket.emit('get games', {myId: window.localStorage.getItem('uUID')}, function (response) {
             console.log(response);
             showGames(response);
@@ -289,8 +282,7 @@ function initGameListEvent() {
     });
 
     document.getElementById('joinGameCollapse').addEventListener('hidden.bs.collapse', function () {
-        const node = document.getElementById('joinGameCollapse');
-        node.innerHTML = '';
+        emptyElementById('joinGameCollapse');
     });
 }
 

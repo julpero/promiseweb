@@ -14,7 +14,7 @@ function gamePlayersToDiv(players, totalHumans) {
     const playerCol = createElementWithIdAndClasses('div', null, 'col');
     const playerList = createElementWithIdAndClasses('ul', null, 'list-unstyled');
     players.forEach(function (player) {
-        const playerItem = createElementWithIdAndClasses('li', null);
+        const playerItem = createElementWithIdAndClasses('li', null, 'player-in-game-item');
         playerItem.innerText = player.name;
         playerList.appendChild(playerItem);
     });
@@ -476,7 +476,7 @@ function createElementWithIdAndClasses(elType, elId, classes, opt) {
 }
 
 function removeClassByClass(searchClass, removeClass) {
-    if (removeClass == undefined) removeClass = searchClass;
+    if (removeClass == undefined || removeClass == null || !removeClass) removeClass = searchClass;
     const els = document.getElementsByClassName(searchClass);
     Array.prototype.forEach.call(els, function(el, i) {
         el.classList.remove(removeClass);
