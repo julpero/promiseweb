@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 module.exports = {
     getRandomAiPlayers: function(numberOfAiPlayers) {
         let aiPlayerArr = [];
