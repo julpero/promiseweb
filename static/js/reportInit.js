@@ -129,7 +129,7 @@ function showGamesToReport(gameList) {
         year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false,
     };
     gameList.forEach(function (game) {
-        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
+        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row game-container-div');
         const gameStarted = new Date(game.created).getTime();
         const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
         const winnerName = game.gameStatistics.winnerName;
