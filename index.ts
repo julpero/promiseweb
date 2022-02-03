@@ -259,68 +259,56 @@ try {
                 fn(retVal);
             });
     
-            // socket.on('delete game', async (deleteGameObj, fn) => {
-            //     const gameIdStr = deleteGameObj.gameId;
-            //     const retVal = {
-            //         leavingResult: 'NOTSET',
-            //         gameId: gameIdStr,
-            //     }
-            //     const ObjectId = require('mongodb').ObjectId;
-            //     const searchId = new ObjectId(gameIdStr);
-            //     const database = mongoUtil.getDb();
-            //     const collection = database.collection(promisewebCollection);
-            //     const query = {
-            //         _id: searchId,
-            //         gameStatus: GAMESTATUS.OnGoing,
-            //     };
-            //     const game = await collection.findOne(query);
-            //     if (game !== null) {
-            //         for (let i = 0; i < game.humanPlayers.length; i++) {
-            //             if (game.humanPlayers[i].playerId == leaverIdStr && game.humanPlayers[i].active) {
-            //                 const options = { upsert: true };
-            //                 const updateDoc = {
-            //                     $set: {
-            //                         humanPlayers: pf.deActivatePlayer(game.humanPlayers, leaverIdStr),
-            //                     }
-            //                 };
-            //                 const result = await collection.updateOne(query, updateDoc, options);
-            //                 if (result.modifiedCount == 1) {
-            //                     socket.leave(gameIdStr);
-            //                     const leaverName = game.humanPlayers[i].name;
-            //                     sm.removeClientFromMap(leaverName, socket.id, gameIdStr);
-            //                     let chatLine = 'player ' + leaverName + ' has left the game';
-            //                     io.to(gameIdStr).emit('new chat line', chatLine);
-            //                     retVal.leavingResult = 'LEAVED';
-            //                     chatLine = 'You can invite a new player to continue '+leaverName+'\'s game with these id\'s:'
-            //                     io.to(gameIdStr).emit('new chat line', chatLine);
-            //                     chatLine = 'GameId: '+gameIdStr;
-            //                     io.to(gameIdStr).emit('new chat line', chatLine);
-            //                     chatLine = 'PlayerId: '+leaverIdStr;
-            //                     io.to(gameIdStr).emit('new chat line', chatLine);
-            //                     break;
-            //                 }
-            //             }
-            //         }
-            //         let activePlayersInGame = 0;
-            //         game.humanPlayers.forEach(function (player) {
-            //             if (player.active) {
-            //                 activePlayersInGame++;
-            //             }
-            //         });
-            //         if (activePlayersInGame == 0) {
-            //             // all players have left the game, update gamestatus to 99
-            //             const options = { upsert: true };
-            //             const updateDoc = {
-            //                 $set: {
-            //                     gameStatus: GAMESTATUS.Dismissed,
-            //                 }
-            //             }
-            //             await collection.updateOne(query, updateDoc, options);
-            //         }
-            //     }
+            socket.on('delete game', async (deleteGameObj, fn) => {
+                const gameIdStr = deleteGameObj.gameToDelete;
+                const deleteFromDB = deleteGameObj.deleteFromDB;
+                const adminUser = deleteGameObj.adminUser;
+                const adminPass = deleteGameObj.adminPass;
+                const retObj = {
+                    passOk: false,
+                    deleteOk: false
+                }
+                retObj.passOk = await checkAdminAccess(adminUser, adminPass);
+                if (retObj.passOk) {
+                    const ObjectId = require('mongodb').ObjectId;
+                    const searchId = new ObjectId(gameIdStr);
+                    const database = mongoUtil.getDb();
+                    const collection = database.collection(promisewebCollection);
+                    const query = {
+                        _id: searchId
+                    };
+                    const game = await collection.findOne(query);
+                    if (game !== null) {
+                        if (deleteFromDB) {
+                            const deleteBaseGame = await collection.deleteOne(query);
+                            if (deleteBaseGame.deletedCount == 1) {
+                                console.log('game '+ gameIdStr + ' deleted from main game db');
+                                retObj.deleteOk = true;
+                            }
+                            const statsCollection = database.collection(statsCollectionStr);
+                            const statsQuery = {
+                                gameId: gameIdStr
+                            };
+                            const deleteStats = await statsCollection.deleteMany(statsQuery);
+                            if (deleteStats.deletedCount > 0) {
+                                console.log('game '+ gameIdStr + ' deleted from statistics db');
+                            }
+                        } else {
+                            const options = { upsert: true };
+                            const updateDoc = {
+                                $set: {
+                                    gameStatus: GAMESTATUS.Dismissed,
+                                }
+                            }
+                            await collection.updateOne(query, updateDoc, options);
+                            console.log('game '+ gameIdStr + ' set dismissed');
+                            retObj.deleteOk = true;
+                        }
+                    }
+                }
     
-            //     fn(retVal);
-            // });
+                fn(retObj);
+            });
     
             socket.on('leave game', async (leaveGame, fn) => {
                 const gameIdStr = leaveGame.gameId;
@@ -1112,24 +1100,29 @@ try {
             });
 
             socket.on('get ongoing games', async (data, fn) => {
-                console.log('get games - start to get games');
+                console.log('get ongoing games - start to get games');
                 const myId = data.myId;
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
-                const query = {
-                    gameStatus: GAMESTATUS.OnGoing,
-                };
-                const cursor = await collection.find(query);
-    
+                const queryAggregation = [{$match: {
+                    gameStatus: { $in: [ GAMESTATUS.Created, GAMESTATUS.OnGoing, GAMESTATUS.Dismissed ] }
+                  }}, {$sort: {
+                    gameStatus : 1
+                  }}
+                ];
+                const cursor = await collection.aggregate(queryAggregation);
+
                 const games = [];
                 await cursor.forEach(function(val) {
-                    games.push({
-                        id: val._id.toString(),
-                        humanPlayers: pf.parsedHumanPlayers(val.humanPlayers),
-                        created: val.createDateTime,
-                        hasPassword: val.password.length > 0,
-                        imInThisGame: pf.imInThisGame(val.humanPlayers, myId)
-                    });
+                    if (!pf.imInThisGame(val.humanPlayers, myId)) {
+                        games.push({
+                            id: val._id.toString(),
+                            gameStatus: val.gameStatus,
+                            humanPlayers: pf.parsedHumanPlayers(val.humanPlayers),
+                            created: val.createDateTime,
+                            hasPassword: val.password.length > 0
+                        });
+                    }
                 });
     
                 fn(games);
@@ -2176,7 +2169,7 @@ try {
                     const uCollection = database.collection(userCollection);
                     const deleteResult = await uCollection.deleteOne(deleteQuery);
                     if (deleteResult.deletedCount == 1) {
-                        console.log('user '+ userToReset + 'password reseted')
+                        console.log('user '+ userToReset + ' password reseted');
                         retObj.deleteOk = true;
                     }
                 }

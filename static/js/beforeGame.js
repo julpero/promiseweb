@@ -210,6 +210,23 @@ function createRulesElement(game) {
     return ruleContainerRow;
 }
 
+function deleteGame(gameId, deleteFromDB) {
+    const deleteObj = {
+        gameToDelete: gameId,
+        deleteFromDB: deleteFromDB,
+        adminUser: document.getElementById('observerName').value,
+        adminPass: document.getElementById('observerPass').value
+  }
+    socket.emit('delete game', deleteObj, function (response) {
+        console.log(response);
+        if (response.deleteOk) {
+            socket.emit('get ongoing games', {myId: window.localStorage.getItem('uUID')}, function (response) {
+                showOnGoingGames(response);
+            });
+        }
+    });
+}
+
 function showGames(gameList) {
     const gameListContainer = document.getElementById('joinGameCollapse');
     let firstId = '';
@@ -301,62 +318,92 @@ function showOnGoingGames(gameList) {
     console.log(gameList);
     const onGoingGameListContainer = document.getElementById('observeGameCollapse');
 
-    const loginRow = createElementWithIdAndClasses('div', null, 'row');
-    const loginCol1 = createElementWithIdAndClasses('div', null, 'col form-floating');
-    const loginInputText = createElementWithIdAndClasses('input', 'observerName', 'form-control', { type: 'text', placeholder: 'observerPH'});
-    const loginInputLabel = createElementWithIdAndClasses('label', null, null, { for: 'observerName' });
-    loginInputLabel.innerText = 'login name';
-    loginCol1.appendChild(loginInputText);
-    loginCol1.appendChild(loginInputLabel);
-    loginRow.appendChild(loginCol1);
-    const loginCol2 = createElementWithIdAndClasses('div', null, 'col form-floating');
-    const loginInputPass = createElementWithIdAndClasses('input', 'observerPass', 'form-control', { type: 'password', placeholder: 'observerPW'});
-    const loginInputPassLabel = createElementWithIdAndClasses('label', null, null, { for: 'observerPass' });
-    loginInputPassLabel.innerText = 'password';
-    loginCol2.appendChild(loginInputPass);
-    loginCol2.appendChild(loginInputPassLabel);
-    loginRow.appendChild(loginCol2);
-    onGoingGameListContainer.appendChild(loginRow);
+    if (!document.getElementById('observerName')) {
+        const loginRow = createElementWithIdAndClasses('div', null, 'row');
+        const loginCol1 = createElementWithIdAndClasses('div', null, 'col form-floating');
+        const loginInputText = createElementWithIdAndClasses('input', 'observerName', 'form-control', { type: 'text', placeholder: 'observerPH'});
+        const loginInputLabel = createElementWithIdAndClasses('label', null, null, { for: 'observerName' });
+        loginInputLabel.innerText = 'login name';
+        loginCol1.appendChild(loginInputText);
+        loginCol1.appendChild(loginInputLabel);
+        loginRow.appendChild(loginCol1);
+        const loginCol2 = createElementWithIdAndClasses('div', null, 'col form-floating');
+        const loginInputPass = createElementWithIdAndClasses('input', 'observerPass', 'form-control', { type: 'password', placeholder: 'observerPW'});
+        const loginInputPassLabel = createElementWithIdAndClasses('label', null, null, { for: 'observerPass' });
+        loginInputPassLabel.innerText = 'password';
+        loginCol2.appendChild(loginInputPass);
+        loginCol2.appendChild(loginInputPassLabel);
+        loginRow.appendChild(loginCol2);
+        onGoingGameListContainer.appendChild(loginRow);
+    }
+    
+    removeElementById('gamesContainerDiv');
+    const gamesContainerDiv = createElementWithIdAndClasses('div', 'gamesContainerDiv', 'row', { style: "overflow-y:auto; height: 700px;" });
 
     const dateformatoptions = {
         year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false,
     };
+    let currentStatus = -1;
     gameList.forEach(function (game) {
+        const gameStatus = game.gameStatus;
+        if (currentStatus != -1 && currentStatus != gameStatus) {
+            const statusDividerRow = createElementWithIdAndClasses('div', null, 'row');
+            const statusDividerCol = createElementWithIdAndClasses('div', null, 'col');
+            const statusDividerHr = createElementWithIdAndClasses('hr', null, null);
+            statusDividerCol.appendChild(statusDividerHr);
+            statusDividerRow.appendChild(statusDividerCol);
+            gamesContainerDiv.appendChild(statusDividerRow);
+        }
+        currentStatus = gameStatus;
         const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
         const gameStarted = new Date(game.created).getTime();
         const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
-        const reportDateDiv = createElementWithIdAndClasses('div', null, 'col-2 report-date');
+        const reportDateDiv = createElementWithIdAndClasses('div', null, 'col-3 report-date');
         reportDateDiv.innerText = dateStr;
         gameContainerDiv.appendChild(reportDateDiv);
 
-        const playersContainer = createElementWithIdAndClasses('div', 'gamePlayers' + game.id, 'col-4 report-players');
+        const playersContainer = createElementWithIdAndClasses('div', 'gamePlayers' + game.id, 'col-5 report-players');
         playersContainer.innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null);
         gameContainerDiv.appendChild(playersContainer);
 
-        const btnId = 'observeGameButton' + game.id;
-        const observeGameButton = createElementWithIdAndClasses('button', btnId, 'btn btn-primary observeGameButton', { value: game.id });
-        observeGameButton.innerText = 'Observe game';
-        observeGameButton.addEventListener('click', function() {
-            // eslint-disable-next-line no-undef
-            observeGame(this.value);
-        });
-        const observeGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
-        observeGameButtonContainer.appendChild(observeGameButton);
-        gameContainerDiv.appendChild(observeGameButtonContainer);
+        if (gameStatus == 1) {
+            // ongoing games
+            const btnId = 'observeGameButton' + game.id;
+            const observeGameButton = createElementWithIdAndClasses('button', btnId, 'btn btn-primary observeGameButton', { value: game.id });
+            observeGameButton.innerText = 'Observe game';
+            observeGameButton.addEventListener('click', function() {
+                // eslint-disable-next-line no-undef
+                //observeGame(this.value);
+            });
+            const observeGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
+            observeGameButtonContainer.appendChild(observeGameButton);
+            gameContainerDiv.appendChild(observeGameButtonContainer);
+    
+            const deleteBtnId = 'deleteGameButton' + game.id;
+            const deleteGameButton = createElementWithIdAndClasses('button', deleteBtnId, 'btn btn-primary deleteGameButton', { value: game.id });
+            deleteGameButton.innerText = 'Delete game';
+            deleteGameButton.addEventListener('click', function() {
+                deleteGame(this.value, false);
+            });
+            const deleteGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
+            deleteGameButtonContainer.appendChild(deleteGameButton);
+            gameContainerDiv.appendChild(deleteGameButtonContainer);
+        } else {
+            // deleted and created games
+            const deleteBtnId = 'totalDeleteGameButton' + game.id;
+            const deleteGameButton = createElementWithIdAndClasses('button', deleteBtnId, 'btn btn-primary totalDeleteGameButton', { value: game.id });
+            deleteGameButton.innerText = 'Total delete game';
+            deleteGameButton.addEventListener('click', function() {
+                deleteGame(this.value, true);
+            });
+            const deleteGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
+            deleteGameButtonContainer.appendChild(deleteGameButton);
+            gameContainerDiv.appendChild(deleteGameButtonContainer);
+        }
 
-        const deleteBtnId = 'deleteGameButton' + game.id;
-        const deleteGameButton = createElementWithIdAndClasses('button', deleteBtnId, 'btn btn-primary deleteGameButton', { value: game.id });
-        deleteGameButton.innerText = 'Delete game';
-        deleteGameButton.addEventListener('click', function() {
-            // eslint-disable-next-line no-undef
-            deleteGame(this.value);
-        });
-        const deleteGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
-        deleteGameButtonContainer.appendChild(deleteGameButton);
-        gameContainerDiv.appendChild(deleteGameButtonContainer);
-
-        onGoingGameListContainer.appendChild(gameContainerDiv);
+        gamesContainerDiv.appendChild(gameContainerDiv);
     });
+    onGoingGameListContainer.appendChild(gamesContainerDiv);
 }
 
 
