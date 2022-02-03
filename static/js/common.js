@@ -460,6 +460,7 @@ function removeEventByClass(className, eventName, functionName, removeClass) {
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function showAlert(divId, alertId, alertText) {
     const alertContainer = document.getElementById(divId);
     const alertDiv = createElementWithIdAndClasses('div', alertId, 'alert alert-warning alert-dismissible fade show', { role: 'alert' });

@@ -8,7 +8,7 @@ function gamePlayersToDiv(players, totalHumans) {
     const playerCol = createElementWithIdAndClasses('div', null, 'col');
     const playerList = createElementWithIdAndClasses('ul', null, 'list-unstyled');
     players.forEach(function (player) {
-        const playerItem = createElementWithIdAndClasses('li', null);
+        const playerItem = createElementWithIdAndClasses('li', null, 'player-in-game-item');
         playerItem.innerText = player.name;
         playerList.appendChild(playerItem);
     });
@@ -337,6 +337,7 @@ function showOnGoingGames(gameList) {
         const observeGameButton = createElementWithIdAndClasses('button', btnId, 'btn btn-primary observeGameButton', { value: game.id });
         observeGameButton.innerText = 'Observe game';
         observeGameButton.addEventListener('click', function() {
+            // eslint-disable-next-line no-undef
             observeGame(this.value);
         });
         const observeGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
@@ -347,6 +348,7 @@ function showOnGoingGames(gameList) {
         const deleteGameButton = createElementWithIdAndClasses('button', deleteBtnId, 'btn btn-primary deleteGameButton', { value: game.id });
         deleteGameButton.innerText = 'Delete game';
         deleteGameButton.addEventListener('click', function() {
+            // eslint-disable-next-line no-undef
             deleteGame(this.value);
         });
         const deleteGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
