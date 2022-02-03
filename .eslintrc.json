@@ -43,6 +43,7 @@
         "mainInit":true,
         "mainReportInit":true,
         "mainPasswordInit":true,
+        "showAlert":true,
         "appendToChat":true,
         "getOneGameReport":true,
         "gamePlayersToStr":true,
