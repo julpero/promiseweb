@@ -29,6 +29,13 @@ const rf = require(__dirname + '/reportFunctions.js');
 const sm = require(__dirname + '/clientSocketMapper.js');
 // const ai = require(__dirname + '/aiPlayer.js');
 
+const GAMESTATUS = {
+    Created: 0,
+    OnGoing: 1,
+    Played: 2,
+    Dismissed: 99
+}
+
 const minGamesToReport = 5;
 const vanillaGameRules = {
     // startRound: {$eq: 10},
@@ -143,7 +150,7 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
                 const query = {
-                    gameStatus: 1, // check first ongoing game
+                    gameStatus: GAMESTATUS.OnGoing, // check first ongoing game
                 };
                 const games = collection.find(query);
                 await games.forEach(function (game) {
@@ -166,7 +173,7 @@ try {
     
                 if (!gameFound) {
                     const query = {
-                        gameStatus: 0, // check promised ongoing game
+                        gameStatus: GAMESTATUS.Created,
                     };
                     const games = collection.find(query);
                     await games.forEach(function (game) {
@@ -201,7 +208,7 @@ try {
                 const collection = database.collection(promisewebCollection);
                 const query = {
                     _id: searchId,
-                    gameStatus: 1,
+                    gameStatus: GAMESTATUS.OnGoing,
                 };
                 const game = await collection.findOne(query);
                 if (game !== null) {
@@ -242,7 +249,7 @@ try {
                         const options = { upsert: true };
                         const updateDoc = {
                             $set: {
-                                gameStatus: 99,
+                                gameStatus: GAMESTATUS.Dismissed,
                             }
                         }
                         await collection.updateOne(query, updateDoc, options);
@@ -266,7 +273,7 @@ try {
                 const collection = database.collection(promisewebCollection);
                 const query = {
                     _id: searchId,
-                    gameStatus: 0,
+                    gameStatus: GAMESTATUS.Created,
                 };
                 const game = await collection.findOne(query);
                 console.log('leave game', game, gameIdStr);
@@ -288,7 +295,7 @@ try {
                         const updateDoc = {
                             $set: {
                                 humanPlayers: newHumanPlayers,
-                                gameStatus: retVal.gameDeleted ? 99 : 0, // if no more players in the game, set gamestatus to 99
+                                gameStatus: retVal.gameDeleted ? GAMESTATUS.Dismissed : GAMESTATUS.Created, // if no more players in the game, set gamestatus to 99
                             }
                         };
                         const result = await collection.updateOne(query, updateDoc, options);
@@ -332,7 +339,7 @@ try {
                 const collection = database.collection(promisewebCollection);
                 const query = {
                     _id: searchId,
-                    gameStatus: 1,
+                    gameStatus: GAMESTATUS.OnGoing,
                 };
                 const game = await collection.findOne(query);
                 if (game !== null) {
@@ -455,7 +462,7 @@ try {
                 const collection = database.collection(promisewebCollection);
                 const query = {
                     _id: searchId,
-                    gameStatus: 0,
+                    gameStatus: GAMESTATUS.Created,
                     password: newPlayer.gamePassword
                 };
                 const game = await collection.findOne(query);
@@ -536,7 +543,7 @@ try {
                 const collection = database.collection(promisewebCollection);
     
                 const query = {
-                    gameStatus: { $lte: 1 },
+                    gameStatus: { $lte: GAMESTATUS.OnGoing },
                     'humanPlayers.playerId': { $eq: adminId }
                 };
                 const cursor = await collection.find(query);
@@ -633,7 +640,7 @@ try {
                 const doReload = getRound.doReload;
                 const newRound = getRound.newRound;
                 const gameOver = getRound.gameOver;
-                const gameStatus = gameOver ? 2 : 1;
+                const gameStatus = gameOver ? GAMESTATUS.Played : GAMESTATUS.OnGoing;
                 
                 const query = {
                     _id: searchId,
@@ -668,7 +675,7 @@ try {
                 const searchId = new ObjectId(gameIdStr);
                 const query = {
                     _id: searchId,
-                    gameStatus: 1,
+                    gameStatus: GAMESTATUS.OnGoing,
                     // password: newPlayer.gamePassword,
                 };
                 const gameInDb = await collection.findOne(query);
@@ -737,7 +744,7 @@ try {
                 
                 const query = {
                     _id: searchId,
-                    gameStatus: 1,
+                    gameStatus: GAMESTATUS.OnGoing,
                     // password: newPlayer.gamePassword,
                 };
                 const gameInDb = await collection.findOne(query);
@@ -830,7 +837,7 @@ try {
                 
                 const query = {
                     _id: searchId,
-                    gameStatus: 1,
+                    gameStatus: GAMESTATUS.OnGoing,
                     // password: newPlayer.gamePassword,
                      };
                 const gameInDb = await collection.findOne(query);
@@ -857,7 +864,7 @@ try {
                             let newRound = false;
                             let cardsInThisPlay = null;
                             const winnerName = pf.winnerOfPlay(gameAfterPlay.rounds[roundInDb].cardsPlayed[play], gameAfterPlay.rounds[roundInDb].trumpCard.suit);
-                            let gameStatus = 1;
+                            let gameStatus = GAMESTATUS.OnGoing;
 
                             let gameStatistics = null;
                             
@@ -917,7 +924,7 @@ try {
                                     if (gameAfterPlay.rounds.length == roundInDb + 1) {
                                         // this was the last round of the game
                                         gameOver = true;
-                                        gameStatus = 2;
+                                        gameStatus = GAMESTATUS.Played;
                                         io.to(gameIdStr).emit('new chat line', 'GAME OVER!');
                                     } else {
                                         // start next round
@@ -978,7 +985,7 @@ try {
                     if (cardPlayedOk) {
                         let queryUsed = query;
                         if (gameOver) {
-                            queryUsed = { gameStatus: 2,
+                            queryUsed = { gameStatus: GAMESTATUS.Played,
                                 _id: searchId,
                                 // password: newPlayer.gamePassword,
                             };
@@ -1009,7 +1016,7 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
                 const query = {
-                    gameStatus: 0,
+                    gameStatus: GAMESTATUS.Created,
                 };
                 const cursor = await collection.find(query);
     
@@ -1047,7 +1054,7 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
                 const query = {
-                    gameStatus: 1,
+                    gameStatus: GAMESTATUS.OnGoing,
                 };
                 const cursor = await collection.find(query);
     
@@ -1133,7 +1140,7 @@ try {
     
                     const collection = database.collection(promisewebCollection);
                     const queryAggregation = [{$match: {
-                        gameStatus: {$eq: 2}
+                        gameStatus: {$eq: GAMESTATUS.Played}
                       }}, {$sort: {
                        createDateTime : -1
                       }}
@@ -1204,7 +1211,7 @@ try {
 
                 // game count
                 console.log('get report data - report data - game count');
-                const queryGameCount = { gameStatus: 2 };
+                const queryGameCount = { gameStatus: GAMESTATUS.Played };
                 const gameCount = await collection.countDocuments(queryGameCount);
                 retObj.gamesPlayed = gameCount;
                 // ********
@@ -1212,7 +1219,7 @@ try {
                 // rounds played
                 console.log('get report data - report data - rounds played');
                 const aggregationRoundsPlayed = [{$match: {
-                    gameStatus: {$eq: 2}
+                    gameStatus: { $eq: GAMESTATUS.Played }
                   }}, {$group: {
                     _id: null,
                     totalRounds: {
@@ -1239,7 +1246,7 @@ try {
                 console.log('get report data - report data - games played per player');
                 const aggregationGamesPlayed = [{$match: {
                     gameStatus: {
-                      $eq: 2
+                      $eq: GAMESTATUS.Played
                     }
                   }}, {$unwind: {
                     path: '$humanPlayers',
@@ -1268,7 +1275,7 @@ try {
                 console.log('get report data - report data - average points per player');
                 const aggregationAvgPoints = [{$match: {
                     gameStatus: {
-                      $eq: 2
+                      $eq: GAMESTATUS.Played
                     },
                     "gameStatistics.roundsPlayed": {$eq: 19}
                   }}, {$unwind: {
@@ -1299,7 +1306,7 @@ try {
                     {
                       $match: {
                         gameStatus: {
-                          $eq: 2
+                          $eq: GAMESTATUS.Played
                         },
                         'gameStatistics.bigRoundsPlayed': {$gt: 0},
                         'gameStatistics.smallRoundsPlayed': {$gt: 0},
@@ -1370,7 +1377,7 @@ try {
                 console.log('get report data - report data - average keep percentage per player');
                 const aggregationAvgKeepPercentage = [{$match: {
                     gameStatus: {
-                      $eq: 2
+                      $eq: GAMESTATUS.Played
                     },
                     "gameStatistics.roundsPlayed": {
                       $gte: 0
@@ -1419,7 +1426,7 @@ try {
                 console.log('get report data - report data - total points per player');
                 const aggregationTotalPointsPerPlayer = [{$match: {
                     gameStatus: {
-                      $eq: 2
+                      $eq: GAMESTATUS.Played
                     }
                   }}, {$unwind: {
                     path: "$gameStatistics.playersStatistics",
@@ -1449,7 +1456,7 @@ try {
                 console.log('get report data - report data - total wins per player');
                 const aggregationPlayerTotalWins = [{$match: {
                     gameStatus: {
-                      $eq: 2
+                      $eq: GAMESTATUS.Played
                     }
                   }}, {$group: {
                     _id: "$gameStatistics.winnerName",
@@ -1491,7 +1498,7 @@ try {
                 console.log('get report data - report data - average score points per player');
                 const aggregationAvgScorePointsPerPlayer = [{$match: {
                     gameStatus: {
-                      $eq: 2
+                      $eq: GAMESTATUS.Played
                     }
                   }}, {$unwind: {
                     path: "$gameStatistics.playersStatistics",
@@ -1519,7 +1526,7 @@ try {
                 console.log('get report data - report data - average percentage points');
                 const aggregationPlayerPercentagePointsTotal = [{$match: {
                     gameStatus: {
-                      $eq: 2
+                      $eq: GAMESTATUS.Played
                     },
                     "gameStatistics.winnerPoints": {$gt: 0}
                   }}, {$unwind: {
@@ -1554,7 +1561,7 @@ try {
                 console.log('get report data - report data - players total');
                 const aggregationPlayersTotal = [{$match: {
                     gameStatus: {
-                      $eq: 2
+                      $eq: GAMESTATUS.Played
                     }
                   }}, {$group: {
                     _id: null,
@@ -1575,7 +1582,7 @@ try {
                 // players count
                 console.log('get report data - report data - players count');
                 const aggregationPlayerCount = [{$match: {
-                    gameStatus: {$eq: 2},
+                    gameStatus: { $eq: GAMESTATUS.Played },
                   }}, {$group: {
                     _id: "$humanPlayersCount",
                     lkm: {$sum: 1}
@@ -1604,7 +1611,7 @@ try {
                     {
                       $match: {
                         gameStatus: {
-                          $eq: 2
+                          $eq: GAMESTATUS.Played
                         }
                       }
                     }, {
@@ -1652,7 +1659,7 @@ try {
                 // melter
                 console.log('get report data - report data - melter');
                 const aggregationMeltingGame = [{$match: {
-                    gameStatus: {$eq: 2}
+                    gameStatus: { $eq: GAMESTATUS.Played }
                   }}, {$sort: {
                     "gameStatistics.spurtAndMelt.meltGap": -1,
                     // "gameStatistics.spurtAndMelt.meltFrom": -1,
@@ -1676,7 +1683,7 @@ try {
                 // spurter
                 console.log('get report data - report data - spurter');
                 const aggregationSpurtingGame = [{$match: {
-                    gameStatus: {$eq: 2}
+                    gameStatus: { $eq: GAMESTATUS.Played }
                   }}, {$sort: {
                     "gameStatistics.spurtAndMelt.spurtGap": -1,
                     // "gameStatistics.spurtAndMelt.spurtFrom": -1,
@@ -1700,7 +1707,7 @@ try {
                 // vanilla games
                 console.log('get report data - report data - vanilla games');
                 const aggregationVanillaGames = [{$match: {
-                    gameStatus: {$eq: 2},
+                    gameStatus: { $eq: GAMESTATUS.Played },
                   }}, {$match: vanillaGameRules
                 }, {$group: {
                     _id: null,
@@ -1721,7 +1728,7 @@ try {
                 // used rules
                 console.log('get report data - report data - used rules');
                 const aggregationUsedRules = [{$match: {
-                    gameStatus: {$eq: 2},
+                    gameStatus: { $eq: GAMESTATUS.Played },
                   }}, {$project: {
                     item: 1,
                     evenPromisesDisallowed: {$cond: [{ $eq: ["$evenPromisesAllowed", false]}, 1, 0]},
@@ -1794,7 +1801,7 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
                 const query = {
-                    gameStatus: 2,
+                    gameStatus: GAMESTATUS.Played,
                     _id: searchId,
                 };
                 const gameInDb = await collection.findOne(query);
@@ -1810,14 +1817,14 @@ try {
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
                 const query = {
-                    gameStatus: 2,
+                    gameStatus: GAMESTATUS.Played,
                 };
                 const gamesInDb = await collection.find(query);
                 await gamesInDb.forEach(async function (gameInDb) {
                     const gameId = gameInDb._id;
                     const gameStatistics = rf.generateGameStatistics(gameInDb.game, true);
 
-                    const updateQuery = { _id: gameId, gameStatus: 2};
+                    const updateQuery = { _id: gameId, gameStatus: GAMESTATUS.Played};
                     const options = { upsert: true };
                     const updateDoc = {
                         $set: {
@@ -1849,7 +1856,7 @@ try {
                 console.log('get average report ... games played');
                 const aggregationA = [
                     {$match: {
-                        gameStatus: {$eq: 2}
+                        gameStatus: { $eq: GAMESTATUS.Played }
                     }},
                     {$unwind: {
                         path: "$humanPlayers",
@@ -1875,7 +1882,7 @@ try {
                 console.log('get average report ... avg points, all games');
                 const aggregationC = [
                     {$match: {
-                        gameStatus: {$eq: 2},
+                        gameStatus: { $eq: GAMESTATUS.Played },
                     }},
                     {$project: {
                         "game.rounds.cardsPlayed": 0,
@@ -1910,7 +1917,7 @@ try {
                 console.log('get average report ... avg points, regular games');
                 const aggregationB = [
                     {$match: {
-                        gameStatus: {$eq: 2},
+                        gameStatus: { $eq: GAMESTATUS.Played },
                         evenPromisesAllowed: {$in: [true, null]},
                         visiblePromiseRound: {$in: [true, null]},
                         onlyTotalPromise: {$in: [false, null]},
@@ -1992,7 +1999,7 @@ try {
                     const collection = database.collection(promisewebCollection);
                     const query = {
                         _id: searchId,
-                        gameStatus: 2,
+                        gameStatus: GAMESTATUS.Played,
                     };
                     const gameInDb = await collection.findOne(query);
                     const gameStatistics = rf.generateGameStatistics(gameInDb.game, true);
@@ -2051,7 +2058,7 @@ try {
                     const collection = database.collection(promisewebCollection);
                     const query = {
                         _id: searchId,
-                        gameStatus: 2,
+                        gameStatus: GAMESTATUS.Played,
                     };
                     const gameInDb = await collection.findOne(query);
                     const newHumanPlayers = gameInDb.humanPlayers;
@@ -2225,7 +2232,7 @@ async function startGame (gameInfo) {
     const options = { upsert: true };
     const updateDoc = {
         $set: {
-            gameStatus: 1,
+            gameStatus: GAMESTATUS.OnGoing,
             game: game,
         }
     };
@@ -2274,7 +2281,7 @@ async function getPlayerAvgPoints(playerName, roundsInGame) {
         {
           $match: {
             gameStatus: {
-              $eq: 2
+              $eq: GAMESTATUS.Played
             }, 
             "humanPlayers.name": {$eq: playerName}
           }
