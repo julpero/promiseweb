@@ -343,7 +343,7 @@ function initCardTable(myRound) {
 }
 
 function initMyCardsContainer(maxCards) {
-    const node = createElementWithIdAndClasses('div', null, 'row myCardsRowClass');
+    const node = createElementWithIdAndClasses('div', 'myCardsRowDiv', 'row myCardsRowClass');
     
     for (let i = 0; i < maxCards; i++) {
         node.appendChild(drawCardCol(i));
@@ -424,7 +424,7 @@ function createScoreboard(promiseTable) {
 
     const tableBody = document.createElement('tbody');
     for (let i = 0; i < promiseTable.rounds.length; i++) {
-        const tableBodyRow = document.createElement('tr');
+        const tableBodyRow = createElementWithIdAndClasses('tr', null, 'scoreboardTableRow');
         for (let j = 0; j < promiseTable.players.length; j++) {
             const pointCol = createElementWithIdAndClasses('td', 'player'+j+'Points'+i, 'scoreboardTableCol');
             pointCol.innerHTML = '&nbsp;';

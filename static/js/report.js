@@ -2,15 +2,15 @@ function showNickChanger(gameList) {
     const gameListContainer = document.getElementById('chooseNickGameCollapse');
     console.log(gameList);
     gameList.forEach(function (game) {
-        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
+        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row game-container-div');
         const gamePlayers = createElementWithIdAndClasses('div', 'gamePlayers' + game.id, 'col-4 report-players');
         gamePlayers.innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null)+showErrorNames(game.playerNameErrors);
         gameContainerDiv.appendChild(gamePlayers);
 
         const oldNameCol = createElementWithIdAndClasses('div', null, 'col-2');
-        const oldNameInput = createElementWithIdAndClasses('input', 'oldName'+game.id, null, { type: 'text' });
+        const oldNameInput = createElementWithIdAndClasses('input', 'oldName'+game.id, 'oldNameInput', { type: 'text' });
         const newNameCol = createElementWithIdAndClasses('div', null, 'col-2');
-        const newNameInput = createElementWithIdAndClasses('input', 'newName'+game.id, null, { type: 'text' });
+        const newNameInput = createElementWithIdAndClasses('input', 'newName'+game.id, 'newNameInput', { type: 'text' });
         oldNameCol.appendChild(oldNameInput);
         gameContainerDiv.appendChild(oldNameCol);
         newNameCol.appendChild(newNameInput);
@@ -29,12 +29,18 @@ function showNickChanger(gameList) {
                     gameId: this.value,
                     oldName: oldName ,
                     newName: newName,
+                    adminUser: document.getElementById('adminUser').value,
+                    adminPass: document.getElementById('adminPass').value
                 };
-        
                 socket.emit('change nick', nickChangeObj, function() {
-                    socket.emit('get games for report', {}, function (response) {
+                    const getGamesObj = {
+                        isSecure: true,
+                        adminUser: document.getElementById('adminUser').value,
+                        adminPass: document.getElementById('adminPass').value
+                    }
+                    socket.emit('get games for report', getGamesObj, function (response) {
                         emptyElementById('chooseNickGameCollapse');
-                        showNickChanger(response);
+                        showNickChanger(response.data);
                     });
                 });
             } else {
@@ -55,13 +61,20 @@ function showNickChanger(gameList) {
     
             const generateReportObj = {
                 gameId: this.value,
+                adminUser: document.getElementById('adminUser').value,
+                adminPass: document.getElementById('adminPass').value
             };
-            socket.emit('generate game statistics', generateReportObj, function(gameStatistics) {
-                console.log(gameStatistics);
-                socket.emit('get games for report', {}, function (response) {
+            socket.emit('generate game statistics', generateReportObj, function(generateResult) {
+                console.log(generateResult.passOk);
+                const getGamesObj = {
+                    isSecure: true,
+                    adminUser: document.getElementById('adminUser').value,
+                    adminPass: document.getElementById('adminPass').value
+                }
+                socket.emit('get games for report', getGamesObj, function (response) {
                     emptyElementById('chooseNickGameCollapse');
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    showNickChanger(response);
+                    showNickChanger(response.data);
                 });
             });
         });
@@ -72,8 +85,7 @@ function showNickChanger(gameList) {
 
         gameListContainer.appendChild(gameContainerDiv);
 
-    });
-}
+    });}
 
 function showErrorNames(errorNames) {
     if (errorNames.length == 0) return '';

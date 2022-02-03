@@ -41,6 +41,8 @@
         "showNickChanger":true,
         "doPromise":true,
         "mainInit":true,
+        "mainReportInit":true,
+        "mainPasswordInit":true,
         "appendToChat":true,
         "getOneGameReport":true,
         "gamePlayersToStr":true,

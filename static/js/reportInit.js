@@ -174,8 +174,8 @@ function initGameListEvent() {
     const chooseGameCollapseEl = document.getElementById('chooseGameCollapse');
     if (chooseGameCollapseEl != null) {
         chooseGameCollapseEl.addEventListener('shown.bs.collapse', function () {
-            socket.emit('get games for report', {}, function (response) {
-                showGamesToReport(response);
+            socket.emit('get games for report', { isSecure: false }, function (response) {
+                showGamesToReport(response.data);
             });
             chooseGameCollapseEl.addEventListener('hidden.bs.collapse', function () {
                 emptyElementById('chooseGameCollapse');
@@ -203,8 +203,22 @@ function initNickChangeEvent() {
     const chooseNickGameCollapseEl = document.getElementById('chooseNickGameCollapse');
     if (chooseNickGameCollapseEl != null) {
         chooseNickGameCollapseEl.addEventListener('shown.bs.collapse', function () {
-            socket.emit('get games for report', {}, function (response) {
-                showNickChanger(response);
+            const getGamesObj = {
+                isSecure: true,
+                adminUser: document.getElementById('adminUser').value,
+                adminPass: document.getElementById('adminPass').value
+            }
+            socket.emit('get games for report', getGamesObj, function (response) {
+                emptyElementById('chooseNickGameCollapse');
+                emptyElementById('alertDiv');
+                if (response.passOk) {
+                    showNickChanger(response.data);
+                } else {
+                    console.error('Authentication error');
+                    showAlert('alertDiv', 'authAlertDiv', 'Authentication error');
+                    emptyElementById('chooseNickGameCollapse');
+                    bootstrap.Collapse.getInstance(document.getElementById('chooseNickGameCollapse')).hide();
+                }
             });
         });
     
@@ -240,7 +254,7 @@ function enableButtons() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function mainInit() {
+function mainReportInit() {
     initEvents();
     enableButtons();
 }

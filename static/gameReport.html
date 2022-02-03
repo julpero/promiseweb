@@ -22,7 +22,7 @@
         <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
         <meta name="theme-color" content="#ffffff">
 
-        <title>promiseweb - Promise Card Game</title>
+        <title>promiseweb - Promise Card Game - game reports</title>
         <link rel="stylesheet" href="/css/bootstrap.min.css">
     </head>
     <body data-bs-no-jquery>
@@ -33,12 +33,12 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <a class="btn btn-primary report-button disabled" data-bs-toggle="collapse" href="#chooseGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary report-button disabled" id="oneGameReportButton" data-bs-toggle="collapse" href="#chooseGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         One game
                     </a>
                 </div>
                 <div class="col">
-                    <a class="btn btn-primary report-button disabled" data-bs-toggle="collapse" href="#averageReportCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary report-button disabled" id="averageGameReportButton" data-bs-toggle="collapse" href="#averageReportCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Averages
                     </a>
                 </div>
@@ -85,7 +85,7 @@
         <script src="/js/report.js"></script>
         <script type="text/javascript">
             const socket = io();
-            mainInit();
+            mainReportInit();
         </script>
 
     </body>

@@ -1,5 +1,6 @@
 function resetPassword(userName) {
   const resetObj = {
+    adminUser: document.getElementById('adminUser').value,
     adminPass: document.getElementById('adminPass').value,
     userToReset: userName
   }
@@ -8,7 +9,11 @@ function resetPassword(userName) {
     socket.emit('reset user password', resetObj, function(response) {
       emptyElementById('resetPasswordsCollapse');
       if (response.passOk && response.deleteOk) {
-        socket.emit('show players with password', { adminPass: document.getElementById('adminPass').value }, function (response) {
+        const showPlayersObj = {
+          adminUser: document.getElementById('adminUser').value,
+          adminPass: document.getElementById('adminPass').value
+        }
+        socket.emit('show players with password', showPlayersObj, function (response) {
           if (response.passOk) {
             listUsers(response.playersWithPassword);
           }
@@ -43,7 +48,11 @@ function initPasswordChangeEvent() {
   const passwordChangeCollapseEl = document.getElementById('resetPasswordsCollapse');
   if (passwordChangeCollapseEl != null) {
     passwordChangeCollapseEl.addEventListener('shown.bs.collapse', function () {
-      socket.emit('show players with password', { adminPass: document.getElementById('adminPass').value }, function (response) {
+      const showPlayersObj = {
+        adminUser: document.getElementById('adminUser').value,
+        adminPass: document.getElementById('adminPass').value
+      }
+      socket.emit('show players with password', showPlayersObj, function (response) {
           if (!response.passOk) {
             emptyElementById('resetPasswordsCollapse');
           } else {
@@ -63,7 +72,8 @@ function enableButtons() {
   removeClassByClass('report-button', 'disabled');
 }
 
-function mainInit() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function mainPasswordInit() {
   initPasswordChangeEvent();
   enableButtons();
 }
