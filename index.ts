@@ -259,6 +259,69 @@ try {
                 fn(retVal);
             });
     
+            // socket.on('delete game', async (deleteGameObj, fn) => {
+            //     const gameIdStr = deleteGameObj.gameId;
+            //     const retVal = {
+            //         leavingResult: 'NOTSET',
+            //         gameId: gameIdStr,
+            //     }
+            //     const ObjectId = require('mongodb').ObjectId;
+            //     const searchId = new ObjectId(gameIdStr);
+            //     const database = mongoUtil.getDb();
+            //     const collection = database.collection(promisewebCollection);
+            //     const query = {
+            //         _id: searchId,
+            //         gameStatus: GAMESTATUS.OnGoing,
+            //     };
+            //     const game = await collection.findOne(query);
+            //     if (game !== null) {
+            //         for (let i = 0; i < game.humanPlayers.length; i++) {
+            //             if (game.humanPlayers[i].playerId == leaverIdStr && game.humanPlayers[i].active) {
+            //                 const options = { upsert: true };
+            //                 const updateDoc = {
+            //                     $set: {
+            //                         humanPlayers: pf.deActivatePlayer(game.humanPlayers, leaverIdStr),
+            //                     }
+            //                 };
+            //                 const result = await collection.updateOne(query, updateDoc, options);
+            //                 if (result.modifiedCount == 1) {
+            //                     socket.leave(gameIdStr);
+            //                     const leaverName = game.humanPlayers[i].name;
+            //                     sm.removeClientFromMap(leaverName, socket.id, gameIdStr);
+            //                     let chatLine = 'player ' + leaverName + ' has left the game';
+            //                     io.to(gameIdStr).emit('new chat line', chatLine);
+            //                     retVal.leavingResult = 'LEAVED';
+            //                     chatLine = 'You can invite a new player to continue '+leaverName+'\'s game with these id\'s:'
+            //                     io.to(gameIdStr).emit('new chat line', chatLine);
+            //                     chatLine = 'GameId: '+gameIdStr;
+            //                     io.to(gameIdStr).emit('new chat line', chatLine);
+            //                     chatLine = 'PlayerId: '+leaverIdStr;
+            //                     io.to(gameIdStr).emit('new chat line', chatLine);
+            //                     break;
+            //                 }
+            //             }
+            //         }
+            //         let activePlayersInGame = 0;
+            //         game.humanPlayers.forEach(function (player) {
+            //             if (player.active) {
+            //                 activePlayersInGame++;
+            //             }
+            //         });
+            //         if (activePlayersInGame == 0) {
+            //             // all players have left the game, update gamestatus to 99
+            //             const options = { upsert: true };
+            //             const updateDoc = {
+            //                 $set: {
+            //                     gameStatus: GAMESTATUS.Dismissed,
+            //                 }
+            //             }
+            //             await collection.updateOne(query, updateDoc, options);
+            //         }
+            //     }
+    
+            //     fn(retVal);
+            // });
+    
             socket.on('leave game', async (leaveGame, fn) => {
                 const gameIdStr = leaveGame.gameId;
                 const retVal = {
@@ -1085,26 +1148,7 @@ try {
                 const adminUser = dataIsSecure ? data.adminUser : null;
                 const adminPass = dataIsSecure ? data.adminPass : null;
                 if (dataIsSecure) {
-                    const secretConfig = require(__dirname + '/secret.config.js');
-                    const adminUserName = secretConfig.adminUserName;
-
-                    if (adminUser == adminUserName) {
-                        const uCollection = database.collection(userCollection);
-                        const uQuery = {
-                            playerName: { $eq: adminUserName }
-                        };
-                        const userDoc = await uCollection.findOne(uQuery);
-                        if (userDoc == null) {
-                            retObj.passOk = false;
-                        } else {
-                            // check if password matches
-                            const passStr = adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
-                            const passOk = await bcrypt.compare(passStr, userDoc.passHash);
-                            if (passOk) {
-                                retObj.passOk = true;
-                            }
-                        }
-                    }
+                    retObj.passOk = await checkAdminAccess(adminUser, adminPass);
                 } else {
                     retObj.passOk = true;
                 }
@@ -1967,31 +2011,12 @@ try {
                 const retObj = {
                     passOk: false
                 }
-                const database = mongoUtil.getDb();
                 const adminUser = data.adminUser;
                 const adminPass = data.adminPass;
-                const secretConfig = require(__dirname + '/secret.config.js');
-                const adminUserName = secretConfig.adminUserName;
-
-                if (adminUser == adminUserName) {
-                    const uCollection = database.collection(userCollection);
-                    const uQuery = {
-                        playerName: { $eq: adminUserName }
-                    };
-                    const userDoc = await uCollection.findOne(uQuery);
-                    if (userDoc == null) {
-                        retObj.passOk = false;
-                    } else {
-                        // check if password matches
-                        const passStr = adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
-                        const passOk = await bcrypt.compare(passStr, userDoc.passHash);
-                        if (passOk) {
-                            retObj.passOk = true;
-                        }
-                    }
-                }
-
+                retObj.passOk = await checkAdminAccess(adminUser, adminPass);
+                
                 if (retObj.passOk) {
+                    const database = mongoUtil.getDb();
                     const gameIdStr = data.gameId;
                     console.log('generate game statistics - start to generate game statistics for %s', gameIdStr, gameIdStr);
                     const ObjectId = require('mongodb').ObjectId;
@@ -2022,32 +2047,13 @@ try {
                 }
                 const gameIdStr = data.gameId;
                 console.log('change nick - start to change nick', gameIdStr);
-                const database = mongoUtil.getDb();
-
+                
                 const adminUser = data.adminUser;
                 const adminPass = data.adminPass;
-                const secretConfig = require(__dirname + '/secret.config.js');
-                const adminUserName = secretConfig.adminUserName;
-
-                if (adminUser == adminUserName) {
-                    const uCollection = database.collection(userCollection);
-                    const uQuery = {
-                        playerName: { $eq: adminUserName }
-                    };
-                    const userDoc = await uCollection.findOne(uQuery);
-                    if (userDoc == null) {
-                        retObj.passOk = false;
-                    } else {
-                        // check if password matches
-                        const passStr = adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
-                        const passOk = await bcrypt.compare(passStr, userDoc.passHash);
-                        if (passOk) {
-                            retObj.passOk = true;
-                        }
-                    }
-                }
-
+                retObj.passOk = await checkAdminAccess(adminUser, adminPass);
+                
                 if (retObj.passOk) {
+                    const database = mongoUtil.getDb();
                     const ObjectId = require('mongodb').ObjectId;
                     const oldName = data.oldName;
                     const newName = data.newName;
@@ -2128,38 +2134,21 @@ try {
                     passOk: false,
                     playersWithPassword: []
                 }
-                const database = mongoUtil.getDb();
-                const secretConfig = require(__dirname + '/secret.config.js');
-                const adminUserName = secretConfig.adminUserName;
-
+                
                 const adminUser = getObj.adminUser;
                 const adminPass = getObj.adminPass;
-
-                if (adminUser == adminUserName) {
+                retObj.passOk = await checkAdminAccess(adminUser, adminPass);
+                
+                if (retObj.passOk) {
+                    const database = mongoUtil.getDb();
                     const uCollection = database.collection(userCollection);
-                    const uQuery = {
-                        playerName: { $eq: adminUserName }
-                    };
-                    const userDoc = await uCollection.findOne(uQuery);
-                    if (userDoc == null) {
-                        retObj.passOk = false;
-                    } else {
-                        // check if password matches
-                        const passStr = adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
-                        const passOk = await bcrypt.compare(passStr, userDoc.passHash);
-                        if (passOk) {
-                            retObj.passOk = true;
-                        }
+                    const usersQuery = {
+                        playerName: { $ne: adminUser }
                     }
-                    if (retObj.passOk) {
-                        const usersQuery = {
-                            playerName: { $ne: adminUserName }
-                        }
-                        const usersCusrsor = await uCollection.find(usersQuery);
-                        await usersCusrsor.forEach(function(val) {
-                            retObj.playersWithPassword.push(val.playerName);
-                        });
-                    }
+                    const usersCusrsor = await uCollection.find(usersQuery);
+                    await usersCusrsor.forEach(function(val) {
+                        retObj.playersWithPassword.push(val.playerName);
+                    });
                 }
                 fn(retObj);
             });
@@ -2170,34 +2159,21 @@ try {
                     passOk: false,
                     deleteOk: false
                 }
-                const database = mongoUtil.getDb();
-                const secretConfig = require(__dirname + '/secret.config.js');
-                const adminUserName = secretConfig.adminUserName;
-                if (adminUserName == null || adminUserName == '' || userToReset == adminUserName) {
-                    retObj.passOk = false;
+                const adminUser = resetObj.adminUser;
+                const adminPass = resetObj.adminPass;
+
+                retObj.passOk = await checkAdminAccess(adminUser, adminPass);
+                if (!resetObj.passOk || userToReset == adminUser) {
                     fn(retObj);
                     return;
                 }
 
-                const uCollection = database.collection(userCollection);
-                const uQuery = {
-                    playerName: { $eq: adminUserName }
-                };
-                const userDoc = await uCollection.findOne(uQuery);
-                if (userDoc == null) {
-                    retObj.passOk = false;
-                } else {
-                    // check if password matches
-                    const passStr = resetObj.adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
-                    const passOk = await bcrypt.compare(passStr, userDoc.passHash);
-                    if (passOk) {
-                        retObj.passOk = true;
-                    }
-                }
                 if (retObj.passOk) {
                     const deleteQuery = {
                         playerName: { $eq: userToReset }
                     }
+                    const database = mongoUtil.getDb();
+                    const uCollection = database.collection(userCollection);
                     const deleteResult = await uCollection.deleteOne(deleteQuery);
                     if (deleteResult.deletedCount == 1) {
                         console.log('user '+ userToReset + 'password reseted')
@@ -2212,6 +2188,33 @@ try {
 } catch (error) {
     const err = JSON.stringify(error);
     console.log('server - Error while connecting to MongoDB: ' + err, error);
+}
+
+async function checkAdminAccess(adminUser, adminPass) {
+    if (!adminUser || !adminPass) return false;
+
+    const database = mongoUtil.getDb();
+    const secretConfig = require(__dirname + '/secret.config.js');
+    const adminUserName = secretConfig.adminUserName;
+
+    if (adminUser == adminUserName) {
+        const uCollection = database.collection(userCollection);
+        const uQuery = {
+            playerName: { $eq: adminUserName }
+        };
+        const userDoc = await uCollection.findOne(uQuery);
+        if (userDoc == null) {
+            return false;
+        } else {
+            // check if password matches
+            const passStr = adminPass+':'+secretConfig.secretPhase+':'+adminUserName;
+            const passOk = await bcrypt.compare(passStr, userDoc.passHash);
+            if (passOk) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 async function startGame (gameInfo) {
