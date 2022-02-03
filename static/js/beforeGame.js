@@ -211,18 +211,23 @@ function createRulesElement(game) {
 }
 
 function deleteGame(gameId, deleteFromDB) {
+    emptyElementById('alertOngoingGamesDiv');
     const deleteObj = {
         gameToDelete: gameId,
         deleteFromDB: deleteFromDB,
         adminUser: document.getElementById('observerName').value,
         adminPass: document.getElementById('observerPass').value
-  }
+    }
     socket.emit('delete game', deleteObj, function (response) {
         console.log(response);
-        if (response.deleteOk) {
+        if (response.passOk) {
+            emptyElementById('alertOngoingGamesDiv');
             socket.emit('get ongoing games', {myId: window.localStorage.getItem('uUID')}, function (response) {
                 showOnGoingGames(response);
             });
+        } else {
+            console.error('Authentication error');
+            showAlert('alertOngoingGamesDiv', 'authOngoingGamesAlertDiv', 'Authentication error');
         }
     });
 }
@@ -355,7 +360,8 @@ function showOnGoingGames(gameList) {
             gamesContainerDiv.appendChild(statusDividerRow);
         }
         currentStatus = gameStatus;
-        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
+
+        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row onGoingGameRow onGoingGameRowStatus'+gameStatus);
         const gameStarted = new Date(game.created).getTime();
         const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
         const reportDateDiv = createElementWithIdAndClasses('div', null, 'col-3 report-date');
