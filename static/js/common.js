@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function gamePlayersToStr(players, totalHumans, totalComputers, winnerName) {
     var retStr = '';
     players.forEach(function (player) {
@@ -8,40 +9,6 @@ function gamePlayersToStr(players, totalHumans, totalComputers, winnerName) {
     if (totalComputers > 0) retStr+= ' (+'+totalComputers+')';
     return retStr;
 }
-
-function gamePlayersToDiv(players, totalHumans) {
-    const retDiv = createElementWithIdAndClasses('div', null, 'row');
-    const playerCol = createElementWithIdAndClasses('div', null, 'col');
-    const playerList = createElementWithIdAndClasses('ul', null, 'list-unstyled');
-    players.forEach(function (player) {
-        const playerItem = createElementWithIdAndClasses('li', null, 'player-in-game-item');
-        playerItem.innerText = player.name;
-        playerList.appendChild(playerItem);
-    });
-    for (let i = players.length; i < totalHumans; i++) {
-        const emptyPlayerItem = createElementWithIdAndClasses('li', null);
-        emptyPlayerItem.innerText = '{}';
-        playerList.appendChild(emptyPlayerItem);
-    }
-    playerCol.appendChild(playerList);
-    retDiv.appendChild(playerCol);
-    return retDiv;
-}
-
-// function color2(str) {
-//     let rgb = [];
-//     // Changing non-hexadecimal characters to 0
-//     str = [...str].map(c => (/[0-9A-Fa-f]/g.test(c)) ? c : 0).join('');
-//     // Padding string with zeroes until it adds up to 3
-//     while (str.length % 3) str += '0';
-
-//     // Dividing string into 3 equally large arrays
-//     for (let i = 0; i < str.length; i += str.length / 3)
-//         rgb.push(str.slice(i, i + str.length / 3));
-
-//     // Formatting a hex color from the first two letters of each portion
-//     return `#${rgb.map(string => string.slice(0, 2)).join('')}`;
-// }
 
 function increase_brightness(hex, percent){
     // strip the leading # if it's there
@@ -249,7 +216,7 @@ function showOneKeepsReport(reportObject) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const keepChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: keepsData,
         options: keepsOptions,
@@ -319,7 +286,7 @@ function showOnePointsReport(reportObject) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const pointsChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: pointsData,
         options: pointsOptions,
@@ -399,13 +366,14 @@ function showCardsReport(reportObject) {
     });
 
     const ctx = document.getElementById(canvasIdStr);
-    const cardsChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: cardsData,
         options: cardsOptions,
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getOneGameReport(gameId) {
     const reportModalEl = document.getElementById('oneGameReportModal');
     reportModalEl.addEventListener('shown.bs.modal', function() {
@@ -422,12 +390,7 @@ function getOneGameReport(gameId) {
     bsModal.show();
 }
 
-function getCurrentRoundInd() {
-    const roundIndStr = document.getElementById('currentRoundInd').value;
-    if (roundIndStr != '') return parseInt(roundIndStr, 10);
-    return null;
-}
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function emptyElementById(elId) {
     const el = document.getElementById(elId);
     if (el == null) return;
@@ -435,34 +398,38 @@ function emptyElementById(elId) {
         el.removeChild(el.firstChild);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function emptyElementByClass(className) {
     const els = document.getElementsByClassName(className);
-    Array.prototype.forEach.call(els, function(el, i) {
+    Array.prototype.forEach.call(els, function(el) {
         while (el.firstChild)
             el.removeChild(el.firstChild);
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function removeElementById(elName) {
     const el = document.getElementById(elName);
     if (el != null)
         el.parentNode.removeChild(el);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function disableButtonsByClass(btnClass, disabled) {
     const buttons = document.getElementsByClassName(btnClass);
-    Array.prototype.forEach.call(buttons, function(el, i) {
+    Array.prototype.forEach.call(buttons, function(el) {
         el.disabled = disabled;
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createElementWithIdAndClasses(elType, elId, classes, opt) {
     const el = document.createElement(elType);
     if (elId != null)
         el.setAttribute('id', elId);
     if (classes !== undefined && classes !== null) {
         const classArr = classes.split(' ');
-        Array.prototype.forEach.call(classArr, function(classStr, i) {
+        Array.prototype.forEach.call(classArr, function(classStr) {
             el.classList.add(classStr);
         });
     }
@@ -475,25 +442,22 @@ function createElementWithIdAndClasses(elType, elId, classes, opt) {
     return el;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function removeClassByClass(searchClass, removeClass) {
     if (removeClass == undefined || removeClass == null || !removeClass) removeClass = searchClass;
     const els = document.getElementsByClassName(searchClass);
-    Array.prototype.forEach.call(els, function(el, i) {
+    Array.prototype.forEach.call(els, function(el) {
         el.classList.remove(removeClass);
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function removeEventByClass(className, eventName, functionName, removeClass) {
     const els = document.getElementsByClassName(className);
-    Array.prototype.forEach.call(els, function(el, i) {
+    Array.prototype.forEach.call(els, function(el) {
         el.removeEventListener(eventName, functionName, false);
         if (removeClass) el.classList.remove(className);
     });
-}
-
-function getSelectValue(selectName) {
-    const sel = document.getElementById(selectName);
-    return parseInt(sel.options[sel.selectedIndex].value, 10);
 }
 
 function showAlert(divId, alertId, alertText) {
@@ -506,3 +470,4 @@ function showAlert(divId, alertId, alertText) {
     alertContainer.appendChild(alertDiv);
     new bootstrap.Alert(alertDiv);
 }
+

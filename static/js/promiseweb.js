@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         let rnd = window.crypto.getRandomValues(new Uint32Array(1))[0];
@@ -23,6 +24,22 @@ function getCardIndex(cards, myCard) {
         }
     });
     return index;
+}
+
+function getCurrentRoundInd() {
+    const roundIndStr = document.getElementById('currentRoundInd').value;
+    if (roundIndStr != '') return parseInt(roundIndStr, 10);
+    return null;
+}
+
+function initOtherPlayers(myRound) {
+    const bgColor = window.getComputedStyle(document.body, null).getPropertyValue("background-color");
+    myRound.players.forEach(function(player, idx) {
+        const playerNameDiv = document.getElementById('player'+otherPlayerMapper(idx, myRound.players)+'NameCol');
+        playerNameDiv.innerText = player.name;
+        const playerInfoRow = playerNameDiv.parentElement;
+        playerInfoRow.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(player.name)+', '+bgColor+')';
+    });
 }
 
 function drawCards(myRound) {
@@ -219,11 +236,11 @@ function showMyTurn() {
 function hideThinkings() {
     removeElementById('pulsingRow');
     let redDivs = document.getElementsByClassName('thinking-red-div');
-    Array.prototype.forEach.call(redDivs, function(el, i){
+    Array.prototype.forEach.call(redDivs, function(el){
         el.classList.remove('thinking-red-div');
     });
     let greenDivs = document.getElementsByClassName('thinking-green-div');
-    Array.prototype.forEach.call(greenDivs, function(el, i){
+    Array.prototype.forEach.call(greenDivs, function(el){
         el.classList.remove('thinking-green-div');
     });
 }
@@ -502,7 +519,6 @@ function getPromise(myRound, evenPromisesAllowed, speedPromise, opponentPromiseC
         showWhoIsPromising(myRound);
         dimMyCards(myRound, 0.7);
     }
-    showLiveStats(myRound);
 }
 
 function amIStarterOfPlay(myRound) {
@@ -887,12 +903,6 @@ function avgRoundPoints(playersArr) {
     return avgRoundPoints;
 }
 
-function showLiveStats(myRound) {
-    if (myRound.statistics == null || myRound.statistics.statsAvgObj == null) return;
-    liveStats1Graph(myRound.statistics.statsAvgObj);
-    liveStats2Graph(myRound.statistics.statsAvgObj);
-}
-
 function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) {
     checkSmall(myRound.players.length);
     hideThinkings();
@@ -914,7 +924,6 @@ function playRound(myRound, freeTrump, privateSpeedGame, opponentGameCardValue) 
         showWhoIsPlaying(myRound);
         dimMyCards(myRound, 0.8);
     }
-    showLiveStats(myRound);
 }
 
 function getCardFromDiv(divStr) {
@@ -1087,7 +1096,7 @@ function initPromiseTable(promiseTable) {
 
     const tooltippedDivs = document.getElementsByClassName('promTooltip');
     if (tooltippedDivs != null) {
-        Array.prototype.forEach.call(tooltippedDivs, function(el, i) {
+        Array.prototype.forEach.call(tooltippedDivs, function(el) {
                 const tooltip = bootstrap.Tooltip.getInstance(el);
                 if (tooltip != null) {
                     // disposed elements can't have animations
@@ -1123,7 +1132,7 @@ function initPromiseTable(promiseTable) {
                     el.classList.add('promiseUnder');
                     tooltipTitle = 'Under promised, total: ' + totalPromise + '/' + cardsInRound;
                 }
-                const elTootip = new bootstrap.Tooltip(el, {title: tooltipTitle, animation: animate});
+                new bootstrap.Tooltip(el, {title: tooltipTitle, animation: animate});
             }
             const promise = promiseTable.promisesByPlayers[i][j];
             const speedPromiseStr = promise.speedPromisePoints != null && promise.speedPromisePoints != 0 ? (promise.speedPromisePoints == 1 ? '+' : promise.speedPromisePoints) : '';
@@ -1146,11 +1155,11 @@ function initPromiseTable(promiseTable) {
                     playerUnder++;
                 }
                 if (speedPromiseStr != '') tooltipStr+= ' ('+speedPromiseStr+')';
-                const playerPromTooltip = new bootstrap.Tooltip(playerPromEl, {title: tooltipStr, animation: animate});
+                new bootstrap.Tooltip(playerPromEl, {title: tooltipStr, animation: animate});
             }
         }
         const promiseNameEl = document.getElementById('player'+i+'PromiseName');
-        const promiseNameTooltip = new bootstrap.Tooltip(promiseNameEl, {title: "kept: " + playerKept + " / over: " + playerOver + " / under: " + playerUnder, animation: animate});
+        new bootstrap.Tooltip(promiseNameEl, {title: "kept: " + playerKept + " / over: " + playerOver + " / under: " + playerUnder, animation: animate});
     }
 }
 
@@ -1188,7 +1197,7 @@ function initScoreBoard(promiseTable, gameOver, avgStats) {
 
                 tooltipStr+=  ' = '+parseFloat(playerPoints - avgPoints).toFixed(1) + ' points in average';
 
-                const playerPointsTooltip = new bootstrap.Tooltip(playerPointsEl, {title: tooltipStr});
+                new bootstrap.Tooltip(playerPointsEl, {title: tooltipStr});
             } else {
                 playerPointsEl.classList.add('avgHistory');
                 playerPointsEl.innerText = parseFloat(avgPoints).toFixed(1);
@@ -1205,98 +1214,23 @@ function initScoreBoard(promiseTable, gameOver, avgStats) {
 function checkSmall(playerCount) {
     if (playerCount > 4) {
         const htmls = document.getElementsByTagName('html');
-        Array.prototype.forEach.call(htmls, function(el, i){
+        Array.prototype.forEach.call(htmls, function(el){
             el.classList.add('html-sm');
         });
         const els = document.getElementsByClassName('cardCol');
-        Array.prototype.forEach.call(els, function(el, i){
+        Array.prototype.forEach.call(els, function(el){
             el.classList.add('cardCol-sm');
         });
     } else {
         const els1 = document.getElementsByClassName('html-sm');
-        Array.prototype.forEach.call(els1, function(el, i){
+        Array.prototype.forEach.call(els1, function(el){
             el.classList.remove('html-sm');
         });
         const els2 = document.getElementsByClassName('cardCol-sm');
-        Array.prototype.forEach.call(els2, function(el, i){
+        Array.prototype.forEach.call(els2, function(el){
             el.classList.remove('cardCol-sm');
         });
     }
-}
-
-function printPointStats(players) {
-    const node = document.getElementById('pointsStats');
-
-    if (node.children.length > 0) return;
-
-    const inGameReportCanvasName = 'averagesReportCanvas';
-    const reportCanvas = createElementWithIdAndClasses('canvas', inGameReportCanvasName);
-    node.appendChild(reportCanvas);
-    const inGameReportOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: {
-                ticks: {
-                    beginAtZero: true,
-                }
-            },
-        },
-        plugins: {
-            title: {
-                display: false,
-            },
-            legend: {
-                display: false,
-            },
-        },
-    };
-
-    const datasetsData = [];
-    const playersArr = [];
-    const allArr = [];
-    const equalArr = [];
-    for (let i = 0; i < players.length; i++) {
-        playersArr.push(players[i].name);
-        const allGamesSum = players[i].playerStats.playersAllGames.reduce((a, b) => a + b, 0);
-        const allGamesCount = players[i].playerStats.playersAllGames.length;
-        const allGamesAvg = allGamesSum/allGamesCount;
-        const equalGamesSum = players[i].playerStats.playersEqualGames.reduce((a, b) => a + b, 0);
-        const equalGamesCount = players[i].playerStats.playersEqualGames.length;
-        const equalGamesAvg = equalGamesSum/equalGamesCount;
-        const allGamesTooltip = 'avg points  '+ (allGamesAvg).toFixed(1) +'\nin all previous '+ allGamesCount +' games';
-        const equalGamesTooltip = 'avg points  '+ (equalGamesAvg).toFixed(1) +'\nin all previous '+ equalGamesCount +' equal games';
-        allArr.push(allGamesAvg);
-        equalArr.push(equalGamesAvg);
-        // reportDataArr.push([players[i].name, allGamesAvg, allGamesTooltip, equalGamesAvg, equalGamesTooltip]);
-    }
-    datasetsData.push({
-        label: 'all games',
-        data: allArr,
-        borderWidth: 1,
-        backgroundColor: 'rgba(66,133,244,1.0)',
-    });
-    datasetsData.push({
-        label: 'equal games',
-        data: equalArr,
-        borderWidth: 1,
-        backgroundColor: 'rgba(233,66,66,1.0)',
-    });
-    const barData = {
-        labels: playersArr,
-        datasets: datasetsData,
-    };
-
-    Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.chart.canvas.id == inGameReportCanvasName) instance.destroy();
-    });
-
-    const ctx = document.getElementById(inGameReportCanvasName);
-    const inGameReportChart = new Chart(ctx, {
-        type: 'bar',
-        data: barData,
-        options: inGameReportOptions,
-    });
 }
 
 async function cardPlayedCallback(gameInfo) {
@@ -1384,9 +1318,9 @@ function browserReload(myRound, speedPromise) {
     showPlayedCards(myRound);
     showWonCards(myRound);
     checkSmall(myRound.players.length);
-    printPointStats(myRound.players)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function appendToChat(text) {
     const currentText = document.getElementById('chatTextArea').value;
     document.getElementById('chatTextArea').value = currentText +'\n'+ text;

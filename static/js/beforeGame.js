@@ -1,3 +1,28 @@
+function getSelectValue(selectName) {
+    const sel = document.getElementById(selectName);
+    return parseInt(sel.options[sel.selectedIndex].value, 10);
+}
+
+function gamePlayersToDiv(players, totalHumans) {
+    const retDiv = createElementWithIdAndClasses('div', null, 'row');
+    const playerCol = createElementWithIdAndClasses('div', null, 'col');
+    const playerList = createElementWithIdAndClasses('ul', null, 'list-unstyled');
+    players.forEach(function (player) {
+        const playerItem = createElementWithIdAndClasses('li', null);
+        playerItem.innerText = player.name;
+        playerList.appendChild(playerItem);
+    });
+    for (let i = players.length; i < totalHumans; i++) {
+        const emptyPlayerItem = createElementWithIdAndClasses('li', null);
+        emptyPlayerItem.innerText = '{}';
+        playerList.appendChild(emptyPlayerItem);
+    }
+    playerCol.appendChild(playerList);
+    retDiv.appendChild(playerCol);
+    return retDiv;
+}
+
+
 function validateNewGame(gameOptions) {
     if (gameOptions.humanPlayersCount + gameOptions.botPlayersCount < 2 || gameOptions.humanPlayersCount + gameOptions.botPlayersCount > 6) {
         alert('Total number of players must be between 2 and 5');
@@ -272,17 +297,89 @@ function showGames(gameList) {
     }
 }
 
+function showOnGoingGames(gameList) {
+    console.log(gameList);
+    const onGoingGameListContainer = document.getElementById('observeGameCollapse');
+
+    const loginRow = createElementWithIdAndClasses('div', null, 'row');
+    const loginCol1 = createElementWithIdAndClasses('div', null, 'col form-floating');
+    const loginInputText = createElementWithIdAndClasses('input', 'observerName', 'form-control', { type: 'text', placeholder: 'observerPH'});
+    const loginInputLabel = createElementWithIdAndClasses('label', null, null, { for: 'observerName' });
+    loginInputLabel.innerText = 'login name';
+    loginCol1.appendChild(loginInputText);
+    loginCol1.appendChild(loginInputLabel);
+    loginRow.appendChild(loginCol1);
+    const loginCol2 = createElementWithIdAndClasses('div', null, 'col form-floating');
+    const loginInputPass = createElementWithIdAndClasses('input', 'observerPass', 'form-control', { type: 'password', placeholder: 'observerPW'});
+    const loginInputPassLabel = createElementWithIdAndClasses('label', null, null, { for: 'observerPass' });
+    loginInputPassLabel.innerText = 'password';
+    loginCol2.appendChild(loginInputPass);
+    loginCol2.appendChild(loginInputPassLabel);
+    loginRow.appendChild(loginCol2);
+    onGoingGameListContainer.appendChild(loginRow);
+
+    const dateformatoptions = {
+        year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false,
+    };
+    gameList.forEach(function (game) {
+        const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row');
+        const gameStarted = new Date(game.created).getTime();
+        const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
+        const reportDateDiv = createElementWithIdAndClasses('div', null, 'col-2 report-date');
+        reportDateDiv.innerText = dateStr;
+        gameContainerDiv.appendChild(reportDateDiv);
+
+        const playersContainer = createElementWithIdAndClasses('div', 'gamePlayers' + game.id, 'col-4 report-players');
+        playersContainer.innerHTML = gamePlayersToStr(game.humanPlayers, game.humanPlayersCount, game.computerPlayersCount, null);
+        gameContainerDiv.appendChild(playersContainer);
+
+        const btnId = 'observeGameButton' + game.id;
+        const observeGameButton = createElementWithIdAndClasses('button', btnId, 'btn btn-primary observeGameButton', { value: game.id });
+        observeGameButton.innerText = 'Observe game';
+        observeGameButton.addEventListener('click', function() {
+            observeGame(this.value);
+        });
+        const observeGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
+        observeGameButtonContainer.appendChild(observeGameButton);
+        gameContainerDiv.appendChild(observeGameButtonContainer);
+
+        const deleteBtnId = 'deleteGameButton' + game.id;
+        const deleteGameButton = createElementWithIdAndClasses('button', deleteBtnId, 'btn btn-primary deleteGameButton', { value: game.id });
+        deleteGameButton.innerText = 'Delete game';
+        deleteGameButton.addEventListener('click', function() {
+            deleteGame(this.value);
+        });
+        const deleteGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
+        deleteGameButtonContainer.appendChild(deleteGameButton);
+        gameContainerDiv.appendChild(deleteGameButtonContainer);
+
+        onGoingGameListContainer.appendChild(gameContainerDiv);
+    });
+}
+
+
 function initGameListEvent() {
     document.getElementById('joinGameCollapse').addEventListener('shown.bs.collapse', function () {
         emptyElementById('joinGameCollapse');
         socket.emit('get games', {myId: window.localStorage.getItem('uUID')}, function (response) {
-            console.log(response);
             showGames(response);
         });
     });
 
     document.getElementById('joinGameCollapse').addEventListener('hidden.bs.collapse', function () {
         emptyElementById('joinGameCollapse');
+    });
+}
+
+function initOnGoingGameListEvent() {
+    document.getElementById('observeGameCollapse').addEventListener('shown.bs.collapse', function () {
+        socket.emit('get ongoing games', {myId: window.localStorage.getItem('uUID')}, function (response) {
+            showOnGoingGames(response);
+        });
+    });
+
+    document.getElementById('observeGameCollapse').addEventListener('hidden.bs.collapse', function () {
+        emptyElementById('observeGameCollapse');
     });
 }
 
@@ -399,6 +496,7 @@ function initShowFrontPageBarsModal(reportData) {
 
 function initEvents() {
     initGameListEvent();
+    initOnGoingGameListEvent();
 }
 
 function usedRulesToHtml(usedRulesCount) {
@@ -694,7 +792,7 @@ function showTabulatorReport(reportData) {
     
     const tabledata = generateTabulatorData(reportData);
 
-    const table = new Tabulator("#tabulatorRepotrGrid", {
+    new Tabulator("#tabulatorRepotrGrid", {
         //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
         data:tabledata, //assign data to table
         layout:"fitColumns", //fit columns to width of table (optional)
@@ -707,7 +805,6 @@ function getReportData() {
         console.log(response);
         showTabulatorReport(response);
         initShowFrontPageBarsModal(response);
-        const tooltipTemplate = '<div class="tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-wide"></div></div>';
 
         document.getElementById("gamesPlayedInfo").innerHTML = 'Total of '+response.gamesPlayed+' games and '+ response.roundsPlayed +' rounds played so far...';
         document.getElementById("playersTotalInfo").innerHTML = ' ... and '+response.playersTotal+' players hit '+ response.totalCardsHit +' cards in those games.';
@@ -737,6 +834,7 @@ function getReportData() {
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function mainInit() {
     initEvents();
     initButtons();
