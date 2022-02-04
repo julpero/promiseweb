@@ -447,7 +447,6 @@ try {
             });
     
             socket.on('join game', async (newPlayer, fn) => {
-                let okToJoin = true;
                 const gameIdStr = newPlayer.gameId;
                 const myName = newPlayer.myName;
                 const retVal = {
@@ -455,51 +454,9 @@ try {
                     gameId: gameIdStr,
                 }
                 
-                const myId = newPlayer.myId;
-                const database = mongoUtil.getDb();
-
-                const secretConfig = require(__dirname + '/secret.config.js');
-                const saltRounds = 10;
-                const uCollection = database.collection(userCollection);
-                const uQuery = {
-                    playerName: { $eq: myName }
-                };
-                const userDoc = await uCollection.findOne(uQuery);
-                if (userDoc == null) {
-                    // first time user, check if both passwords match
-                    if (newPlayer.myPass1 != newPlayer.myPass2) {
-                        retVal.joiningResult = 'PWDMISMATCH';
-                        okToJoin = false;
-                    }
-                    if (newPlayer.myPass2.length == 0) {
-                        retVal.joiningResult = 'PWD2EMPTY';
-                        okToJoin = false;
-                    }
-                    if (newPlayer.myPass1.length < 4) {
-                        retVal.joiningResult = 'PWDSHORT';
-                        okToJoin = false;
-                    }
-
-                    if (okToJoin) {
-                        // create user
-                        const passStr = newPlayer.myPass1+':'+secretConfig.secretPhase+':'+myName;
-                        bcrypt.hash(passStr, saltRounds, async function(err, hash) {
-                            const userDoc2 = {
-                                playerName: myName,
-                                passHash: hash,
-                            };
-                            await uCollection.insertOne(userDoc2);
-                        });
-                    }
-                } else {
-                    // check if password matches
-                    const passStr = newPlayer.myPass1+':'+secretConfig.secretPhase+':'+myName;
-                    const passOk = await bcrypt.compare(passStr, userDoc.passHash);
-                    if (!passOk) {
-                        retVal.joiningResult = 'PWDFAILS';
-                        okToJoin = false;
-                    }
-                }
+                const loginObj = await checkLogin(myName, newPlayer.myPass1, newPlayer.myPass2);
+                retVal.joiningResult = loginObj.resultStr;
+                const okToJoin = loginObj.loginOk;
 
                 // unset passwords
                 newPlayer.myPass1 = null;
@@ -510,6 +467,8 @@ try {
 
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
+                const myId = newPlayer.myId;
+                const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
                 const query = {
                     _id: searchId,
@@ -568,10 +527,6 @@ try {
                     io.emit('update gameinfo', resultGameInfo);
     
                     if (resultGameInfo.humanPlayersCount == resultGameInfo.humanPlayers.length) {
-                        // add bot players here
-                        if (resultGameInfo.botPlayersCount > 0) {
-                            // resultGameInfo.humanPlayers.concat(ai.getRandomAiPlayers(resultGameInfo.botPlayersCount));
-                        }
                         // start game
                         await startGame(resultGameInfo);
                     }
@@ -580,7 +535,15 @@ try {
 
             socket.on('observe game', async (observeGameOptions, fn) => {
                 console.log(observeGameOptions);
-                fn();
+                const retObj = {
+                    passOk: false,
+                    playerOk: false,
+                    data: null
+                }
+
+                // first check that user is ok:
+                
+                fn(retObj);
             });
     
             socket.on('create game', async (gameOptions, fn) => {
@@ -607,48 +570,9 @@ try {
                     }
                 });
 
-                const secretConfig = require(__dirname + '/secret.config.js');
-                const saltRounds = 10;
-                const uCollection = database.collection(userCollection);
-                const uQuery = {
-                    playerName: { $eq: adminUserName }
-                };
-                const userDoc = await uCollection.findOne(uQuery);
-                if (userDoc == null) {
-                    // first time user, check if both passwords match
-                    if (gameOptions.userPassword1 != gameOptions.userPassword2) {
-                        errorCode = 'PWDMISMATCH';
-                        okToCreate = false;
-                    }
-                    if (gameOptions.userPassword2.length == 0) {
-                        errorCode = 'PWD2EMPTY';
-                        okToCreate = false;
-                    }
-                    if (gameOptions.userPassword1.length < 4) {
-                        errorCode = 'PWDSHORT';
-                        okToCreate = false;
-                    }
-
-                    if (okToCreate) {
-                        // create user
-                        const passStr = gameOptions.userPassword1+':'+secretConfig.secretPhase+':'+adminUserName;
-                        bcrypt.hash(passStr, saltRounds, async function(err, hash) {
-                            const userDoc2 = {
-                                playerName: adminUserName,
-                                passHash: hash,
-                            };
-                            await uCollection.insertOne(userDoc2);
-                        });
-                    }
-                } else {
-                    // check if password matches
-                    const passStr = gameOptions.userPassword1+':'+secretConfig.secretPhase+':'+adminUserName;
-                    const passOk = await bcrypt.compare(passStr, userDoc.passHash);
-                    if (!passOk) {
-                        errorCode = 'PWDFAILS';
-                        okToCreate = false;
-                    }
-                }
+                const loginObj = await checkLogin(adminUserName, gameOptions.userPassword1, gameOptions.userPassword2);
+                errorCode = loginObj.resultStr;
+                okToCreate = loginObj.loginOk;
 
                 // unset passwords
                 gameOptions.userPassword1 = null;
@@ -2208,6 +2132,59 @@ async function checkAdminAccess(adminUser, adminPass) {
         }
     }
     return false;
+}
+
+async function checkLogin(userName, userPass1, userPass2) {
+    const loginObj = {
+        resultStr: "",
+        loginOk: true
+    }
+    const database = mongoUtil.getDb();
+    const secretConfig = require(__dirname + '/secret.config.js');
+    const saltRounds = 10;
+    const uCollection = database.collection(userCollection);
+    const uQuery = {
+        playerName: { $eq: userName }
+    };
+    const userDoc = await uCollection.findOne(uQuery);
+
+    if (userDoc == null) {
+        // first time user, check if both passwords match
+        if (userPass1 != userPass2) {
+            loginObj.resultStr = 'PWDMISMATCH';
+            loginObj.loginOk = false;
+        }
+        if (userPass2.length == 0) {
+            loginObj.resultStr = 'PWD2EMPTY';
+            loginObj.loginOk = false;
+        }
+        if (userPass1.length < 4) {
+            loginObj.resultStr = 'PWDSHORT';
+            loginObj.loginOk = false;
+        }
+
+        if (loginObj.loginOk) {
+            // create user
+            const passStr = userPass1+':'+secretConfig.secretPhase+':'+userName;
+            bcrypt.hash(passStr, saltRounds, async function(err, hash) {
+                const userDoc2 = {
+                    playerName: userName,
+                    passHash: hash,
+                };
+                await uCollection.insertOne(userDoc2);
+            });
+        }
+    } else {
+        // check if password matches
+        const passStr = userPass1+':'+secretConfig.secretPhase+':'+userName;
+        const passOk = await bcrypt.compare(passStr, userDoc.passHash);
+        if (!passOk) {
+            loginObj.resultStr = 'PWDFAILS';
+            loginObj.loginOk = false;
+        }
+    }
+
+    return loginObj;
 }
 
 async function startGame (gameInfo) {

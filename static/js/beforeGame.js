@@ -221,10 +221,32 @@ function deleteGame(gameId, deleteFromDB) {
     socket.emit('delete game', deleteObj, function (response) {
         console.log(response);
         if (response.passOk) {
-            emptyElementById('alertOngoingGamesDiv');
             socket.emit('get ongoing games', {myId: window.localStorage.getItem('uUID')}, function (response) {
                 showOnGoingGames(response);
             });
+        } else {
+            console.error('Authentication error');
+            showAlert('alertOngoingGamesDiv', 'authOngoingGamesAlertDiv', 'Authentication error');
+        }
+    });
+}
+
+function observeGame(gameId) {
+    emptyElementById('alertOngoingGamesDiv');
+    const observeObj = {
+        gameToObserve: gameId,
+        observerName: document.getElementById('observerName').value,
+        observerPass: document.getElementById('observerPass').value
+    }
+    socket.emit('observe game', observeObj, function(response) {
+        console.log(response);
+        if (response.passOk) {
+            if (response.playerOk) {
+                showAlert('alertOngoingGamesDiv', 'waitingGameAlertDiv', 'Waiting players to allow you to join game...');
+            } else {
+                console.error('No friends playingg error');
+                showAlert('alertOngoingGamesDiv', 'noFriensdInGameAlertDiv', 'No friends playing in this game (need at least ten same games)');
+            }
         } else {
             console.error('Authentication error');
             showAlert('alertOngoingGamesDiv', 'authOngoingGamesAlertDiv', 'Authentication error');
@@ -378,8 +400,7 @@ function showOnGoingGames(gameList) {
             const observeGameButton = createElementWithIdAndClasses('button', btnId, 'btn btn-primary observeGameButton', { value: game.id });
             observeGameButton.innerText = 'Observe game';
             observeGameButton.addEventListener('click', function() {
-                // eslint-disable-next-line no-undef
-                //observeGame(this.value);
+                observeGame(this.value);
             });
             const observeGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
             observeGameButtonContainer.appendChild(observeGameButton);
