@@ -1328,6 +1328,12 @@ function appendToChat(text) {
     textArea.scrollTop = textArea.scrollHeight;
 }
 
+function newObserverCallback(newObserver) {
+    document.getElementById('openObserversButton').classList.remove('disabled');
+    document.getElementById('openObserversButton').classList.remove('btn-secondary');
+    document.getElementById('openObserversButton').classList.add('btn-warning');
+}
+
 function randomNegToPos(max) {
     return Math.floor(Math.random() * (2*max)) - max;
 }

@@ -36,6 +36,12 @@ const GAMESTATUS = {
     Dismissed: 99
 }
 
+const OBSERVEMODE = {
+    NoSet: 0,
+    Allow: 1,
+    AllowWithCards: 2
+}
+
 const minGamesToReport = 5;
 const vanillaGameRules = {
     // startRound: {$eq: 10},
@@ -57,6 +63,7 @@ const promisewebCollection = 'promiseweb';
 const statsCollectionStr = 'promisewebStats';
 const pingCollection = 'pingCollection';
 const userCollection = 'userCollection';
+const observeCollection = 'observeCollection';
 
 const mongoUtil = require(__dirname + '/mongoUtil.js');
 try {
@@ -541,8 +548,162 @@ try {
                     data: null
                 }
 
+                const observerName = observeGameOptions.observerName;
+                const observerId = observeGameOptions.myId;
+                const gameIdStr = observeGameOptions.gameToObserve;
+
                 // first check that user is ok:
-                
+                const loginObj = await checkLogin(observerName, observeGameOptions.observerPass, null);
+                if (loginObj.loginOk) {
+                    retObj.passOk = true;
+                    
+                    // get game players
+
+                    const ObjectId = require('mongodb').ObjectId;
+                    const searchId = new ObjectId(gameIdStr);
+                    const database = mongoUtil.getDb();
+                    const collection = database.collection(promisewebCollection);
+                    const query = {
+                        _id: searchId,
+                        gameStatus: GAMESTATUS.OnGoing,
+                    };
+                    const game = await collection.findOne(query);
+                    if (game != null) {
+                        const playersInGame = [];
+                        for (let i = 0; i < game.humanPlayers.length; i++) {
+                            const otherPlayer = game.humanPlayers[i].name;
+                            const otherPlayerId = game.humanPlayers[i].playerId;
+                            if (otherPlayer == observerName) continue;
+                            playersInGame.push({
+                                name: otherPlayer,
+                                playerId: otherPlayerId,
+                                observeMode: OBSERVEMODE.NoSet
+                            })
+                        }
+                        for (let i = 0; i < playersInGame.length; i++) {
+                            const otherPlayer = playersInGame[i].name;
+                            // check if there is at least one friend playing in this game
+                            const gamesQuery = {
+                                gameStatus: {
+                                    $eq: GAMESTATUS.Played
+                                },
+                                "humanPlayers.name": {
+                                    $all: [
+                                        observerName, otherPlayer
+                                    ]
+                                }
+                            }
+                            const gamesWithPlayer = await collection.countDocuments(gamesQuery);
+                            if (gamesWithPlayer >= 5) {
+                                let sendObserving = false;
+                                retObj.playerOk = true;
+                                retObj.data = "START WAITING";
+
+                                const obsCollection = database.collection(observeCollection);
+                                const obsQuery = {
+                                    gameId: gameIdStr
+                                }
+                                const obsGame = await obsCollection.findOne(obsQuery);
+
+                                const observer = {
+                                    name: observerName,
+                                    observerId: observerId,
+                                    playersInGame: playersInGame
+                                }
+
+                                if (obsGame == null) {
+                                    // no one else is observing this game
+                                    const observers = [];
+                                    observers.push(observer);
+                                    const newObsGame = {
+                                        gameId: gameIdStr,
+                                        observers: observers
+                                    }
+                                    await obsCollection.insertOne(newObsGame);
+                                    sendObserving= true;
+                                } else {
+                                    let alreadyObserving = false;
+                                    for (let j = 0; j < obsGame.observers.length; j++) {
+                                        if (obsGame.observers[j].name == observerName) {
+                                            // already sent observer call, do nothing
+                                            alreadyObserving = true;
+                                        }
+                                    }
+                                    if (!alreadyObserving) {
+                                        const newObservers = obsGame.observers;
+                                        newObservers.push(observer);
+                                        const options = { upsert: true };
+                                        const updatedObserversDoc = {
+                                            $set: { observers: newObservers }
+                                        }
+                                        const updateResult = await obsCollection.updateOne(obsQuery, updatedObserversDoc, options);
+                                        if (updateResult.modifiedCount == 1) {
+                                            sendObserving = true;
+                                        }
+                                    }
+                                }
+                                if (sendObserving) {
+                                    const chatLine = observerName+' want\'s to observe this game';
+                                    io.to(gameIdStr).emit('new chat line', chatLine);
+
+                                    io.to(gameIdStr).emit('new observer', observerName);
+                                }
+
+                                break;
+                            }
+                        }
+                    } else {
+                        retObj.data = "NO GAME";
+                    }
+
+                }
+                fn(retObj);
+            });
+
+            socket.on('get observers', async (getObj, fn) => {
+                const retObj = {
+                    observers: []
+                }
+                const gameIdStr = getObj.gameId;
+                const myId = getObj.myId;
+
+                const database = mongoUtil.getDb();
+                const ObjectId = require('mongodb').ObjectId;
+                const searchId = new ObjectId(gameIdStr);
+                const collection = database.collection(promisewebCollection);
+                const query = {
+                    _id: searchId,
+                    gameStatus: { $lte: GAMESTATUS.OnGoing },
+                    'humanPlayers.playerId': { $eq: myId }
+                };
+                const game = await collection.findOne(query);
+                if (game == null) {
+                    fn(retObj);
+                    return;
+                } else {
+                    const obsCollection = database.collection(observeCollection);
+                    const obsQuery = {
+                        gameId: gameIdStr
+                    }
+                    const obsGame = await obsCollection.findOne(obsQuery);
+                    if (obsGame != null) {
+                        for (let i = 0; i < obsGame.observers.length; i++) {
+                            const observerName = obsGame.observers[i].name;
+                            for (let j = 0; j < obsGame.observers[i].playersInGame.length; j++) {
+                                const playerId = obsGame.observers[i].playersInGame[j].playerId;
+                                if (playerId == myId) {
+                                    const observer = {
+                                        name: observerName,
+                                        myChoice: obsGame.observers[i].playersInGame[j].observeMode
+                                    }
+                                    retObj.observers.push(observer);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 fn(retObj);
             });
     
@@ -2107,6 +2268,12 @@ try {
     console.log('server - Error while connecting to MongoDB: ' + err, error);
 }
 
+/**
+ * Checks if user is admin
+ * @param adminUser string
+ * @param adminPass string
+ * @returns boolean if user is admin
+ */
 async function checkAdminAccess(adminUser, adminPass) {
     if (!adminUser || !adminPass) return false;
 
@@ -2134,10 +2301,21 @@ async function checkAdminAccess(adminUser, adminPass) {
     return false;
 }
 
+/**
+ * Checks user login credentials
+ * @param userName string
+ * @param userPass1 string
+ * @param userPass2 string
+ * @returns object with resultStr string and loginOk boolean
+ */
 async function checkLogin(userName, userPass1, userPass2) {
     const loginObj = {
         resultStr: "",
         loginOk: true
+    }
+    if (!userName || !userPass1) {
+        loginObj.loginOk = false;
+        return loginObj;
     }
     const database = mongoUtil.getDb();
     const secretConfig = require(__dirname + '/secret.config.js');
