@@ -511,10 +511,31 @@ function initLeavingButtons() {
     });
 }
 
+function sendObserveValue(btn) {
+    // dataset members are always lowercase
+    const sendObsValueObj = {
+        gameId: document.getElementById('currentGameId').value,
+        observer: btn.dataset.observer,
+        playerId: window.localStorage.getItem('uUID'),
+        obsValue: btn.dataset.obsvalue
+    }
+    console.log(sendObsValueObj);
+    socket.emit('observe response', sendObsValueObj, function(obj) {
+        console.log(obj);
+        showObservers();
+    });
+}
+
 function showObserverList(observersList) {
     emptyElementById('observersModalBody');
     const observersModal = document.getElementById('observersModalBody');
     observersList.observers.forEach(function (observer) {
+        const obsName = observer.name;
+        // dataset members are always lowercase
+        const obsButtonObject = {
+            'data-observer': obsName,
+            'data-obsvalue': null
+        }
         const obsRow = createElementWithIdAndClasses('div', null, 'row');
 
         const obsNameCol = createElementWithIdAndClasses('div', null, 'col-5');
@@ -530,21 +551,33 @@ function showObserverList(observersList) {
                 currentStatus = ' (allowed with cards)';
                 break;
         }
-        obsNameCol.innerText = observer.name + currentStatus;
+        obsNameCol.innerText = obsName + currentStatus;
 
+        obsButtonObject["data-obsValue"] = 'DENY';
         const obsDenyCol = createElementWithIdAndClasses('div', null, 'col-2');
-        const denyButton = createElementWithIdAndClasses('button', null, 'btn btn-danger');
+        const denyButton = createElementWithIdAndClasses('button', null, 'btn btn-danger', obsButtonObject);
         denyButton.innerText = 'DENY';
+        denyButton.addEventListener('click', function () {
+            sendObserveValue(this);
+        });
         obsDenyCol.appendChild(denyButton);
 
+        obsButtonObject["data-obsValue"] = 'ALLOW';
         const obsAllowCol = createElementWithIdAndClasses('div', null, 'col-2');
-        const allowButton = createElementWithIdAndClasses('button', null, 'btn btn-success');
+        const allowButton = createElementWithIdAndClasses('button', null, 'btn btn-success', obsButtonObject);
         allowButton.innerText = 'ALLOW';
+        allowButton.addEventListener('click', function () {
+            sendObserveValue(this);
+        });
         obsAllowCol.appendChild(allowButton);
 
+        obsButtonObject["data-obsValue"] = 'ALLOW WITH CARDS';
         const obsAllowWithCardsCol = createElementWithIdAndClasses('div', null, 'col-3');
-        const allowWithCardsButton = createElementWithIdAndClasses('button', null, 'btn btn-success disabled');
+        const allowWithCardsButton = createElementWithIdAndClasses('button', null, 'btn btn-success disabled', obsButtonObject);
         allowWithCardsButton.innerText = 'ALLOW WITH CARDS';
+        allowWithCardsButton.addEventListener('click', function () {
+            sendObserveValue(this);
+        });
         obsAllowWithCardsCol.appendChild(allowWithCardsButton);
         
         obsRow.appendChild(obsNameCol);

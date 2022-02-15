@@ -706,6 +706,92 @@ try {
 
                 fn(retObj);
             });
+
+            socket.on('observe response', async (observeObject, fn) => {
+                console.log(observeObject);
+                const gameIdStr = observeObject.gameId;
+                const observer = observeObject.observer;
+                const myId = observeObject.playerId;
+                const obsValue = observeObject.obsValue;
+
+                const retObj = {
+                    obsOk: false
+                }
+
+                const database = mongoUtil.getDb();
+                const ObjectId = require('mongodb').ObjectId;
+                const searchId = new ObjectId(gameIdStr);
+                const collection = database.collection(promisewebCollection);
+                const query = {
+                    _id: searchId,
+                    gameStatus: { $lte: GAMESTATUS.OnGoing },
+                    'humanPlayers.playerId': { $eq: myId }
+                };
+                const game = await collection.findOne(query);
+                if (game == null) {
+                    fn(retObj);
+                    return;
+                } else {
+                    const obsCollection = database.collection(observeCollection);
+                    const obsQuery = {
+                        gameId: gameIdStr,
+                        'observers.name': { $eq: observer },
+                        'observers.playersInGame.playerId': { $eq: myId }
+                    }
+                    const obsGame = await obsCollection.findOne(obsQuery);
+                    if (obsGame != null) {
+                        let playerInGame = false;
+                        let obsIndex = -1;
+                        let playerIndex = -1;
+                        for (let i = 0; i < obsGame.observers.length; i++) {
+                            if (obsGame.observers[i].name == observer) {
+                                obsIndex = i;
+                                for (let j = 0; obsGame.observers[i].playersInGame.length; j++) {
+                                    if (obsGame.observers[i].playersInGame[j].playerId == myId) {
+                                        playerIndex = j;
+                                        playerInGame = true;
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        if (!playerInGame || obsIndex == -1 || playerIndex == -1) {
+                            fn(retObj);
+                            return;
+                        }
+
+                        switch (obsValue) {
+                            case 'DENY': {
+                                // delete observation
+                                const deleteResult = await obsCollection.deleteOne(obsQuery);
+                                if (deleteResult.deletedCount == 1) {
+                                    retObj.obsOk = true;
+                                }
+                                fn(retObj);
+                                return;
+                            }
+                            case 'ALLOW':
+                            case 'ALLOW WITH CARDS': {
+                                const newObsValue = obsValue == 'ALLOW' ? OBSERVEMODE.Allow : OBSERVEMODE.AllowWithCards;
+                                const updatedObserversDoc = {
+                                    $set: { 'observers.$[obsIndex].playersInGame.$[playerIndex].observeMode': newObsValue }
+                                }
+                                const options = {
+                                    upsert: true,
+                                    arrayFilters: [{'obsIndex.name': {$eq: observer}}, {'playerIndex.playerId': {$eq: myId } }]
+                                };
+                                const updateResult = await obsCollection.updateOne(obsQuery, updatedObserversDoc, options);
+                                if (updateResult.modifiedCount == 1) {
+                                    retObj.obsOk = true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                fn(retObj);
+            });
     
             socket.on('create game', async (gameOptions, fn) => {
                 let okToCreate = true;
@@ -2365,7 +2451,7 @@ async function checkLogin(userName, userPass1, userPass2) {
     return loginObj;
 }
 
-async function startGame (gameInfo) {
+async function startGame(gameInfo) {
     const gameIdStr = gameInfo.id;
     const players = pf.initPlayers(gameInfo);
     const rounds = pf.initRounds(gameInfo, players);
