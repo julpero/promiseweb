@@ -5,7 +5,7 @@ const speedPromiseMultiplierNotEven = 0.6;
 
 module.exports = {
 
-    roundToPlayer: function (playerId, roundInd, thisGame, doReloadInit, newRound, gameOver) {
+    roundToPlayer: function (playerId, roundInd, thisGame, doReloadInit, newRound, gameOver, obsGame) {
         const round = thisGame.game.rounds[roundInd];
         const playerName = this.getPlayerNameById(playerId, thisGame.humanPlayers);
         const play = this.getCurrentPlayIndex(round);
@@ -29,7 +29,8 @@ module.exports = {
             doReloadInit: doReloadInit,
             newRound: newRound,
             gameOver: gameOver,
-            handValues: getHandValues(thisGame, roundInd)
+            handValues: getHandValues(thisGame, roundInd),
+            obsGame: obsGame
             // round: round, // comment this when in production!
         };
     },

@@ -1306,6 +1306,11 @@ async function cardPlayedCallback(gameInfo) {
             initSpeedBar(gameInfo);
             getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
         }
+        if (myRound.obsGame && myRound.obsGame.observers && myRound.obsGame.observers.length > 0) {
+            document.getElementById('openObserversButton').classList.remove('disabled');
+            document.getElementById('openObserversButton').classList.remove('btn-secondary');
+            document.getElementById('openObserversButton').classList.add('btn-primary');
+        }
     });
 }
 

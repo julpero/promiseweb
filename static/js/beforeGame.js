@@ -598,8 +598,20 @@ function showObserverList(observersList) {
     });
 }
 
-function startObserving(obsGameObj) {
-    console.log(obsGameObj);
+function observeAllowedCallback(obsGameObj) {
+    // TODO: show that observing started
+    console.log("observeAllowedCallback", obsGameObj);
+}
+
+function startObservingCallback(obsGameObj) {
+    console.log("startObservingCallback", obsGameObj);
+    const startToObserveObj = {
+        gameId: obsGameObj.gameId,
+        observerId: window.localStorage.getItem('uUID')
+    }
+    socket.emit("start to observe", startToObserveObj, function(obj) {
+        console.log('started observing', obj);
+    });
 }
 
 function showObservers() {
