@@ -482,11 +482,18 @@ function initJoinByIdButton() {
 }
 
 function initLeavingButtons() {
-    // document.getElementById('dontLeaveButton').addEventListener('click', function() {
-    //     document.getElementById('leaveGameCollapse').collapse;
-    // });
     document.getElementById('leaveButton').addEventListener('click', function() {
         document.getElementById('leavingUId').value = window.localStorage.getItem('uUID');
+    });
+    document.getElementById('leaveObserveButton').addEventListener('click', function() {
+        const stopObsOject = {
+            myId: window.localStorage.getItem('uUID'),
+            gameId: document.getElementById('currentGameId').value,
+        }
+        socket.emit('stop observing', stopObsOject, function (response) {
+            console.log('stopped observing: ', response);
+            alert('You have now left observing the game. Please click OK and then refresh this page.');
+        });
     });
     document.getElementById('leavingGameModal').addEventListener('hidden.bs.modal', function() {
         const uuid = uuidv4();

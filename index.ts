@@ -732,6 +732,28 @@ try {
                 fn(retObj);
             });
 
+            socket.on('stop observing', async (stopObsOject, fn) => {
+                console.log('stop observing', stopObsOject);
+                // delete observer from observation
+                const gameIdStr = stopObsOject.gameId;
+                const myId = stopObsOject.myId;
+                const database = mongoUtil.getDb();
+                const obsCollection = database.collection(observeCollection);
+                const obsQuery = {
+                    gameId: gameIdStr,
+                    'observers.observerId': {$eq: myId}
+                };
+                const obsGame = await obsCollection.findOne(obsQuery);
+                if (obsGame) {
+                    const observer = obsGame.observers.find(observer => observer.observerId == myId).name;
+                    const pullObserver = { $pull: { 'observers': { observerId: myId} } };
+                    await obsCollection.updateOne(obsQuery, pullObserver);
+                    sm.removeClientFromMap(observer, socket.id, gameIdStr);
+                }
+                socket.leave(gameIdStr);
+                fn({leaved: true});
+            });
+
             socket.on('get observers', async (getObj, fn) => {
                 const retObj = {
                     observers: []

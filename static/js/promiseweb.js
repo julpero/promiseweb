@@ -1274,6 +1274,11 @@ async function cardPlayedCallback(gameInfo) {
 
     socket.emit('get round', getRound, function(myRound) {
         console.log(myRound);
+        const iAmObserver = amIObserver(myRound);
+        console.log('iAmObserver', iAmObserver);
+        if (iAmObserver) {
+            observerInit();
+        }
         document.getElementById('myName').value = myRound.myName;
         document.getElementById('currentRoundInd').value = myRound.roundInd;
         if (myRound.gameOver) {
@@ -1306,7 +1311,7 @@ async function cardPlayedCallback(gameInfo) {
             initSpeedBar(gameInfo);
             getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
         }
-        if (myRound.obsGame && myRound.obsGame.observers && myRound.obsGame.observers.length > 0) {
+        if (!iAmObserver && myRound.obsGame && myRound.obsGame.observers && myRound.obsGame.observers.length > 0) {
             document.getElementById('openObserversButton').classList.remove('disabled');
             document.getElementById('openObserversButton').classList.remove('btn-secondary');
             document.getElementById('openObserversButton').classList.add('btn-primary');
@@ -1359,4 +1364,19 @@ function deleteObservingCallback(deleteObserver) {
 
 function randomNegToPos(max) {
     return Math.floor(Math.random() * (2*max)) - max;
+}
+
+function amIObserver(myRound) {
+    if (myRound.players.find(function(player) {
+        return player.thisIsMe
+    }) == undefined) {
+        return true;
+    }
+    return false;
+}
+
+function observerInit() {
+    document.getElementById('openObserversButton').classList.add('disabled');
+    document.getElementById('toggleLeaveGameCollapseButton').style.display = 'none';
+    document.getElementById('toggleLeaveObserveCollapseButton').style.display = '';
 }
