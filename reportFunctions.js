@@ -1,6 +1,7 @@
 module.exports = {
     averagePoints: function (games, playerName) {
         let totalPoints = 0;
+        // eslint-disable-next-line no-global-assign
         self = this;
         games.forEach(function(game) {
             totalPoints+= self.getGamePoints(game.game, playerName);

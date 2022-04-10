@@ -260,11 +260,11 @@ function initPlayerTable(index, align, maxCards, colCount) {
     row1.appendChild(createElementWithIdAndClasses('div', 'player'+index+'Keeps', 'col-2 playerInfoCol'));
     row1.appendChild(createElementWithIdAndClasses('div', 'player'+index+'ProgressBar', 'col-4'));
     
-    var row2 = null;
+    let row2 = null;
     if (index > 0) {
         row2 = createElementWithIdAndClasses('div', null, 'row');
-        for (var i = 0; i < maxCards; i++) {
-            var classStr = 'col cardCol';
+        for (let i = 0; i < maxCards; i++) {
+            let classStr = 'col cardCol';
             if (i == 0) classStr+= ' firstCardCol';
             if (i == maxCards - 1) classStr+= ' lastCardCol';
             row2.appendChild(createElementWithIdAndClasses('div', 'player'+index+'CardCol'+i, classStr));
@@ -276,7 +276,7 @@ function initPlayerTable(index, align, maxCards, colCount) {
     const col32 = createElementWithIdAndClasses('div', null, 'col cardCol');
 
     const cardsWonRow = createElementWithIdAndClasses('div', null, 'row inner-row');
-    for (var i = 0; i < maxCards; i++) {
+    for (let i = 0; i < maxCards; i++) {
         const classStr = (i == 0) ? 'col cardCol firstCardCol' : 'col cardCol cardWonCol';
         cardsWonRow.appendChild(createElementWithIdAndClasses('div', 'player'+index+'CardsWon'+i+'Div', classStr));
     }
@@ -323,13 +323,14 @@ function initPlayerTable(index, align, maxCards, colCount) {
 
 function myPlayedCardDiv(index) {
     const nodeRow = createElementWithIdAndClasses('div', null, 'row');
-    var classStr = 'col cardCol';
+    let classStr = 'col cardCol';
     if (index == 5) classStr+= ' firstCardCol';
     const nodeCol = createElementWithIdAndClasses('div', 'player'+index+'CardPlayedDiv', classStr);
     nodeRow.appendChild(nodeCol);
     return nodeRow;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function initCardTable(myRound) {
     emptyElementById('otherPlayers');
     const node = document.getElementById('otherPlayers');
@@ -341,20 +342,10 @@ function initCardTable(myRound) {
     if (playerCount == 6) node.appendChild(initTableFor6());
 }
 
-function initOtherPlayers(myRound) {
-    const bgColor = window.getComputedStyle(document.body, null).getPropertyValue("background-color");
-    myRound.players.forEach(function(player, idx) {
-        const playerNameDiv = document.getElementById('player'+otherPlayerMapper(idx, myRound.players)+'NameCol');
-        playerNameDiv.innerText = player.name;
-        const playerInfoRow = playerNameDiv.parentElement;
-        playerInfoRow.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(player.name)+', '+bgColor+')';
-    });
-}
-
 function initMyCardsContainer(maxCards) {
-    const node = createElementWithIdAndClasses('div', null, 'row myCardsRowClass');
+    const node = createElementWithIdAndClasses('div', 'myCardsRowDiv', 'row myCardsRowClass');
     
-    for (var i = 0; i < maxCards; i++) {
+    for (let i = 0; i < maxCards; i++) {
         node.appendChild(drawCardCol(i));
     }
 
@@ -376,6 +367,7 @@ function initMyPromiseRow() {
     return node;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createPromiseTable(promiseTable) {
     const node = document.getElementById('promiseTable');
     const table = document.createElement('table');
@@ -383,7 +375,7 @@ function createPromiseTable(promiseTable) {
     const tableHeaderRow = document.createElement('tr');
     
     tableHeaderRow.appendChild(createElementWithIdAndClasses('th', null, 'promiseTableHeader', {scope: 'col'}));
-    for (var i = 0; i < promiseTable.rounds.length; i++) {
+    for (let i = 0; i < promiseTable.rounds.length; i++) {
         const tableHeaderCol = createElementWithIdAndClasses('th', 'promiseTableHeader'+i, 'promiseTableHeader promTooltip', {scope: 'col'});
         tableHeaderCol.innerText = promiseTable.rounds[i].cardsInRound;
         tableHeaderRow.appendChild(tableHeaderCol);
@@ -392,13 +384,13 @@ function createPromiseTable(promiseTable) {
 
     const tableBody = document.createElement('tbody');
     const bgColor = window.getComputedStyle(document.body, null).getPropertyValue("background-color");
-    for (var i = 0; i < promiseTable.promisesByPlayers.length; i++) {
+    for (let i = 0; i < promiseTable.promisesByPlayers.length; i++) {
         const tableBodyRow = document.createElement('tr');
         const playerNameCol = createElementWithIdAndClasses('th', 'player'+i+'PromiseName', 'promiseTableCol playerPromiseNameCol promTooltip', {scope: 'row'});
         playerNameCol.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(promiseTable.players[i])+', '+bgColor+')';
         playerNameCol.innerText = promiseTable.players[i];
         tableBodyRow.appendChild(playerNameCol);
-        for (var j = 0; j < promiseTable.rounds.length; j++) {
+        for (let j = 0; j < promiseTable.rounds.length; j++) {
             const promiseCol = createElementWithIdAndClasses('td', 'player'+i+'Prom'+j, 'promiseTableCol playerPromiseCol');
             tableBodyRow.appendChild(promiseCol);
         }
@@ -411,28 +403,29 @@ function createPromiseTable(promiseTable) {
     node.appendChild(table);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createScoreboard(promiseTable) {
     const node = document.getElementById('scoreboard');
     const table = document.createElement('table');
     const tableHeader = document.createElement('thead');
     const tableHeaderRow = document.createElement('tr');
     const bgColor = window.getComputedStyle(document.body, null).getPropertyValue("background-color");
-    for (var i = 0; i < promiseTable.players.length; i++) {
+    for (let i = 0; i < promiseTable.players.length; i++) {
         const playerName = promiseTable.players[i];
-        var playerShortName = playerName;
+        let playerShortName = playerName;
         if (playerShortName.length > 3) playerShortName = playerShortName.substring(0, 3);
         const tableHeaderCol = createElementWithIdAndClasses('th', 'tableHeaderName'+i, 'scoreboardTableHeader', {scope: 'col'});
         tableHeaderCol.style.backgroundImage = 'linear-gradient(90deg,  '+colorize(playerName)+', '+bgColor+')';
         tableHeaderCol.innerText = playerShortName;
-        const tableHeaderColTooltip = new bootstrap.Tooltip(tableHeaderCol, {title: playerName});
+        new bootstrap.Tooltip(tableHeaderCol, {title: playerName});
         tableHeaderRow.appendChild(tableHeaderCol);
     }
     tableHeader.appendChild(tableHeaderRow);
 
     const tableBody = document.createElement('tbody');
-    for (var i = 0; i < promiseTable.rounds.length; i++) {
-        const tableBodyRow = document.createElement('tr');
-        for (var j = 0; j < promiseTable.players.length; j++) {
+    for (let i = 0; i < promiseTable.rounds.length; i++) {
+        const tableBodyRow = createElementWithIdAndClasses('tr', null, 'scoreboardTableRow');
+        for (let j = 0; j < promiseTable.players.length; j++) {
             const pointCol = createElementWithIdAndClasses('td', 'player'+j+'Points'+i, 'scoreboardTableCol');
             pointCol.innerHTML = '&nbsp;';
             tableBodyRow.appendChild(pointCol);
@@ -452,6 +445,7 @@ function liElementWithText(text) {
     return el;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function initRuleList(gameInfo) {
     emptyElementById('ruleList');
     const node = document.getElementById('ruleList');
@@ -468,6 +462,7 @@ function initRuleList(gameInfo) {
     if (gameInfo.hiddenCardsMode == 2) node.appendChild(liElementWithText('show card in charge and winning card'));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function initSpeedBar(gameInfo) {
     const node = document.getElementById('speedPromiseDiv');
     if (gameInfo.privateSpeedGame || gameInfo.speedPromise) {

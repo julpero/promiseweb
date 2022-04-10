@@ -34,7 +34,7 @@
         <div class="container-fluid" id="gameChooser">
             <div class="row">
                 <div class="col">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#joinGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary" id="openJoinGameDialogButton" data-bs-toggle="collapse" href="#joinGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Show open games
                     </a>
                     <div class="collapse" id="joinGameCollapse">
@@ -43,7 +43,17 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#createGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary" id="openOngoingGamesDialogButton" data-bs-toggle="collapse" href="#observeGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        Show ongoing games
+                    </a>
+                    <div id="alertOngoingGamesDiv"></div>
+                    <div class="collapse" id="observeGameCollapse">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <a class="btn btn-primary" id="openCreateGameFormButton" data-bs-toggle="collapse" href="#createGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Create game
                     </a>
                     <div class="collapse" id="createGameCollapse">
@@ -349,15 +359,6 @@
                             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                                 <a class="nav-link small active" id="v-pills-chat-tab" data-bs-toggle="pill" href="#v-pills-chat" role="tab" aria-controls="v-pills-chat" aria-selected="true">
                                     Chat
-                                </a>
-                                <a class="nav-link small" id="v-pills-stat-tab" data-bs-toggle="pill" href="#v-pills-stat" role="tab" aria-controls="v-pills-stat" aria-selected="false">
-                                    Stats
-                                </a>
-                                <a class="nav-link small" id="v-pills-live-1-tab" data-bs-toggle="pill" href="#v-pills-live-1" role="tab" aria-controls="v-pills-live-1" aria-selected="false">
-                                    Live1
-                                </a>
-                                <a class="nav-link small" id="v-pills-live-2-tab" data-bs-toggle="pill" href="#v-pills-live-2" role="tab" aria-controls="v-pills-live-2" aria-selected="false">
-                                    Live2
                                 </a>
                             </div>
                         </div>

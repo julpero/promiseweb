@@ -5,7 +5,7 @@ const speedPromiseMultiplierNotEven = 0.6;
 
 module.exports = {
 
-    roundToPlayer: function (playerId, roundInd, thisGame, statistics, doReloadInit, newRound, gameOver) {
+    roundToPlayer: function (playerId, roundInd, thisGame, doReloadInit, newRound, gameOver) {
         const round = thisGame.game.rounds[roundInd];
         const playerName = this.getPlayerNameById(playerId, thisGame.humanPlayers);
         const play = this.getCurrentPlayIndex(round);
@@ -29,8 +29,7 @@ module.exports = {
             doReloadInit: doReloadInit,
             newRound: newRound,
             gameOver: gameOver,
-            handValues: getHandValues(thisGame, roundInd),
-            statistics: statistics,
+            handValues: getHandValues(thisGame, roundInd)
             // round: round, // comment this when in production!
         };
     },
@@ -583,7 +582,7 @@ function initRound(roundIndex, cardsInRound, players, speedPromise) {
     const deck = initDeck();
 
     const roundPlayers = [];
-    players.forEach(function (player, idx) {
+    players.forEach(function (player) {
         let playerCards = [];
         if (cardsInRound == 1) {
             const card = deck.draw(1);

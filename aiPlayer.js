@@ -1,12 +1,14 @@
+/* eslint-disable no-undef */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 module.exports = {
     getRandomAiPlayers: function(numberOfAiPlayers) {
-        var aiPlayerArr = [];
-        for (var i = 0; i < 9; i++) {
+        let aiPlayerArr = [];
+        for (let i = 0; i < 9; i++) {
             aiPlayerArr.push(getAiPlayer(i));
         }
-        var shuffledAiPlayerArr = knuthShuffle(aiPlayerArr);
-        var retAiPlayerArr = [];
-        for (var i = 0; i < numberOfAiPlayers; i++) {
+        let shuffledAiPlayerArr = knuthShuffle(aiPlayerArr);
+        let retAiPlayerArr = [];
+        for (let i = 0; i < numberOfAiPlayers; i++) {
             retAiPlayerArr.push(aiPlayerToPlayer(shuffledAiPlayerArr[i]));
         }
         return retAiPlayerArr;
@@ -37,7 +39,7 @@ function getRandomInt(min, max) {
 function playerRandInt(mean, variance = 2)
 {
     if (variance <= 0) return mean;
-    var randInt = getRandomInt(mean - variance, mean + variance + 1);
+    let randInt = getRandomInt(mean - variance, mean + variance + 1);
     if (randInt > 100) return 100;
     if (randInt < 0) return 0;
     return randInt;
@@ -46,7 +48,7 @@ function playerRandInt(mean, variance = 2)
 function playerRandDouble(mean, variance = 0.05)
 {
     if (variance <= 0) return mean;
-    var randDouble = getRandomNumber(mean - variance, mean + variance);
+    let randDouble = getRandomNumber(mean - variance, mean + variance);
     if (randDouble > 1) return 1.0;
     if (randDouble < 0) return 0.0;
     return randDouble;
@@ -55,30 +57,30 @@ function playerRandDouble(mean, variance = 0.05)
 function getAiPlayer(playerId) {
 
     // this is playerId: 0
-    var AiName = "Jaska";
+    let AiName = "Jaska";
 
-    var DodgeBase = playerRandInt(57);
-    var DodgeSure = 100; // this is a fact
-    var DodgeSmallestValuesInSuit = playerRandInt(90);
-    var DodgeSmallestValuesInSuitNOT = playerRandInt(76);
-    var DodgeCardCountAvgOtherPlayersCount1 = playerRandInt(23);
-    var DodgeBiggestValuesInSuit = playerRandInt(14);
-    var DodgeBiggestValuesInSuitNOT = playerRandInt(15);
-    var DodgeCardCountAvgOtherPlayersCount2 = playerRandInt(19);
-    var DodgeInChargeAverageCount = playerRandDouble(0.94);
+    let DodgeBase = playerRandInt(57);
+    let DodgeSure = 100; // this is a fact
+    let DodgeSmallestValuesInSuit = playerRandInt(90);
+    let DodgeSmallestValuesInSuitNOT = playerRandInt(76);
+    let DodgeCardCountAvgOtherPlayersCount1 = playerRandInt(23);
+    let DodgeBiggestValuesInSuit = playerRandInt(14);
+    let DodgeBiggestValuesInSuitNOT = playerRandInt(15);
+    let DodgeCardCountAvgOtherPlayersCount2 = playerRandInt(19);
+    let DodgeInChargeAverageCount = playerRandDouble(0.94);
     
     // BigValuesInSuit
-    var BigValuesInSuit = playerRandInt(10, 1);
+    let BigValuesInSuit = playerRandInt(10, 1);
 
     // SmallValuesInSuit
-    var SmallValuesInSuit = playerRandInt(3, 1);
+    let SmallValuesInSuit = playerRandInt(3, 1);
 
     // MakePromise
-    var PromiseMultiplierBase1 = playerRandDouble(0.54);
-    var PromiseMultiplierChange1A = playerRandDouble(0.01);
-    var PromiseMultiplierChange1B = playerRandDouble(0.03);
-    var PromiseMultiplierChange1C = playerRandDouble(0.21);
-    var MiniRisk = playerRandInt(53);
+    let PromiseMultiplierBase1 = playerRandDouble(0.54);
+    let PromiseMultiplierChange1A = playerRandDouble(0.01);
+    let PromiseMultiplierChange1B = playerRandDouble(0.03);
+    let PromiseMultiplierChange1C = playerRandDouble(0.21);
+    let MiniRisk = playerRandInt(53);
 
     if (playerId == 1)
     {
@@ -315,7 +317,7 @@ function getAiPlayer(playerId) {
 }
 
 function knuthShuffle(arr) {
-    var rand, temp, i;
+    let rand, temp, i;
  
     for (i = arr.length - 1; i > 0; i -= 1) {
         rand = Math.floor((i + 1) * Math.random()); //get random between zero and i (inclusive)
@@ -329,7 +331,7 @@ function knuthShuffle(arr) {
 
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        let r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
 }
