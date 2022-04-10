@@ -310,6 +310,20 @@ try {
                             }
                         }
                         await collection.updateOne(query, updateDoc, options);
+
+                        // also update possible observe game status
+                        const obsCollection = database.collection(observeCollection);
+                        const obsQuery = {
+                            gameId: gameIdStr
+                        }
+                        const obsGame = await obsCollection.findOne(obsQuery);
+                        if (obsGame) {
+                            const options = { upsert: true };
+                            const obsUpdate = {
+                                $set: { gameStatus: GAMESTATUS.Played }
+                            }
+                            await obsCollection.updateOne(obsQuery, obsUpdate, options);
+                        }
                     }
                 }
     
@@ -1394,6 +1408,20 @@ try {
                                 _id: searchId,
                                 // password: newPlayer.gamePassword,
                             };
+
+                            // set possible observing to finished
+                            const obsCollection = database.collection(observeCollection);
+                            const obsQuery = {
+                                gameId: gameIdStr
+                            }
+                            const obsGame = await obsCollection.findOne(obsQuery);
+                            if (obsGame) {
+                                const options = { upsert: true };
+                                const obsUpdate = {
+                                    $set: { gameStatus: GAMESTATUS.Played }
+                                }
+                                await obsCollection.updateOne(obsQuery, obsUpdate, options);
+                            }
                         }
                         const thisGame = await collection.findOne(queryUsed);
             
