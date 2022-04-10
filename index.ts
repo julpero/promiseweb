@@ -158,9 +158,10 @@ try {
                 const collection = database.collection(promisewebCollection);
                 const query = {
                     gameStatus: GAMESTATUS.OnGoing, // check first ongoing game
+                    'humanPlayers.playerId': {$eq: myId}
                 };
-                const games = collection.find(query);
-                await games.forEach(function (game) {
+                const game = await collection.findOne(query);
+                if (game) {
                     game.humanPlayers.forEach(function(player) {
                         if (player.playerId == myId) {
                             const gameIdStr = game._id.toString();
@@ -176,14 +177,15 @@ try {
                             socket.emit('card played', gameInfo);
                         }
                     });
-                });
+                }
     
                 if (!gameFound) {
                     const query = {
                         gameStatus: GAMESTATUS.Created,
+                        'humanPlayers.playerId': {$eq: myId}
                     };
-                    const games = collection.find(query);
-                    await games.forEach(function (game) {
+                    const game = collection.findOne(query);
+                    if (game) {
                         game.humanPlayers.forEach(function(player) {
                             if (player.playerId == myId) {
                                 const gameIdStr = game._id.toString();
@@ -198,7 +200,7 @@ try {
                                 socket.emit('promise made', gameInfo);
                             }
                         });
-                    });
+                    }
                 }
             });
 
