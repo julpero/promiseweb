@@ -922,6 +922,7 @@ try {
                                     gameStatus: gameStatus,
                                     game: gameAfterPlay,
                                     gameStatistics: gameStatistics,
+                                    lastUpdate: new Date(),
                                 }
                             };
                             const result = await collection.updateOne(query, updateDoc, options);
@@ -2207,6 +2208,7 @@ async function startGame (gameInfo) {
         $set: {
             gameStatus: GAMESTATUS.OnGoing,
             game: game,
+            gameStarted: new Date(),
         }
     };
     await collection.updateOne(query, updateDoc, options);
