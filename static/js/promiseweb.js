@@ -1274,6 +1274,11 @@ async function cardPlayedCallback(gameInfo) {
 
     socket.emit('get round', getRound, function(myRound) {
         console.log(myRound);
+        const iAmObserver = amIObserver(myRound);
+        console.log('iAmObserver', iAmObserver);
+        if (iAmObserver) {
+            observerInit();
+        }
         document.getElementById('myName').value = myRound.myName;
         document.getElementById('currentRoundInd').value = myRound.roundInd;
         if (myRound.gameOver) {
@@ -1306,6 +1311,11 @@ async function cardPlayedCallback(gameInfo) {
             initSpeedBar(gameInfo);
             getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
         }
+        if (!iAmObserver && myRound.obsGame && myRound.obsGame.observers && myRound.obsGame.observers.length > 0) {
+            document.getElementById('openObserversButton').classList.remove('disabled');
+            document.getElementById('openObserversButton').classList.remove('btn-secondary');
+            document.getElementById('openObserversButton').classList.add('btn-primary');
+        }
     });
 }
 
@@ -1328,12 +1338,45 @@ function appendToChat(text) {
     textArea.scrollTop = textArea.scrollHeight;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function newObserverCallback(newObserver) {
     document.getElementById('openObserversButton').classList.remove('disabled');
     document.getElementById('openObserversButton').classList.remove('btn-secondary');
     document.getElementById('openObserversButton').classList.add('btn-warning');
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function deleteObservingCallback(deleteObserver) {
+    console.log('deleteObservingCallback', deleteObserver);
+    if (deleteObserver.obsOk
+        && document.getElementById('currentGameId').value == deleteObserver.obsGame.gameId
+        && document.getElementById("observersModal").attributes["aria-modal"]
+        && document.getElementById("observersModal").attributes["aria-modal"].value == "true") {
+            // eslint-disable-next-line no-undef
+            showObservers();
+    }
+    if (deleteObserver.observersCount == 0) {
+        document.getElementById('openObserversButton').classList.add('disabled');
+        document.getElementById('openObserversButton').classList.remove('btn-warning');
+        document.getElementById('openObserversButton').classList.add('btn-secondary');
+    }
+}
+
 function randomNegToPos(max) {
     return Math.floor(Math.random() * (2*max)) - max;
+}
+
+function amIObserver(myRound) {
+    if (myRound.players.find(function(player) {
+        return player.thisIsMe
+    }) == undefined) {
+        return true;
+    }
+    return false;
+}
+
+function observerInit() {
+    document.getElementById('openObserversButton').classList.add('disabled');
+    document.getElementById('toggleLeaveGameCollapseButton').style.display = 'none';
+    document.getElementById('toggleLeaveObserveCollapseButton').style.display = '';
 }
