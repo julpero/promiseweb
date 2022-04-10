@@ -1328,10 +1328,28 @@ function appendToChat(text) {
     textArea.scrollTop = textArea.scrollHeight;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function newObserverCallback(newObserver) {
     document.getElementById('openObserversButton').classList.remove('disabled');
     document.getElementById('openObserversButton').classList.remove('btn-secondary');
     document.getElementById('openObserversButton').classList.add('btn-warning');
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function deleteObservingCallback(deleteObserver) {
+    console.log('deleteObservingCallback', deleteObserver);
+    if (deleteObserver.obsOk
+        && document.getElementById('currentGameId').value == deleteObserver.obsGame.gameId
+        && document.getElementById("observersModal").attributes["aria-modal"]
+        && document.getElementById("observersModal").attributes["aria-modal"].value == "true") {
+            // eslint-disable-next-line no-undef
+            showObservers();
+    }
+    if (deleteObserver.observersCount == 0) {
+        document.getElementById('openObserversButton').classList.add('disabled');
+        document.getElementById('openObserversButton').classList.remove('btn-warning');
+        document.getElementById('openObserversButton').classList.add('btn-secondary');
+    }
 }
 
 function randomNegToPos(max) {

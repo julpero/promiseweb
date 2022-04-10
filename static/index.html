@@ -388,7 +388,7 @@
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#leaveGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Leave game
                     </a>
-                    <a class="btn btn-secondary" id="openObserversButton" data-bs-toggle="modal" href="#observersModal" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-secondary disabled" id="openObserversButton" data-bs-toggle="modal" href="#observersModal" role="button" aria-expanded="false" aria-controls="collapseExample">
                         OBS
                     </a>
 
@@ -651,6 +651,10 @@
                 socket.on('card played', cardPlayedCallback);
 
                 socket.on('new observer', newObserverCallback);
+                
+                socket.on('observe deleted', deleteObservingCallback);
+
+                socket.on('observe allowed', startObserving);
 
                 mainInit();
 

@@ -538,7 +538,7 @@ function showObserverList(observersList) {
         }
         const obsRow = createElementWithIdAndClasses('div', null, 'row');
 
-        const obsNameCol = createElementWithIdAndClasses('div', null, 'col-5');
+        const obsNameCol = createElementWithIdAndClasses('div', null, 'col-3');
         let currentStatus = '';
         switch (observer.myChoice) {
             case 0:
@@ -562,6 +562,15 @@ function showObserverList(observersList) {
         });
         obsDenyCol.appendChild(denyButton);
 
+        obsButtonObject["data-obsValue"] = 'UNSET';
+        const obsUnsetCol = createElementWithIdAndClasses('div', null, 'col-2');
+        const unsetButton = createElementWithIdAndClasses('button', null, 'btn btn-warning', obsButtonObject);
+        unsetButton.innerText = 'UNSET';
+        unsetButton.addEventListener('click', function () {
+            sendObserveValue(this);
+        });
+        obsUnsetCol.appendChild(unsetButton);
+
         obsButtonObject["data-obsValue"] = 'ALLOW';
         const obsAllowCol = createElementWithIdAndClasses('div', null, 'col-2');
         const allowButton = createElementWithIdAndClasses('button', null, 'btn btn-success', obsButtonObject);
@@ -574,7 +583,7 @@ function showObserverList(observersList) {
         obsButtonObject["data-obsValue"] = 'ALLOW WITH CARDS';
         const obsAllowWithCardsCol = createElementWithIdAndClasses('div', null, 'col-3');
         const allowWithCardsButton = createElementWithIdAndClasses('button', null, 'btn btn-success disabled', obsButtonObject);
-        allowWithCardsButton.innerText = 'ALLOW WITH CARDS';
+        allowWithCardsButton.innerText = 'ALLOW W CARDS';
         allowWithCardsButton.addEventListener('click', function () {
             sendObserveValue(this);
         });
@@ -582,10 +591,15 @@ function showObserverList(observersList) {
         
         obsRow.appendChild(obsNameCol);
         obsRow.appendChild(obsDenyCol);
+        obsRow.appendChild(obsUnsetCol);
         obsRow.appendChild(obsAllowCol);
         obsRow.appendChild(obsAllowWithCardsCol);
         observersModal.appendChild(obsRow);
     });
+}
+
+function startObserving(obsGameObj) {
+    console.log(obsGameObj);
 }
 
 function showObservers() {

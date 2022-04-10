@@ -36,7 +36,7 @@ const GAMESTATUS = {
     Dismissed: 99
 }
 
-const OBSERVEMODE = {
+const OBSERVE_MODE = {
     NoSet: 0,
     Allow: 1,
     AllowWithCards: 2
@@ -577,7 +577,7 @@ try {
                             playersInGame.push({
                                 name: otherPlayer,
                                 playerId: otherPlayerId,
-                                observeMode: OBSERVEMODE.NoSet
+                                observeMode: OBSERVE_MODE.NoSet
                             })
                         }
                         for (let i = 0; i < playersInGame.length; i++) {
@@ -623,13 +623,31 @@ try {
                                     sendObserving= true;
                                 } else {
                                     let alreadyObserving = false;
+                                    let alreadyObservingWithId = '';
                                     for (let j = 0; j < obsGame.observers.length; j++) {
                                         if (obsGame.observers[j].name == observerName) {
                                             // already sent observer call, do nothing
                                             alreadyObserving = true;
+                                            alreadyObservingWithId = obsGame.observers[j].observerId;
                                         }
                                     }
-                                    if (!alreadyObserving) {
+                                    if (alreadyObserving) {
+                                        // check if id matches
+                                        if (observerId != alreadyObservingWithId) {
+                                            // we have to update id
+                                            const updateObserversIdDoc = {
+                                                $set: { 'observers.$[obsIndex].observerId': observerId }
+                                            }
+                                            const options = {
+                                                upsert: true,
+                                                arrayFilters: [{'obsIndex.name': {$eq: observerName}}]
+                                            };
+                                            const updateResult = await obsCollection.updateOne(obsQuery, updateObserversIdDoc, options);
+                                            if (updateResult.modifiedCount != 1) {
+                                                console.log('damn');
+                                            }
+                                        }
+                                    } else {
                                         const newObservers = obsGame.observers;
                                         newObservers.push(observer);
                                         const options = { upsert: true };
@@ -715,7 +733,10 @@ try {
                 const obsValue = observeObject.obsValue;
 
                 const retObj = {
-                    obsOk: false
+                    obsOk: false,
+                    obsGame: null,
+                    obsPlayer: null,
+                    observersCount: 0
                 }
 
                 const database = mongoUtil.getDb();
@@ -761,19 +782,37 @@ try {
                             return;
                         }
 
+                        let newObsValue = OBSERVE_MODE.NoSet;
+                        switch (obsValue) {
+                            case 'UNSET':
+                                newObsValue = OBSERVE_MODE.NoSet;
+                                break;
+                            case 'ALLOW':
+                                newObsValue = OBSERVE_MODE.Allow;
+                                break;
+                            case 'ALLOW WITH CARDS':
+                                newObsValue = OBSERVE_MODE.AllowWithCards;
+                                break;
+                        }
+
                         switch (obsValue) {
                             case 'DENY': {
-                                // delete observation
-                                const deleteResult = await obsCollection.deleteOne(obsQuery);
-                                if (deleteResult.deletedCount == 1) {
+                                // delete observer from observation
+                                const pullObserver = { $pull: { 'observers': { name: observer} } };
+                                const deleteResult = await obsCollection.updateOne(obsQuery, pullObserver);
+                                if (deleteResult.modifiedCount == 1) {
                                     retObj.obsOk = true;
+                                    retObj.obsGame = obsGame;
+                                    retObj.obsPlayer = observer
+                                    retObj.observersCount = obsGame.observers.length - 1;
                                 }
                                 fn(retObj);
+                                io.emit('observe deleted', retObj);
                                 return;
                             }
+                            case 'UNSET':
                             case 'ALLOW':
                             case 'ALLOW WITH CARDS': {
-                                const newObsValue = obsValue == 'ALLOW' ? OBSERVEMODE.Allow : OBSERVEMODE.AllowWithCards;
                                 const updatedObserversDoc = {
                                     $set: { 'observers.$[obsIndex].playersInGame.$[playerIndex].observeMode': newObsValue }
                                 }
@@ -786,6 +825,15 @@ try {
                                     retObj.obsOk = true;
                                 }
                             }
+                        }
+                    }
+                    // check if this was last allowance
+                    const obsGameAfter = await obsCollection.findOne(obsQuery);
+                    if (obsGameAfter != null) {
+                        const observersPermissions = obsGameAfter.observers.filter(obs => obs.name == observer)[0];
+                        if (observersPermissions.playersInGame.filter(player => player.observeMode == OBSERVE_MODE.NoSet).length == 0) {
+                            // all players have set permission
+                            io.emit('observe allowed', obsGameAfter);
                         }
                     }
                 }
