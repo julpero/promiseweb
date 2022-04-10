@@ -180,26 +180,74 @@ try {
                 }
     
                 if (!gameFound) {
-                    const query = {
+                    const query2 = {
                         gameStatus: GAMESTATUS.Created,
                         'humanPlayers.playerId': {$eq: myId}
                     };
-                    const game = collection.findOne(query);
-                    if (game) {
-                        game.humanPlayers.forEach(function(player) {
+                    const game2 = await collection.findOne(query2);
+                    if (game2) {
+                        game2.humanPlayers.forEach(function(player) {
                             if (player.playerId == myId) {
-                                const gameIdStr = game._id.toString();
+                                const gameIdStr = game2._id.toString();
                                 console.log('check game - found game 0', gameIdStr);
+                                gameFound = true;
                                 socket.join(gameIdStr);
                                 sm.addClientToMap(player.name, socket.id, gameIdStr);
                                 const chatLine = 'player ' + player.name + ' connected';
                                 io.to(gameIdStr).emit('new chat line', chatLine);
-                                const gameInfo = pf.gameToGameInfo(game);
+                                const gameInfo = pf.gameToGameInfo(game2);
                                 gameInfo.currentRound = 0;
                                 gameInfo.reloaded = true;
                                 socket.emit('promise made', gameInfo);
                             }
                         });
+                    }
+                }
+
+                if (!gameFound) {
+                    const query3 = {
+                        gameStatus: GAMESTATUS.OnGoing,
+                        'observers.observerId': {$eq: myId}
+                    }
+                    const obsCollection = database.collection(observeCollection);
+                    const game3 = await obsCollection.findOne(query3);
+                    if (game3) {
+                        const userName = game3.observers.find(function(observer) {
+                            return observer.observerId == myId;
+                        }).name;
+                        const realGameIdStr = game3.gameId;
+                        const checkObsOkObj = {
+                            gameId: realGameIdStr,
+                            observerName: userName
+                        }
+                        const ObjectId = require('mongodb').ObjectId;
+                        const realGameId = new ObjectId(realGameIdStr);
+                        const realGameQuery = {
+                            _id: realGameId
+                        };
+                        const realGame = await collection.findOne(realGameQuery);
+                        if (realGame && realGame.gameStatus == GAMESTATUS.OnGoing) {
+                            const obsOk = await observeOk(checkObsOkObj);
+                            socket.join(realGameIdStr);
+                            sm.addClientToMap(userName, socket.id, realGameIdStr);
+                            if (obsOk) {
+                                console.log('check game - found game observing', realGameIdStr);
+                                gameFound = true;
+                                const chatLine = userName + ' started to observe';
+                                io.to(realGameIdStr).emit('new chat line', chatLine);
+                                const gameInfo = pf.gameToGameInfo(realGame);
+                                gameInfo.currentRound = pf.getCurrentRoundIndex(realGame);
+                                gameInfo.reloaded = true;
+                                socket.emit('card played', gameInfo);
+                            } else {
+                                const chatLine = userName+' want\'s to observe this game';
+                                io.to(realGameIdStr).emit('new chat line', chatLine);
+
+                                io.to(realGameIdStr).emit('new observer', userName);
+                            }
+                        } else {
+                            // TODO: update observe game status
+                        }
                     }
                 }
             });
@@ -618,7 +666,8 @@ try {
                                     observers.push(observer);
                                     const newObsGame = {
                                         gameId: gameIdStr,
-                                        observers: observers
+                                        observers: observers,
+                                        gameStatus: GAMESTATUS.OnGoing,
                                     }
                                     await obsCollection.insertOne(newObsGame);
                                     sendObserving= true;
@@ -741,6 +790,23 @@ try {
                 const obsOk = await observeOk(checkObsOkObj);
                 if (obsOk) {
                     socket.join(gameIdStr);
+
+                    const database = mongoUtil.getDb();
+                    const ObjectId = require('mongodb').ObjectId;
+                    const searchId = new ObjectId(gameIdStr);
+                    const collection = database.collection(promisewebCollection);
+                    const query = {
+                        _id: searchId,
+                        gameStatus: GAMESTATUS.OnGoing, // ongoing game
+                    };
+                    const game = await collection.findOne(query);
+
+                    const chatLine = userName + ' started to observe';
+                    io.to(gameIdStr).emit('new chat line', chatLine);
+                    const gameInfo = pf.gameToGameInfo(game);
+                    gameInfo.currentRound = pf.getCurrentRoundIndex(game);
+                    gameInfo.reloaded = true;
+                    socket.emit('card played', gameInfo);
                 } else {
                     // TODO: remove from map and observer list
                 }
