@@ -8,10 +8,6 @@ server.listen(port, () => {
     console.log('server listening on *:' + port);
 });
 
-const NodeCache = require( "node-cache" );
-const myCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
-const hash = require('object-hash');
-
 const bcrypt = require('bcrypt');
 
 const sanitizeFileName = require("sanitize-filename");
@@ -1026,17 +1022,8 @@ try {
             });
     
             socket.on('get round', async (getRound, fn) => {
-                const getRoundHash = hash(getRound);
                 const gameIdStr = getRound.gameId;
                 const myId = getRound.myId;
-                console.log('get round', getRoundHash, getRound, gameIdStr, myId);
-                if (await myCache.has(getRoundHash)) {
-                    console.log('get round - getRoundHash already exists', getRoundHash, gameIdStr, myId);
-                    return;
-                } else {
-                    console.log('get round - insert getRoundHash to cache', getRoundHash, gameIdStr, myId);
-                    await myCache.set(getRoundHash, 1);
-                }
                 const roundInd = getRound.round;
     
                 const database = mongoUtil.getDb();
@@ -1229,17 +1216,8 @@ try {
             });
     
             socket.on('play card', async (playDetails, fn) => {
-                const playDetailsHash = hash(playDetails);
                 const gameIdStr = playDetails.gameId;
                 const myId = playDetails.myId;
-                console.log('play card', playDetailsHash, playDetails, gameIdStr, myId);
-                if (await myCache.has(playDetailsHash)) {
-                    console.log('play card - playDetailsHash already exists', playDetails, gameIdStr, myId);
-                    return;
-                } else {
-                    console.log('play card - insert playDetailsHash to cache', playDetails, gameIdStr, myId);
-                    await myCache.set(playDetailsHash, 1);
-                }
                 const roundInd = playDetails.roundInd;
                 const playedCard = playDetails.playedCard;
 
