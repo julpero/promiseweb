@@ -8,10 +8,6 @@ server.listen(port, () => {
     console.log('server listening on *:' + port);
 });
 
-const NodeCache = require( "node-cache" );
-const myCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
-const hash = require('object-hash');
-
 const bcrypt = require('bcrypt');
 
 const sanitizeFileName = require("sanitize-filename");
@@ -605,7 +601,7 @@ try {
             });
 
             socket.on('observe game', async (observeGameOptions, fn) => {
-                console.log(observeGameOptions);
+                console.log('observeGameOptions', observeGameOptions);
                 const retObj = {
                     passOk: false,
                     playerOk: false,
@@ -712,7 +708,7 @@ try {
                                             }
                                         }
                                         // remove from map, insert again after update
-                                        sm.removeClientFromMap(observer.name, socket.id, gameIdStr);
+                                        sm.removeClientFromMap(observerName, socket.id, gameIdStr);
                                     } else {
                                         const newObservers = obsGame.observers;
                                         newObservers.push(observer);
@@ -725,9 +721,9 @@ try {
                                             sendObserving = true;
                                         }
                                     }
-                                    // add observer to game map for future use
-                                    sm.addClientToMap(observer.name, socket.id, gameIdStr);
                                 }
+                                // add observer to game map for future use
+                                sm.addClientToMap(observerName, socket.id, gameIdStr);
                                 if (sendObserving) {
                                     const chatLine = observerName+' want\'s to observe this game';
                                     io.to(gameIdStr).emit('new chat line', chatLine);
@@ -964,6 +960,7 @@ try {
                             const sockets = sm.getSocketFromMap(observer);
                             if (sockets) {
                                 sockets.forEach(socket => {
+                                    console.warn('sending join to observer');
                                     io.to(socket).emit('start observe game', obsGameAfter);
                                 });
                             } else {
@@ -1025,17 +1022,8 @@ try {
             });
     
             socket.on('get round', async (getRound, fn) => {
-                const getRoundHash = hash(getRound);
                 const gameIdStr = getRound.gameId;
                 const myId = getRound.myId;
-                console.log('get round', getRoundHash, getRound, gameIdStr, myId);
-                if (await myCache.has(getRoundHash)) {
-                    console.log('get round - getRoundHash already exists', getRoundHash, gameIdStr, myId);
-                    return;
-                } else {
-                    console.log('get round - insert getRoundHash to cache', getRoundHash, gameIdStr, myId);
-                    await myCache.set(getRoundHash, 1);
-                }
                 const roundInd = getRound.round;
     
                 const database = mongoUtil.getDb();
@@ -1228,17 +1216,8 @@ try {
             });
     
             socket.on('play card', async (playDetails, fn) => {
-                const playDetailsHash = hash(playDetails);
                 const gameIdStr = playDetails.gameId;
                 const myId = playDetails.myId;
-                console.log('play card', playDetailsHash, playDetails, gameIdStr, myId);
-                if (await myCache.has(playDetailsHash)) {
-                    console.log('play card - playDetailsHash already exists', playDetails, gameIdStr, myId);
-                    return;
-                } else {
-                    console.log('play card - insert playDetailsHash to cache', playDetails, gameIdStr, myId);
-                    await myCache.set(playDetailsHash, 1);
-                }
                 const roundInd = playDetails.roundInd;
                 const playedCard = playDetails.playedCard;
 
@@ -2624,6 +2603,12 @@ async function checkLogin(userName, userPass1, userPass2) {
     const userDoc = await uCollection.findOne(uQuery);
 
     if (userDoc == null) {
+        // return fail
+        if (userPass2 == null) {
+            loginObj.resultStr = 'PWDFAILS';
+            loginObj.loginOk = false;
+            return loginObj;
+        }
         // first time user, check if both passwords match
         if (userPass1 != userPass2) {
             loginObj.resultStr = 'PWDMISMATCH';

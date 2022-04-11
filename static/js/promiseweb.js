@@ -1274,11 +1274,7 @@ async function cardPlayedCallback(gameInfo) {
 
     socket.emit('get round', getRound, function(myRound) {
         console.log(myRound);
-        const iAmObserver = amIObserver(myRound);
-        console.log('iAmObserver', iAmObserver);
-        if (iAmObserver) {
-            observerInit();
-        }
+        observerInit(myRound);
         document.getElementById('myName').value = myRound.myName;
         document.getElementById('currentRoundInd').value = myRound.roundInd;
         if (myRound.gameOver) {
@@ -1310,11 +1306,6 @@ async function cardPlayedCallback(gameInfo) {
         } else {
             initSpeedBar(gameInfo);
             getPromise(myRound, gameInfo.evenPromisesAllowed, gameInfo.speedPromise, gameInfo.opponentPromiseCardValue);
-        }
-        if (!iAmObserver && myRound.obsGame && myRound.obsGame.observers && myRound.obsGame.observers.length > 0) {
-            document.getElementById('openObserversButton').classList.remove('disabled');
-            document.getElementById('openObserversButton').classList.remove('btn-secondary');
-            document.getElementById('openObserversButton').classList.add('btn-primary');
         }
     });
 }
@@ -1357,6 +1348,7 @@ function deleteObservingCallback(deleteObserver) {
     }
     if (deleteObserver.observersCount == 0) {
         document.getElementById('openObserversButton').classList.add('disabled');
+        document.getElementById('openObserversButton').classList.remove('btn-success');
         document.getElementById('openObserversButton').classList.remove('btn-warning');
         document.getElementById('openObserversButton').classList.add('btn-secondary');
     }
@@ -1375,8 +1367,82 @@ function amIObserver(myRound) {
     return false;
 }
 
-function observerInit() {
-    document.getElementById('openObserversButton').classList.add('disabled');
-    document.getElementById('toggleLeaveGameCollapseButton').style.display = 'none';
-    document.getElementById('toggleLeaveObserveCollapseButton').style.display = '';
+function allowedObserveRequestByAll(myRound) {
+    if (!myRound.obsGame || !myRound.obsGame.observers || myRound.obsGame.observers.length == 0) {
+        return false;
+    }
+    for (let i = 0; i < myRound.obsGame.observers.length; i++) {
+        if (myRound.obsGame.observers[i].playersInGame.find(function(player) {
+            return player.observeMode == 0;
+        }) == undefined) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function givenPermissionToObserve(myRound) {
+    if (!myRound.obsGame || !myRound.obsGame.observers || myRound.obsGame.observers.length == 0) {
+        return false;
+    }
+    for (let i = 0; i < myRound.obsGame.observers.length; i++) {
+        if (myRound.obsGame.observers[i].playersInGame.find(function(player) {
+            return player.name == myRound.myName && player.observeMode != 0;
+        }) != undefined) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function openObserveRequests(myRound) {
+    if (!myRound.obsGame || !myRound.obsGame.observers || myRound.obsGame.observers.length == 0) {
+        return false;
+    }
+    for (let i = 0; i < myRound.obsGame.observers.length; i++) {
+        if (myRound.obsGame.observers[i].playersInGame.find(function(player) {
+            return player.name == myRound.myName && player.observeMode == 0;
+        }) != undefined) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function observerInit(myRound) {
+    console.log('observerInit');
+    if (amIObserver(myRound)) {
+        console.log('amIObserver');
+        document.getElementById('openObserversButton').classList.add('disabled');
+        document.getElementById('toggleLeaveGameCollapseButton').style.display = 'none';
+        document.getElementById('toggleLeaveObserveCollapseButton').style.display = '';
+        return;
+    }
+    if (allowedObserveRequestByAll(myRound)) {
+        console.log('allowedObserveRequestByAll');
+        document.getElementById('openObserversButton').classList.remove('disabled');
+        document.getElementById('openObserversButton').classList.remove('btn-primary');
+        document.getElementById('openObserversButton').classList.remove('btn-secondary');
+        document.getElementById('openObserversButton').classList.remove('btn-warning');
+        document.getElementById('openObserversButton').classList.add('btn-success');
+        return;
+    }
+    if (givenPermissionToObserve(myRound)) {
+        console.log('givenPermissionToObsereve');
+        document.getElementById('openObserversButton').classList.remove('disabled');
+        document.getElementById('openObserversButton').classList.remove('btn-secondary');
+        document.getElementById('openObserversButton').classList.remove('btn-success');
+        document.getElementById('openObserversButton').classList.remove('btn-warning');
+        document.getElementById('openObserversButton').classList.add('btn-primary');
+        return;
+    }
+    if (openObserveRequests(myRound)) {
+        console.log('openObserveRequests');
+        document.getElementById('openObserversButton').classList.remove('disabled');
+        document.getElementById('openObserversButton').classList.remove('btn-secondary');
+        document.getElementById('openObserversButton').classList.remove('btn-primary');
+        document.getElementById('openObserversButton').classList.remove('btn-success');
+        document.getElementById('openObserversButton').classList.add('btn-warning');
+        return;
+    }
 }
