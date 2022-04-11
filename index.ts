@@ -960,7 +960,7 @@ try {
                             const sockets = sm.getSocketFromMap(observer);
                             if (sockets) {
                                 sockets.forEach(socket => {
-                                    console.warn('sending join to observer');
+                                    console.log('sending join to observer');
                                     io.to(socket).emit('start observe game', obsGameAfter);
                                 });
                             } else {
