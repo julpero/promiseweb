@@ -708,7 +708,7 @@ try {
                                             }
                                         }
                                         // remove from map, insert again after update
-                                        sm.removeClientFromMap(observer.name, socket.id, gameIdStr);
+                                        sm.removeClientFromMap(observerName, socket.id, gameIdStr);
                                     } else {
                                         const newObservers = obsGame.observers;
                                         newObservers.push(observer);
@@ -721,9 +721,9 @@ try {
                                             sendObserving = true;
                                         }
                                     }
-                                    // add observer to game map for future use
-                                    sm.addClientToMap(observer.name, socket.id, gameIdStr);
                                 }
+                                // add observer to game map for future use
+                                sm.addClientToMap(observerName, socket.id, gameIdStr);
                                 if (sendObserving) {
                                     const chatLine = observerName+' want\'s to observe this game';
                                     io.to(gameIdStr).emit('new chat line', chatLine);
@@ -960,7 +960,7 @@ try {
                             const sockets = sm.getSocketFromMap(observer);
                             if (sockets) {
                                 sockets.forEach(socket => {
-                                    console.log('sending join to observer');
+                                    console.warn('sending join to observer');
                                     io.to(socket).emit('start observe game', obsGameAfter);
                                 });
                             } else {
