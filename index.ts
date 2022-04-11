@@ -605,7 +605,7 @@ try {
             });
 
             socket.on('observe game', async (observeGameOptions, fn) => {
-                console.log(observeGameOptions);
+                console.log('observeGameOptions', observeGameOptions);
                 const retObj = {
                     passOk: false,
                     playerOk: false,
@@ -964,6 +964,7 @@ try {
                             const sockets = sm.getSocketFromMap(observer);
                             if (sockets) {
                                 sockets.forEach(socket => {
+                                    console.log('sending join to observer');
                                     io.to(socket).emit('start observe game', obsGameAfter);
                                 });
                             } else {
@@ -2624,6 +2625,12 @@ async function checkLogin(userName, userPass1, userPass2) {
     const userDoc = await uCollection.findOne(uQuery);
 
     if (userDoc == null) {
+        // return fail
+        if (userPass2 == null) {
+            loginObj.resultStr = 'PWDFAILS';
+            loginObj.loginOk = false;
+            return loginObj;
+        }
         // first time user, check if both passwords match
         if (userPass1 != userPass2) {
             loginObj.resultStr = 'PWDMISMATCH';
