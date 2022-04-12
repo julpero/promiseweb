@@ -306,7 +306,7 @@ function getObserversName(id, observers) {
     const observer = observers.find(function (obs) {
         return obs.observerId == id;
     });
-    return observer?.name;
+    return observer != null ? observer.name : null;
 }
 
 function cleanObservers(obsArr) {
