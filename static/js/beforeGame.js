@@ -522,8 +522,9 @@ function sendObserveValue(btn) {
     // dataset members are always lowercase
     const sendObsValueObj = {
         gameId: document.getElementById('currentGameId').value,
-        observer: btn.dataset.observer,
+        observerName: btn.dataset.observer,
         playerId: window.localStorage.getItem('uUID'),
+        myName: document.getElementById('myName').value.trim(),
         obsValue: btn.dataset.obsvalue
     }
     console.log(sendObsValueObj);

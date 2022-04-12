@@ -819,11 +819,10 @@ try {
                     gameId: gameIdStr,
                     observerName: userName
                 }
+                const database = mongoUtil.getDb();
                 const obsOk = await observeOk(checkObsOkObj);
                 if (obsOk) {
                     socket.join(gameIdStr);
-
-                    const database = mongoUtil.getDb();
                     const ObjectId = require('mongodb').ObjectId;
                     const searchId = new ObjectId(gameIdStr);
                     const collection = database.collection(promisewebCollection);
@@ -841,6 +840,14 @@ try {
                     socket.emit('card played', gameInfo);
                 } else {
                     // TODO: remove from map and observer list
+                    sm.removeClientFromMap(userName, socket.id, gameIdStr);
+                    const obsCollection = database.collection(observeCollection);
+                    const pullObserver = { $pull: { 'observers': { name: userName} } };
+                    const obsQuery = {
+                        gameId: gameIdStr,
+                        'observers.name': { $eq: userName }
+                    }
+                    await obsCollection.updateOne(obsQuery, pullObserver);
                 }
                 fn(obsGameObj);
             });
@@ -848,8 +855,9 @@ try {
             socket.on('observe response', async (observeObject, fn) => {
                 console.log(observeObject);
                 const gameIdStr = observeObject.gameId;
-                const observer = observeObject.observer;
+                const observerName = observeObject.observerName;
                 const myId = observeObject.playerId;
+                const myName = observeObject.myName;
                 const obsValue = observeObject.obsValue;
 
                 const retObj = {
@@ -876,7 +884,7 @@ try {
                     const obsCollection = database.collection(observeCollection);
                     const obsQuery = {
                         gameId: gameIdStr,
-                        'observers.name': { $eq: observer },
+                        'observers.name': { $eq: observerName },
                         'observers.playersInGame.playerId': { $eq: myId }
                     }
                     const obsGame = await obsCollection.findOne(obsQuery);
@@ -885,7 +893,7 @@ try {
                         let obsIndex = -1;
                         let playerIndex = -1;
                         for (let i = 0; i < obsGame.observers.length; i++) {
-                            if (obsGame.observers[i].name == observer) {
+                            if (obsGame.observers[i].name == observerName) {
                                 obsIndex = i;
                                 for (let j = 0; obsGame.observers[i].playersInGame.length; j++) {
                                     if (obsGame.observers[i].playersInGame[j].playerId == myId) {
@@ -918,17 +926,21 @@ try {
                         switch (obsValue) {
                             case 'DENY': {
                                 // delete observer from observation
-                                const pullObserver = { $pull: { 'observers': { name: observer} } };
+                                const pullObserver = { $pull: { 'observers': { name: observerName} } };
                                 const deleteResult = await obsCollection.updateOne(obsQuery, pullObserver);
                                 if (deleteResult.modifiedCount == 1) {
                                     retObj.obsOk = true;
                                     retObj.obsGame = obsGame;
-                                    retObj.obsPlayer = observer
+                                    retObj.obsPlayer = observerName
                                     retObj.observersCount = obsGame.observers.length - 1;
                                 }
-                                sm.removeClientFromMap(observer, socket.id, gameIdStr);
+                                sm.removeClientFromMap(observerName, socket.id, gameIdStr);
                                 fn(retObj);
                                 io.to(gameIdStr).emit('observe deleted', retObj);
+
+                                const chatLine = myName + ' denied '+ observerName +'\'s observation';
+                                io.to(gameIdStr).emit('new chat line', chatLine);
+
                                 return;
                             }
                             case 'UNSET':
@@ -939,33 +951,36 @@ try {
                                 }
                                 const options = {
                                     upsert: true,
-                                    arrayFilters: [{'obsIndex.name': {$eq: observer}}, {'playerIndex.playerId': {$eq: myId } }]
+                                    arrayFilters: [{'obsIndex.name': {$eq: observerName}}, {'playerIndex.playerId': {$eq: myId } }]
                                 };
                                 const updateResult = await obsCollection.updateOne(obsQuery, updatedObserversDoc, options);
                                 if (updateResult.modifiedCount == 1) {
                                     retObj.obsOk = true;
                                 }
+                                const chatLine = myName + ' response to '+ observerName +'\'s observation: ' + obsValue;
+                                io.to(gameIdStr).emit('new chat line', chatLine);
                             }
                         }
                     }
                     // check if this was last allowance
                     const obsGameAfter = await obsCollection.findOne(obsQuery);
                     if (obsGameAfter != null) {
-                        const observersPermissions = obsGameAfter.observers.filter(obs => obs.name == observer)[0];
+                        const observersPermissions = obsGameAfter.observers.filter(obs => obs.name == observerName)[0];
                         if (observersPermissions.playersInGame.filter(player => player.observeMode == OBSERVE_MODE.NoSet).length == 0) {
                             // all players have set permission
                             // notify players
                             io.to(gameIdStr).emit('observe allowed', obsGameAfter);
                             // join observer to game
-                            const sockets = sm.getSocketFromMap(observer);
+                            const sockets = sm.getSocketFromMap(observerName);
                             if (sockets) {
                                 sockets.forEach(socket => {
                                     console.log('sending join to observer');
                                     io.to(socket).emit('start observe game', obsGameAfter);
                                 });
                             } else {
-                                // TODO: delete observing game
-                                // no socket found
+                                // no socket found, delete whole observation
+                                const pullObserver = { $pull: { 'observers': { name: observerName} } };
+                                await obsCollection.updateOne(obsQuery, pullObserver);
                             }
                         }
                     }
