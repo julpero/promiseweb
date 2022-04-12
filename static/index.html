@@ -43,16 +43,6 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <a class="btn btn-primary" id="openOngoingGamesDialogButton" data-bs-toggle="collapse" href="#observeGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
-                        Show ongoing games
-                    </a>
-                    <div id="alertOngoingGamesDiv"></div>
-                    <div class="collapse" id="observeGameCollapse">
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
                     <a class="btn btn-primary" id="openCreateGameFormButton" data-bs-toggle="collapse" href="#createGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Create game
                     </a>
@@ -319,6 +309,16 @@
                     <button type="button" id="showCommonReportsButton" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#commonReportModal">Show graphs</button>
                 </div>
             </div>
+            <div class="row">
+                <div class="col">
+                    <a class="btn btn-primary" id="openOngoingGamesDialogButton" data-bs-toggle="collapse" href="#observeGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        Show ongoing games
+                    </a>
+                    <div id="alertOngoingGamesDiv"></div>
+                    <div class="collapse" id="observeGameCollapse">
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="container-fluid" id="gameContainer" style="display: none;">
@@ -378,24 +378,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="tab-pane fade" id="v-pills-stat" role="tabpanel" aria-labelledby="v-pills-stat-tab">
-                                    <div class="row">
-                                        <div class="col-12" id="pointsStats" style="height: 140px; width: 100%">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="v-pills-live-1" role="tabpanel" aria-labelledby="v-pills-live-1-tab">
-                                    <div class="row">
-                                        <div class="col-12" id="pointsLive1Stats" style="height: 140px; width: 100%">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="v-pills-live-2" role="tabpanel" aria-labelledby="v-pills-live-2-tab">
-                                    <div class="row">
-                                        <div class="col-12" id="pointsLive2Stats" style="height: 140px; width: 100%">
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -403,8 +385,14 @@
                 </div>
 
                 <div class="col-2" id="menu" style="border: 1px solid black;">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#leaveGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <a class="btn btn-primary" id="toggleLeaveGameCollapseButton" data-bs-toggle="collapse" href="#leaveGameCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Leave game
+                    </a>
+                    <a class="btn btn-primary" id="toggleLeaveObserveCollapseButton" data-bs-toggle="collapse" href="#leaveObserveCollapse" role="button" aria-expanded="false" aria-controls="collapseExample" style="display: none;">
+                        Leave OBS
+                    </a>
+                    <a class="btn btn-secondary disabled" id="openObserversButton" data-bs-toggle="modal" href="#observersModal" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        OBS
                     </a>
 
                     <div class="collapse" id="leaveGameCollapse">
@@ -412,6 +400,13 @@
                         <div class="btn-group" role="group" aria-label="Leaving buttons">
                             <button type="button" id="dontLeaveButton" class="btn btn-success" data-bs-toggle="collapse" data-bs-target="#leaveGameCollapse">No</button>
                             <button type="button" id="leaveButton" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#leavingGameModal">Yes</button>
+                        </div>
+                    </div>
+                    <div class="collapse" id="leaveObserveCollapse">
+                        really leaving?
+                        <div class="btn-group" role="group" aria-label="Leaving buttons">
+                            <button type="button" id="dontLeaveObserveButton" class="btn btn-success" data-bs-toggle="collapse" data-bs-target="#leaveObserveCollapse">No</button>
+                            <button type="button" id="leaveObserveButton" class="btn btn-danger" data-bs-toggle="collapse" data-bs-target="#leaveObserveCollapse">Yes</button>
                         </div>
                     </div>
 
@@ -527,6 +522,24 @@
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+        </div>
+
+        <div class="modal" tabindex="-1" role="dialog" id="observersModal">
+            <div class="modal-dialog modal-xl" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Observers in this game</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body" id="observersModalBody">
+                </div>
+                <div class="modal-footer">
+                  <button id="closeObserveModalBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
               </div>
             </div>
@@ -647,10 +660,15 @@
 
                 socket.on('card played', cardPlayedCallback);
 
-                socket.on('round start', function(roundInfo) {
-                    debugger
-                    console.log(roundInfo);
-                });
+                socket.on('new observer', newObserverCallback);
+                
+                socket.on('observe deleted', deleteObservingCallback);
+
+                socket.on('observe deleted by player', stopObservingCallback);
+
+                socket.on('observe allowed', observeAllowedCallback);
+                
+                socket.on('start observe game', startObservingCallback);
 
                 mainInit();
 

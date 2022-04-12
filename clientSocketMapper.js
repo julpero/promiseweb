@@ -39,7 +39,7 @@ module.exports = {
         return name;
     },
 
-    getSocketFromMap: function (userName) {
+    getSocketsFromMap: function (userName) {
         if (userSocketIdMap.has(userName)) {
             return userSocketIdMap.get(userName).sockets;
         }

@@ -5,11 +5,12 @@ const speedPromiseMultiplierNotEven = 0.6;
 
 module.exports = {
 
-    roundToPlayer: function (playerId, roundInd, thisGame, doReloadInit, newRound, gameOver) {
+    roundToPlayer: function (playerId, roundInd, thisGame, doReloadInit, newRound, gameOver, obsGame) {
         const round = thisGame.game.rounds[roundInd];
         const playerName = this.getPlayerNameById(playerId, thisGame.humanPlayers);
         const play = this.getCurrentPlayIndex(round);
         const playerGoingToWinThisPlay = this.winnerOfPlay(round.cardsPlayed[play], round.trumpCard.suit);
+        const obsGameToRoundObj = obsGameToRound(obsGame);
 
         return {
             gameId: thisGame._id.toString(),
@@ -17,7 +18,7 @@ module.exports = {
             cardsInRound: round.cardsInRound,
             dealerPositionIndex: round.dealerPositionIndex,
             starterPositionIndex: round.starterPositionIndex,
-            myName: playerName,
+            myName: playerName ?? getObserversName(playerId, obsGame.observers),
             myCards: getPlayerCards(playerName, round, thisGame.speedPromise),
             players: getRoundPlayers(playerName, round, play, showPromisesNow('player', thisGame, roundInd), thisGame.humanPlayers, thisGame.hiddenCardsMode, playerGoingToWinThisPlay),
             trumpCard: showTrumpCard(thisGame, roundInd) ? round.trumpCard : null,
@@ -29,7 +30,8 @@ module.exports = {
             doReloadInit: doReloadInit,
             newRound: newRound,
             gameOver: gameOver,
-            handValues: getHandValues(thisGame, roundInd)
+            handValues: getHandValues(thisGame, roundInd),
+            obsGame: obsGameToRoundObj
             // round: round, // comment this when in production!
         };
     },
@@ -297,7 +299,34 @@ module.exports = {
 
         return wrongNames;
     }
+}
 
+function getObserversName(id, observers) {
+    const observer = observers.find(function (obs) {
+        return obs.observerId == id;
+    });
+    return observer?.name;
+}
+
+function cleanObservers(obsArr) {
+    const observers = [];
+    for (let i = 0; i < obsArr.length; i++) {
+        observers.push({
+            name: obsArr[i].name,
+            playersInGame: obsArr[i].playersInGame.map(({name, observeMode}) => ({name, observeMode}))
+        });
+    }
+    return observers;
+}
+
+function obsGameToRound(obsGame) {
+    if (!obsGame) return null;
+    const retObj = {
+        gameId: obsGame.gameId,
+        gameStatus: obsGame.gameStatus,
+        observers: cleanObservers(obsGame.observers)
+    }
+    return retObj;
 }
 
 function isEvenRound(round) {

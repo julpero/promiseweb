@@ -10,8 +10,9 @@ body {
   height: 100%;
 }
 body {
-  background-color: #45a173;
+  /* background-color: #45a173; */
   /* background-color: #ffa5d5; */
+  background-color: lightskyblue;
   color: #333;
   font-family: 'Open Sans', sans-serif;
   -webkit-user-select: none;

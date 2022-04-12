@@ -126,6 +126,8 @@ function drawTrumpCard(myRound) {
 }
 
 function drawMyCards(myRound, speedPromise) {
+    if (amIObserver(myRound)) return;
+
     const deck = Deck();
     if (speedPromise && myRound.myCards.length == 0) {
         for (let i = 0; i < myRound.cardsInRound; i++) {
@@ -1013,12 +1015,11 @@ function getCurrentCardContainer(card) {
     for (let i = 0; i < 10; i++) {
         const cardCol = document.getElementById('player0CardCol'+i);
         if (cardCol.querySelectorAll(cardClassStr).length == 1) return i;
-        // if (.find(cardClassStr).length == 1) return i;
     }
     return 0;
 }
 
-async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hiddenCardsMode) {
+async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hiddenCardsMode, iAmObserver) {
     console.log('moveCardFromHandToTable, card:', card);
     const deck = Deck();
 
@@ -1050,7 +1051,7 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
     
     const playerIndex = mapPlayerNameToTable(playerName);
     console.log('moveCardFromHandToTable, playerIndex:', playerIndex);
-    const containerIndex = playerIndex == 0 ? getCurrentCardContainer(card) : getLastCardContainer(playerIndex);
+    const containerIndex = playerIndex == 0 && !iAmObserver ? getCurrentCardContainer(card) : getLastCardContainer(playerIndex);
     console.log('moveCardFromHandToTable, containerIndex:', containerIndex);
     emptyElementById('player'+playerIndex+'CardCol'+containerIndex);
 
@@ -1246,10 +1247,12 @@ async function cardPlayedCallback(gameInfo) {
         const playedCard = gameInfo.eventInfo.playedCard;
         const cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
         const players = gameInfo.humanPlayers;
+        const myName = document.getElementById('myName').value
+        const iAmObserver = players.find(p => p.name == myName) == null;
         newRound = gameInfo.eventInfo.newRound;
         gameOver = gameInfo.eventInfo.gameOver;
         
-        await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay, gameInfo.hiddenCardsMode);
+        await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay, gameInfo.hiddenCardsMode, iAmObserver);
         if (gameInfo.eventInfo.newPlay) {
             const winnerName = gameInfo.eventInfo.winnerName;
             await moveCardFromTableToWinDeck(winnerName, players);
@@ -1274,6 +1277,7 @@ async function cardPlayedCallback(gameInfo) {
 
     socket.emit('get round', getRound, function(myRound) {
         console.log(myRound);
+        observerInit(myRound);
         document.getElementById('myName').value = myRound.myName;
         document.getElementById('currentRoundInd').value = myRound.roundInd;
         if (myRound.gameOver) {
@@ -1328,6 +1332,120 @@ function appendToChat(text) {
     textArea.scrollTop = textArea.scrollHeight;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function newObserverCallback(newObserver) {
+    document.getElementById('openObserversButton').classList.remove('disabled');
+    document.getElementById('openObserversButton').classList.remove('btn-secondary');
+    document.getElementById('openObserversButton').classList.add('btn-warning');
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function deleteObservingCallback(deleteObserver) {
+    console.log('deleteObservingCallback', deleteObserver);
+    if (deleteObserver.obsOk
+        && document.getElementById('currentGameId').value == deleteObserver.obsGame.gameId
+        && document.getElementById("observersModal").attributes["aria-modal"]
+        && document.getElementById("observersModal").attributes["aria-modal"].value == "true") {
+            // eslint-disable-next-line no-undef
+            showObservers();
+    }
+    if (deleteObserver.observersCount == 0) {
+        document.getElementById('openObserversButton').classList.add('disabled');
+        document.getElementById('openObserversButton').classList.remove('btn-success');
+        document.getElementById('openObserversButton').classList.remove('btn-warning');
+        document.getElementById('openObserversButton').classList.add('btn-secondary');
+    }
+}
+
 function randomNegToPos(max) {
     return Math.floor(Math.random() * (2*max)) - max;
+}
+
+function amIObserver(myRound) {
+    if (myRound.players.find(function(player) {
+        return player.thisIsMe
+    }) == undefined) {
+        return true;
+    }
+    return false;
+}
+
+function allowedObserveRequestByAll(myRound) {
+    if (!myRound.obsGame || !myRound.obsGame.observers || myRound.obsGame.observers.length == 0) {
+        return false;
+    }
+    for (let i = 0; i < myRound.obsGame.observers.length; i++) {
+        if (myRound.obsGame.observers[i].playersInGame.find(function(player) {
+            return player.observeMode == 0;
+        }) == undefined) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function givenPermissionToObserve(myRound) {
+    if (!myRound.obsGame || !myRound.obsGame.observers || myRound.obsGame.observers.length == 0) {
+        return false;
+    }
+    for (let i = 0; i < myRound.obsGame.observers.length; i++) {
+        if (myRound.obsGame.observers[i].playersInGame.find(function(player) {
+            return player.name == myRound.myName && player.observeMode != 0;
+        }) != undefined) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function openObserveRequests(myRound) {
+    if (!myRound.obsGame || !myRound.obsGame.observers || myRound.obsGame.observers.length == 0) {
+        return false;
+    }
+    for (let i = 0; i < myRound.obsGame.observers.length; i++) {
+        if (myRound.obsGame.observers[i].playersInGame.find(function(player) {
+            return player.name == myRound.myName && player.observeMode == 0;
+        }) != undefined) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function observerInit(myRound) {
+    console.log('observerInit');
+    if (amIObserver(myRound)) {
+        console.log('amIObserver');
+        document.getElementById('openObserversButton').classList.add('disabled');
+        document.getElementById('toggleLeaveGameCollapseButton').style.display = 'none';
+        document.getElementById('toggleLeaveObserveCollapseButton').style.display = '';
+        return;
+    }
+    if (allowedObserveRequestByAll(myRound)) {
+        console.log('allowedObserveRequestByAll');
+        document.getElementById('openObserversButton').classList.remove('disabled');
+        document.getElementById('openObserversButton').classList.remove('btn-primary');
+        document.getElementById('openObserversButton').classList.remove('btn-secondary');
+        document.getElementById('openObserversButton').classList.remove('btn-warning');
+        document.getElementById('openObserversButton').classList.add('btn-success');
+        return;
+    }
+    if (givenPermissionToObserve(myRound)) {
+        console.log('givenPermissionToObsereve');
+        document.getElementById('openObserversButton').classList.remove('disabled');
+        document.getElementById('openObserversButton').classList.remove('btn-secondary');
+        document.getElementById('openObserversButton').classList.remove('btn-success');
+        document.getElementById('openObserversButton').classList.remove('btn-warning');
+        document.getElementById('openObserversButton').classList.add('btn-primary');
+        return;
+    }
+    if (openObserveRequests(myRound)) {
+        console.log('openObserveRequests');
+        document.getElementById('openObserversButton').classList.remove('disabled');
+        document.getElementById('openObserversButton').classList.remove('btn-secondary');
+        document.getElementById('openObserversButton').classList.remove('btn-primary');
+        document.getElementById('openObserversButton').classList.remove('btn-success');
+        document.getElementById('openObserversButton').classList.add('btn-warning');
+        return;
+    }
 }

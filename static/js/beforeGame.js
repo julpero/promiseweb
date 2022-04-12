@@ -235,6 +235,7 @@ function observeGame(gameId) {
     emptyElementById('alertOngoingGamesDiv');
     const observeObj = {
         gameToObserve: gameId,
+        myId: window.localStorage.getItem('uUID'),
         observerName: document.getElementById('observerName').value,
         observerPass: document.getElementById('observerPass').value
     }
@@ -480,12 +481,29 @@ function initJoinByIdButton() {
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function stopObservingCallback() {
+    console.log('some player stopped your observing' );
+    stopObserving();
+}
+
+function stopObserving() {
+    const stopObsOject = {
+        myId: window.localStorage.getItem('uUID'),
+        gameId: document.getElementById('currentGameId').value,
+    }
+    socket.emit('stop observing', stopObsOject, function (response) {
+        console.log('stopped observing: ', response);
+        alert('You have now left observing the game. Please click OK and then refresh this page.');
+    });
+}
+
 function initLeavingButtons() {
-    // document.getElementById('dontLeaveButton').addEventListener('click', function() {
-    //     document.getElementById('leaveGameCollapse').collapse;
-    // });
     document.getElementById('leaveButton').addEventListener('click', function() {
         document.getElementById('leavingUId').value = window.localStorage.getItem('uUID');
+    });
+    document.getElementById('leaveObserveButton').addEventListener('click', function() {
+        stopObserving();
     });
     document.getElementById('leavingGameModal').addEventListener('hidden.bs.modal', function() {
         const uuid = uuidv4();
@@ -508,6 +526,132 @@ function initLeavingButtons() {
             }
         });
     });
+}
+
+function sendObserveValue(btn) {
+    // dataset members are always lowercase
+    const sendObsValueObj = {
+        gameId: document.getElementById('currentGameId').value,
+        observerName: btn.dataset.observer,
+        playerId: window.localStorage.getItem('uUID'),
+        myName: document.getElementById('myName').value.trim(),
+        obsValue: btn.dataset.obsvalue
+    }
+    console.log(sendObsValueObj);
+    socket.emit('observe response', sendObsValueObj, function(obj) {
+        console.log(obj);
+        showObservers();
+    });
+}
+
+function showObserverList(observersList) {
+    emptyElementById('observersModalBody');
+    const observersModal = document.getElementById('observersModalBody');
+    observersList.observers.forEach(function (observer) {
+        const obsName = observer.name;
+        // dataset members are always lowercase
+        const obsButtonObject = {
+            'data-observer': obsName,
+            'data-obsvalue': null
+        }
+        const obsRow = createElementWithIdAndClasses('div', null, 'row');
+
+        const obsNameCol = createElementWithIdAndClasses('div', null, 'col-3');
+        let currentStatus = '';
+        switch (observer.myChoice) {
+            case 0:
+                currentStatus = ' (not set)';
+                break;
+            case 1:
+                currentStatus = ' (allowed)';
+                break;
+            case 2:
+                currentStatus = ' (allowed with cards)';
+                break;
+        }
+        obsNameCol.innerText = obsName + currentStatus;
+
+        obsButtonObject["data-obsValue"] = 'DENY';
+        const obsDenyCol = createElementWithIdAndClasses('div', null, 'col-2');
+        const denyButton = createElementWithIdAndClasses('button', null, 'obs-deny-btn btn btn-danger', obsButtonObject);
+        denyButton.innerText = 'DENY';
+        denyButton.addEventListener('click', function () {
+            sendObserveValue(this);
+        });
+        obsDenyCol.appendChild(denyButton);
+
+        obsButtonObject["data-obsValue"] = 'UNSET';
+        const obsUnsetCol = createElementWithIdAndClasses('div', null, 'col-2');
+        const unsetButton = createElementWithIdAndClasses('button', null, 'obs-unset-btn btn btn-warning', obsButtonObject);
+        unsetButton.innerText = 'UNSET';
+        unsetButton.addEventListener('click', function () {
+            sendObserveValue(this);
+        });
+        obsUnsetCol.appendChild(unsetButton);
+
+        obsButtonObject["data-obsValue"] = 'ALLOW';
+        const obsAllowCol = createElementWithIdAndClasses('div', null, 'col-2');
+        const allowButton = createElementWithIdAndClasses('button', null, 'obs-allow-btn btn btn-success', obsButtonObject);
+        allowButton.innerText = 'ALLOW';
+        allowButton.addEventListener('click', function () {
+            sendObserveValue(this);
+        });
+        obsAllowCol.appendChild(allowButton);
+
+        obsButtonObject["data-obsValue"] = 'ALLOW WITH CARDS';
+        const obsAllowWithCardsCol = createElementWithIdAndClasses('div', null, 'col-3');
+        const allowWithCardsButton = createElementWithIdAndClasses('button', null, 'obs-allow-with-cards-btn btn btn-success disabled', obsButtonObject);
+        allowWithCardsButton.innerText = 'ALLOW W CARDS';
+        allowWithCardsButton.addEventListener('click', function () {
+            sendObserveValue(this);
+        });
+        obsAllowWithCardsCol.appendChild(allowWithCardsButton);
+        
+        obsRow.appendChild(obsNameCol);
+        obsRow.appendChild(obsDenyCol);
+        obsRow.appendChild(obsUnsetCol);
+        obsRow.appendChild(obsAllowCol);
+        obsRow.appendChild(obsAllowWithCardsCol);
+        observersModal.appendChild(obsRow);
+    });
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function observeAllowedCallback(obsGameObj) {
+    // TODO: show that observing started
+    console.log("observeAllowedCallback", obsGameObj);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function startObservingCallback(obsGameObj) {
+    console.log("startObservingCallback", obsGameObj);
+    const startToObserveObj = {
+        gameId: obsGameObj.gameId,
+        observerId: window.localStorage.getItem('uUID')
+    }
+    socket.emit("start to observe", startToObserveObj, function(obj) {
+        console.log('started observing', obj);
+    });
+}
+
+function showObservers() {
+    const getObserversObj = {
+        gameId: document.getElementById('currentGameId').value,
+        myId: window.localStorage.getItem('uUID')
+    }
+    socket.emit('get observers', getObserversObj, function(observersList) {
+        console.log(observersList);
+        showObserverList(observersList);
+    });
+}
+
+function initOpenObserverModal() {
+    document.getElementById('observersModal').addEventListener('shown.bs.modal', function () {
+        console.log('show observers');
+
+        showObservers();
+    });
+
 }
 
 function initChatButton() {
@@ -548,6 +692,7 @@ function initButtons() {
     initJoinByIdButton();
     initChatButton();
     initShowReportButton();
+    initOpenObserverModal();
 }
 
 function showFrontPageBars(reportData) {

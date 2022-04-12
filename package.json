@@ -33,8 +33,6 @@
         "deck-of-cards": "^0.1.8",
         "express": "^4.17.3",
         "mongodb": "^4.5.0",
-        "node-cache": "^5.1.2",
-        "object-hash": "^3.0.0",
         "sanitize-filename": "^1.6.3",
         "socket.io": "^4.4.1",
         "tabulator-tables": "^5.1.8",
