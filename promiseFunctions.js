@@ -18,7 +18,7 @@ module.exports = {
             cardsInRound: round.cardsInRound,
             dealerPositionIndex: round.dealerPositionIndex,
             starterPositionIndex: round.starterPositionIndex,
-            myName: playerName,
+            myName: playerName ?? getObserversName(playerId, obsGame.observers),
             myCards: getPlayerCards(playerName, round, thisGame.speedPromise),
             players: getRoundPlayers(playerName, round, play, showPromisesNow('player', thisGame, roundInd), thisGame.humanPlayers, thisGame.hiddenCardsMode, playerGoingToWinThisPlay),
             trumpCard: showTrumpCard(thisGame, roundInd) ? round.trumpCard : null,
@@ -299,6 +299,13 @@ module.exports = {
 
         return wrongNames;
     }
+}
+
+function getObserversName(id, observers) {
+    const observer = observers.find(function (obs) {
+        return obs.observerId == id;
+    });
+    return observer?.name;
 }
 
 function cleanObservers(obsArr) {
