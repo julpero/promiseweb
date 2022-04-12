@@ -481,19 +481,29 @@ function initJoinByIdButton() {
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function stopObservingCallback() {
+    console.log('some player stopped your observing' );
+    stopObserving();
+}
+
+function stopObserving() {
+    const stopObsOject = {
+        myId: window.localStorage.getItem('uUID'),
+        gameId: document.getElementById('currentGameId').value,
+    }
+    socket.emit('stop observing', stopObsOject, function (response) {
+        console.log('stopped observing: ', response);
+        alert('You have now left observing the game. Please click OK and then refresh this page.');
+    });
+}
+
 function initLeavingButtons() {
     document.getElementById('leaveButton').addEventListener('click', function() {
         document.getElementById('leavingUId').value = window.localStorage.getItem('uUID');
     });
     document.getElementById('leaveObserveButton').addEventListener('click', function() {
-        const stopObsOject = {
-            myId: window.localStorage.getItem('uUID'),
-            gameId: document.getElementById('currentGameId').value,
-        }
-        socket.emit('stop observing', stopObsOject, function (response) {
-            console.log('stopped observing: ', response);
-            alert('You have now left observing the game. Please click OK and then refresh this page.');
-        });
+        stopObserving();
     });
     document.getElementById('leavingGameModal').addEventListener('hidden.bs.modal', function() {
         const uuid = uuidv4();

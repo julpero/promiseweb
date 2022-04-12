@@ -664,6 +664,8 @@
                 
                 socket.on('observe deleted', deleteObservingCallback);
 
+                socket.on('observe deleted by player', stopObservingCallback);
+
                 socket.on('observe allowed', observeAllowedCallback);
                 
                 socket.on('start observe game', startObservingCallback);

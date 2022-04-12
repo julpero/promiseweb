@@ -126,6 +126,8 @@ function drawTrumpCard(myRound) {
 }
 
 function drawMyCards(myRound, speedPromise) {
+    if (amIObserver(myRound)) return;
+
     const deck = Deck();
     if (speedPromise && myRound.myCards.length == 0) {
         for (let i = 0; i < myRound.cardsInRound; i++) {
@@ -1013,12 +1015,11 @@ function getCurrentCardContainer(card) {
     for (let i = 0; i < 10; i++) {
         const cardCol = document.getElementById('player0CardCol'+i);
         if (cardCol.querySelectorAll(cardClassStr).length == 1) return i;
-        // if (.find(cardClassStr).length == 1) return i;
     }
     return 0;
 }
 
-async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hiddenCardsMode) {
+async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hiddenCardsMode, iAmObserver) {
     console.log('moveCardFromHandToTable, card:', card);
     const deck = Deck();
 
@@ -1050,7 +1051,7 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
     
     const playerIndex = mapPlayerNameToTable(playerName);
     console.log('moveCardFromHandToTable, playerIndex:', playerIndex);
-    const containerIndex = playerIndex == 0 ? getCurrentCardContainer(card) : getLastCardContainer(playerIndex);
+    const containerIndex = playerIndex == 0 && !iAmObserver ? getCurrentCardContainer(card) : getLastCardContainer(playerIndex);
     console.log('moveCardFromHandToTable, containerIndex:', containerIndex);
     emptyElementById('player'+playerIndex+'CardCol'+containerIndex);
 
@@ -1246,10 +1247,12 @@ async function cardPlayedCallback(gameInfo) {
         const playedCard = gameInfo.eventInfo.playedCard;
         const cardPlayedBy = gameInfo.eventInfo.cardPlayedBy;
         const players = gameInfo.humanPlayers;
+        const myName = document.getElementById('myName').value
+        const iAmObserver = players.find(p => p.name == myName) == null;
         newRound = gameInfo.eventInfo.newRound;
         gameOver = gameInfo.eventInfo.gameOver;
         
-        await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay, gameInfo.hiddenCardsMode);
+        await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay, gameInfo.hiddenCardsMode, iAmObserver);
         if (gameInfo.eventInfo.newPlay) {
             const winnerName = gameInfo.eventInfo.winnerName;
             await moveCardFromTableToWinDeck(winnerName, players);

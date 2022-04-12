@@ -470,7 +470,7 @@ try {
                                     // user is still in map if browser just closed
                                     // let's ping this player
                                     let ping = false;
-                                    const sockets = sm.getSocketFromMap(playAsName);
+                                    const sockets = sm.getSocketsFromMap(playAsName);
                                     if (sockets != null) {
                                         // eslint-disable-next-line no-cond-assign
                                         for (let it = sockets.values(), val = null; val=it.next().value;) {
@@ -934,13 +934,21 @@ try {
                                     retObj.obsPlayer = observerName
                                     retObj.observersCount = obsGame.observers.length - 1;
                                 }
-                                sm.removeClientFromMap(observerName, socket.id, gameIdStr);
-                                fn(retObj);
+
+                                const socketsFromMap = sm.getSocketsFromMap(observerName);
+                                if (socketsFromMap) {
+                                    socketsFromMap.forEach(socketFromMap => {
+                                        sm.removeClientFromMap(observerName, socketFromMap, gameIdStr);
+                                        io.to(socketFromMap).emit('observe deleted by player');
+                                    });
+                                }
+                                
                                 io.to(gameIdStr).emit('observe deleted', retObj);
-
-                                const chatLine = myName + ' denied '+ observerName +'\'s observation';
+                                
+                                const chatLine = myName + ' denied ' + observerName + '\'s observation';
                                 io.to(gameIdStr).emit('new chat line', chatLine);
-
+                                
+                                fn(retObj);
                                 return;
                             }
                             case 'UNSET':
@@ -971,11 +979,11 @@ try {
                             // notify players
                             io.to(gameIdStr).emit('observe allowed', obsGameAfter);
                             // join observer to game
-                            const sockets = sm.getSocketFromMap(observerName);
-                            if (sockets) {
-                                sockets.forEach(socket => {
+                            const socketsFromMap = sm.getSocketsFromMap(observerName);
+                            if (socketsFromMap) {
+                                socketsFromMap.forEach(socketFromMap => {
                                     console.log('sending join to observer');
-                                    io.to(socket).emit('start observe game', obsGameAfter);
+                                    io.to(socketFromMap).emit('start observe game', obsGameAfter);
                                 });
                             } else {
                                 // no socket found, delete whole observation
