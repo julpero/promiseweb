@@ -11,6 +11,7 @@ module.exports = {
         const play = this.getCurrentPlayIndex(round);
         const playerGoingToWinThisPlay = this.winnerOfPlay(round.cardsPlayed[play], round.trumpCard.suit);
         const obsGameToRoundObj = obsGameToRound(obsGame);
+        const myName = playerName ? getObserversName(playerId, obsGame.observers) : playerName;
 
         return {
             gameId: thisGame._id.toString(),
@@ -18,7 +19,7 @@ module.exports = {
             cardsInRound: round.cardsInRound,
             dealerPositionIndex: round.dealerPositionIndex,
             starterPositionIndex: round.starterPositionIndex,
-            myName: playerName ?? getObserversName(playerId, obsGame.observers),
+            myName: myName,
             myCards: getPlayerCards(playerName, round, thisGame.speedPromise),
             players: getRoundPlayers(playerName, round, play, showPromisesNow('player', thisGame, roundInd), thisGame.humanPlayers, thisGame.hiddenCardsMode, playerGoingToWinThisPlay),
             trumpCard: showTrumpCard(thisGame, roundInd) ? round.trumpCard : null,
