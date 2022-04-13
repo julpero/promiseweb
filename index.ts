@@ -77,7 +77,7 @@ try {
             const database = mongoUtil.getDb();
             const collection = database.collection(pingCollection);
             const pingObject = {
-                pingTime: new Date().getTime()
+                pingTime: Date.now()
             };
             const pingResult = await collection.insertOne(pingObject);
             const pingId = pingResult.insertedId;
@@ -1194,9 +1194,12 @@ try {
                                 // update promise
                                 if (gameInDb.evenPromisesAllowed || !pf.isLastPromiser(gameInDb.game.rounds[roundInd]) || gameInDb.game.rounds[roundInd].totalPromise + promiseInt != gameInDb.game.rounds[roundInd].cardsInRound) {
                                     gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promise = promiseInt;
+                                    gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promiseStarted = gameInDb.game.lastTimeStamp;
+                                    gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promiseMade = Date.now();
                                     speedPromisePoints = gameInDb.game.rounds[roundInd].roundPlayers[chkInd].speedPromisePoints;
                                     if (gameInDb.game.rounds[roundInd].totalPromise == null) gameInDb.game.rounds[roundInd].totalPromise = 0;
                                     gameInDb.game.rounds[roundInd].totalPromise += promiseInt;
+                                    gameInDb.game.lastTimeStamp = Date.now();
                                     const options = { upsert: true };
                                     const updateDoc = {
                                         $set: {
@@ -1278,9 +1281,15 @@ try {
                             const playerInd = pf.getPlayerIndexByName(playerName, round.roundPlayers)
                             const newHandObj = pf.takeCardOut(round.roundPlayers[playerInd].cards, playedCard);
                             const newHand = newHandObj.newHand;
-                            round.cardsPlayed[play].push({ name: playerName, card: playedCard });
+                            round.cardsPlayed[play].push({
+                                name: playerName,
+                                card: playedCard,
+                                playedTime: Date.now(),
+                                playStarted: gameInDb.game.lastTimeStamp,
+                            });
     
                             const gameAfterPlay = gameInDb.game;
+                            gameAfterPlay.lastTimeStamp = Date.now();
                             gameAfterPlay.rounds[roundInDb].cardsPlayed = round.cardsPlayed;
                             gameAfterPlay.rounds[roundInDb].roundPlayers[playerInd].cards = newHand;
     
@@ -1314,6 +1323,7 @@ try {
                                     gameAfterPlay.rounds[roundInDb].roundStatus = 2;
                                     // let's count points
                                     for (let i = 0; i < gameAfterPlay.rounds[roundInDb].roundPlayers.length; i++) {
+                                        const playerName = gameAfterPlay.rounds[roundInDb].roundPlayers[i].name;
                                         if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].promise == gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps) {
                                             if (gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps == 0) {
                                                 gameAfterPlay.rounds[roundInDb].roundPlayers[i].points = gameAfterPlay.rounds[roundInDb].cardsInRound > 5 ? 15 : 5;
@@ -1329,12 +1339,16 @@ try {
                                             gameAfterPlay.rounds[roundInDb].roundPlayers[i].speedPromiseTotal = speedPromiseTotal;
                                         }
 
+                                        const playTime = pf.countPlayTime(playerName, gameAfterPlay.rounds[roundInDb].cardsPlayed);
+
                                         const statsPlayer = {
                                             game: gameIdStr,
-                                            played: new Date().getTime(),
+                                            played: Date.now(),
                                             round: roundInDb,
-                                            name: gameAfterPlay.rounds[roundInDb].roundPlayers[i].name,
+                                            name: playerName,
                                             promise: gameAfterPlay.rounds[roundInDb].roundPlayers[i].promise,
+                                            promiseTime: gameAfterPlay.rounds[roundInDb].roundPlayers[i].promiseMade - gameAfterPlay.rounds[roundInDb].roundPlayers[i].promiseStarted,
+                                            playTime: playTime,
                                             keeps: gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps,
                                             points: gameAfterPlay.rounds[roundInDb].roundPlayers[i].points,
                                             kept: gameAfterPlay.rounds[roundInDb].roundPlayers[i].promise == gameAfterPlay.rounds[roundInDb].roundPlayers[i].keeps,
@@ -2703,6 +2717,7 @@ async function startGame(gameInfo) {
     const game = {
         playerOrder: players,
         rounds: rounds,
+        lastTimeStamp: Date.now(),
     };
 
     const database = mongoUtil.getDb();

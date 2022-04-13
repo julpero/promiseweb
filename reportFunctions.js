@@ -101,7 +101,7 @@ module.exports = {
         const roundsPlayed = getRoundsPlayed(game.rounds);
 
         return {
-            generated: new Date().getTime(),
+            generated: Date.now(),
             playersStatistics: playersStatistics,
             winnerName: gameIsPlayed ? playersStatistics[0].playerName : '',
             winnerPoints: gameIsPlayed ? playersStatistics[0].totalPoints : '',
