@@ -299,6 +299,18 @@ module.exports = {
         // if (wrongNames.length > 0) console.log(wrongNames);
 
         return wrongNames;
+    },
+
+    countPlayTime(playerName, cardsPlayed) {
+        let playTime = 0;
+        cardsPlayed.forEach(function (play) {
+            play.forEach(function (player) {
+                if (player.name == playerName) {
+                    playTime += player.playedTime - player.playStarted;
+                }
+            });
+        });
+        return playTime;
     }
 }
 
@@ -625,6 +637,8 @@ function initRound(roundIndex, cardsInRound, players, speedPromise) {
             name: player.name,
             cards: sortedPlayerCards,
             promise: null,
+            promiseStarted: null,
+            promiseMade: null,
             keeps: 0,
             points: null,
             cardsToDebug: sortedPlayerCards,
