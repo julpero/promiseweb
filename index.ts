@@ -62,6 +62,7 @@ const userCollection = 'userCollection';
 const observeCollection = 'observeCollection';
 
 const mongoUtil = require(__dirname + '/mongoUtil.js');
+const fs = require('fs');
 try {
     mongoUtil.connectToServer(async function(err) {
 
@@ -75,8 +76,6 @@ try {
             console.log('ping');
             const database = mongoUtil.getDb();
             const collection = database.collection(pingCollection);
-            // const ObjectId = require('mongodb').ObjectId;
-            // const pingId = new ObjectId();
             const pingObject = {
                 pingTime: new Date().getTime()
             };
@@ -92,7 +91,12 @@ try {
                 throw new Error('ping delete failed');
             }
 
-            res.sendFile(__dirname +'/static/ping.html');
+            const q = req.query.ver;
+            const ver = q ? process.version : '';
+            fs.readFile(__dirname +'/static/ping.html', 'utf-8', (err, data) => {
+                if (err) throw err;
+                res.send(data.replace('{{ver}}', ver));
+            });
         });
         
         app.get('/css/faces/:face', (req, res) => {
