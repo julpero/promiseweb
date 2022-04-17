@@ -24,6 +24,7 @@ const pf = require(__dirname + '/promiseFunctions.js');
 const rf = require(__dirname + '/reportFunctions.js');
 const sm = require(__dirname + '/clientSocketMapper.js');
 // const ai = require(__dirname + '/aiPlayer.js');
+// just dummy
 
 const GAMESTATUS = {
     Created: 0,
