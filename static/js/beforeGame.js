@@ -96,6 +96,7 @@ function initcreateNewGameButton() {
             privateSpeedGame: document.getElementById('privateSpeedGame').checked,
             opponentPromiseCardValue: document.getElementById('opponentPromiseCardValue').checked,
             opponentGameCardValue: document.getElementById('opponentGameCardValue').checked,
+            thisIsDemoGame: document.getElementById('thisIsDemoGame').checked,
             hiddenCardsMode: getSelectValue('hiddenCardsMode'),
         };
         if (validateNewGame(gameOptions)) {

@@ -52,6 +52,7 @@ const vanillaGameRules = {
     privateSpeedGame: {$in: [null, false]},
     opponentPromiseCardValue: {$in: [null, false]},
     opponentGameCardValue: {$in: [null, false]},
+    thisIsDemoGame: {$in: [null, false]},
     hiddenCardsMode: {$in: [null, 0]},
 };
 
@@ -1493,6 +1494,7 @@ try {
                         privateSpeedGame: val.privateSpeedGame,
                         opponentPromiseCardValue: val.opponentPromiseCardValue,
                         opponentGameCardValue: val.opponentGameCardValue,
+                        thisIsDemoGame: val.thisIsDemoGame,
                         hiddenCardsMode: val.hiddenCardsMode,
                         imInThisGame: pf.imInThisGame(val.humanPlayers, myId)
                     });
@@ -1607,6 +1609,7 @@ try {
                             privateSpeedGame: val.privateSpeedGame,
                             opponentPromiseCardValue: val.opponentPromiseCardValue,
                             opponentGameCardValue: val.opponentGameCardValue,
+                            thisIsDemoGame: val.thisIsDemoGame,
                             hiddenCardsMode: val.hiddenCardsMode,
                             playerNameErrors: pf.checkPlayerNames(val, statNames),
                         });
@@ -2168,6 +2171,7 @@ try {
                 console.log('get report data - report data - used rules');
                 const aggregationUsedRules = [{$match: {
                     gameStatus: { $eq: GAMESTATUS.Played },
+                    thisIsDemoGame: {$in: [null, false]}
                   }}, {$project: {
                     item: 1,
                     evenPromisesDisallowed: {$cond: [{ $eq: ["$evenPromisesAllowed", false]}, 1, 0]},
@@ -2366,6 +2370,7 @@ try {
                         privateSpeedGame: {$in: [false, null]},
                         opponentPromiseCardValue: {$in: [false, null]},
                         opponentGameCardValue: {$in: [false, null]},
+                        thisIsDemoGame: {$in: [false, null]},
                         hiddenCardsMode: {$in: [0, null]},
                     }},
                     {$project: {

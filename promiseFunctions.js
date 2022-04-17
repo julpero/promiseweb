@@ -95,6 +95,7 @@ module.exports = {
             privateSpeedGame: game.privateSpeedGame != null && game.privateSpeedGame,
             opponentPromiseCardValue: game.opponentPromiseCardValue != null && game.opponentPromiseCardValue,
             opponentGameCardValue: game.opponentGameCardValue != null && game.opponentGameCardValue,
+            thisIsDemoGame: game.thisIsDemoGame != null && game.thisIsDemoGame,
             hiddenCardsMode: game.hiddenCardsMode == null ? 0 : game.hiddenCardsMode,
         };
         return gameInfo;
