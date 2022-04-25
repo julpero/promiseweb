@@ -35,7 +35,7 @@
         "mongodb": "^4.5.0",
         "sanitize-filename": "^1.6.3",
         "socket.io": "^4.4.1",
-        "tabulator-tables": "^5.1.8",
+        "tabulator-tables": "^5.2.2",
         "velocity-animate": "^2.0.6"
     }
 }
