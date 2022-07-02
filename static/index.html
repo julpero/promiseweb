@@ -30,7 +30,7 @@
         <script type="text/javascript" src="/js/tabulator.min.js"></script>
     </head>
     <body data-bs-no-jquery>
-        
+
         <div class="container-fluid" id="gameChooser">
             <div class="row">
                 <div class="col">
@@ -79,7 +79,7 @@
                                         Total number of ai players
                                     </label>
                                 </div>
-                                        
+
                             </div>
                         </div>
                         <div class="row">
@@ -429,7 +429,7 @@
             </div>
         </div>
 
-        
+
         <div class="container-fluid" id="gameReportContainer">
             <div class="row">
                 <div class="col-12" id="gamesPlayedInfo"></div>
@@ -437,7 +437,7 @@
             <div class="row">
                 <div class="col-1"></div><div class="col-11" id="playersTotalInfo"></div>
             </div>
-            <div class="tabulator-report-grid" id="tabulatorRepotrGrid"></div>
+            <div class="tabulator-report-grid" id="tabulatorReportGrid"></div>
 
             <div class="row">
                 <div class="col" id="vanillaGames"></div>
@@ -487,7 +487,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="modal fade" id="commonReportModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
@@ -514,7 +514,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="modal" tabindex="-1" role="dialog" id="leavingGameModal">
             <div class="modal-dialog" role="document">
               <div class="modal-content">
@@ -576,7 +576,7 @@
             const promisePenaltyTickTime = 3000;
 
             const safeMs = 500;
-            
+
             const intervalTime = 100;
             var intervaller = null;
             var timerTime = null;
@@ -584,7 +584,7 @@
             var possibleCards = [];
             var live1GraphChart = null;
             var live2GraphChart = null;
-            
+
             document.addEventListener('DOMContentLoaded', () => {
                 var joinedGame = null;
                 if (window.localStorage.getItem('uUID')) {
@@ -595,7 +595,7 @@
                     console.log('uUID set: ' + uuid);
                     window.localStorage.setItem('uUID', uuid);
                 }
-                
+
                 socket.on('delete gameinfo', function(gameId) {
                     removeElementById('gameContainerDiv'+gameId);
                 });
@@ -640,7 +640,7 @@
                     console.log('promise made');
                     console.log(gameInfo);
                     const doReloadInit = gameInfo.reloaded;
-                    
+
                     const getRound = {
                         gameId: gameInfo.id,
                         myId: window.localStorage.getItem('uUID'),
@@ -673,13 +673,13 @@
                 socket.on('card played', cardPlayedCallback);
 
                 socket.on('new observer', newObserverCallback);
-                
+
                 socket.on('observe deleted', deleteObservingCallback);
 
                 socket.on('observe deleted by player', stopObservingCallback);
 
                 socket.on('observe allowed', observeAllowedCallback);
-                
+
                 socket.on('start observe game', startObservingCallback);
 
                 mainInit();

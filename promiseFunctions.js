@@ -61,7 +61,7 @@ module.exports = {
         });
         return playerName;
     },
-    
+
     parsedHumanPlayers: function (humanPlayers) {
         const retVal = [];
         humanPlayers.forEach(function(humanPlayer) {
@@ -100,7 +100,7 @@ module.exports = {
         };
         return gameInfo;
     },
-    
+
     getPlayerIndexByName: function (name, players) {
         let playerIndex = null;
         players.forEach(function(player, idx) {
@@ -109,7 +109,7 @@ module.exports = {
         });
         return playerIndex;
     },
-                    
+
     winnerOfPlay: function (cardsPlayedInPlay, trumpSuit) {
         if (cardsPlayedInPlay.length == 0) return null;
         let winner = cardsPlayedInPlay[0].name;
@@ -132,7 +132,7 @@ module.exports = {
                 winningCard = currentCard;
             }
         }
-    
+
         return winner;
     },
 
@@ -146,7 +146,7 @@ module.exports = {
         }
         return null;
     },
-    
+
     okToPlayCard: function (playedCard, playerName, gameInDb) {
         let cardInHand = false;
         let playerCards = null;
@@ -161,7 +161,7 @@ module.exports = {
         }
         return cardInHand && currentPlayTurnPlayerName(gameInDb) == playerName && isCardAvailableToPlay(playedCard, currentRound.cardInCharge, playerCards, gameInDb.freeTrump, currentRound.trumpCard.suit);
     },
-    
+
     initPlayers: function (gameInfo) {
         // first round is played by this order and the first player is the dealer of the first round
         const players = [];
@@ -174,7 +174,7 @@ module.exports = {
         });
         return players;
     },
-    
+
     initRounds: function (gameInfo, players) {
         const rounds = [];
         let roundIndex = 0;
@@ -234,7 +234,7 @@ module.exports = {
             // player has made speed promise
             if (round.roundPlayers[i].promise == round.roundPlayers[i].keeps) {
                 // speed promise is kept
-                // speed promise is 0.3 times (even round) or 0.6 times 
+                // speed promise is 0.3 times (even round) or 0.6 times
                 speedPromiseTotal = Math.ceil(round.roundPlayers[i].points * (isEvenRound(round) ? speedPromiseMultiplierEven : speedPromiseMultiplierNotEven));
             } else {
                 // speed promise went wrong
@@ -383,7 +383,7 @@ function getCardsPlayed(cardsPlayed, playerCount, play, playerName, hiddenCardsM
 
 function getHandValues(thisGame, roundInd) {
     let showHandValue = false;
-    
+
     if (thisGame.opponentPromiseCardValue && !isRoundPromised(thisGame.game.rounds[roundInd])) showHandValue = true;
     if (thisGame.opponentGameCardValue && isRoundPromised(thisGame.game.rounds[roundInd])) showHandValue = true;
 
@@ -616,9 +616,9 @@ function getPromiseTable(thisGame) {
 }
 
 
-function getdealerPositionIndex(roundIndex, totalPlayers) {
+function getDealerPositionIndex(roundIndex, totalPlayers) {
     if (roundIndex < totalPlayers) return roundIndex;
-    return getdealerPositionIndex(roundIndex - totalPlayers, totalPlayers);
+    return getDealerPositionIndex(roundIndex - totalPlayers, totalPlayers);
 }
 
 function initRound(roundIndex, cardsInRound, players, speedPromise) {
@@ -649,7 +649,7 @@ function initRound(roundIndex, cardsInRound, players, speedPromise) {
         });
     });
 
-    const dealerPositionIndex = getdealerPositionIndex(roundIndex, players.length);
+    const dealerPositionIndex = getDealerPositionIndex(roundIndex, players.length);
     let starterPositionIndex = dealerPositionIndex + 1;
     if (starterPositionIndex >= players.length) starterPositionIndex-= players.length;
 
@@ -671,7 +671,7 @@ function initRound(roundIndex, cardsInRound, players, speedPromise) {
 
 function knuthShuffle(arr) {
     let rand, temp, i;
- 
+
     for (i = arr.length - 1; i > 0; i -= 1) {
         rand = Math.floor((i + 1) * Math.random()); //get random between zero and i (inclusive)
         temp = arr[rand]; //swap i and the zero-indexed number

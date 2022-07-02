@@ -6,7 +6,7 @@ function getSelectValue(selectName) {
 function gamePlayersToDiv(players, totalHumans) {
     const retDiv = createElementWithIdAndClasses('div', null, 'row');
     const playerCol = createElementWithIdAndClasses('div', null, 'col');
-    const playerList = createElementWithIdAndClasses('ul', null, 'list-unstyled');
+    const playerList = createElementWithIdAndClasses('ul', null, 'list-un-styled');
     players.forEach(function (player) {
         const playerItem = createElementWithIdAndClasses('li', null, 'player-in-game-item');
         playerItem.innerText = player.name;
@@ -72,7 +72,7 @@ function createNewGame(gameOptions) {
     });
 }
 
-function initcreateNewGameButton() {
+function initCreateNewGameButton() {
     document.getElementById('createNewGameButton').addEventListener('click', function() {
         const gameOptions = {
             humanPlayersCount: getSelectValue('newGameHumanPlayersCount'),
@@ -120,7 +120,7 @@ function initRulesCheck() {
 
 function validateJoinGame(gameDetails) {
     if (gameDetails.myName.length < 4) {
-        alert('(Nick)name must be at least four charcters!');
+        alert('(Nick)name must be at least four characters!');
         return false;
     }
     if (gameDetails.myPass1.length < 4) {
@@ -196,7 +196,7 @@ function createRulesElement(game) {
     if (game.opponentGameCardValue) rules.push('game hand value');
     if (game.hiddenCardsMode == 1) rules.push('show only card in charge');
     if (game.hiddenCardsMode == 2) rules.push('show card in charge and winning card');
-    
+
     if (rules.length > 0) {
         const ulList = createElementWithIdAndClasses('ul', null);
         for (let i = 0; i < rules.length; i++) {
@@ -246,8 +246,8 @@ function observeGame(gameId) {
             if (response.playerOk) {
                 showAlert('alertOngoingGamesDiv', 'waitingGameAlertDiv', 'Waiting players to allow you to join game...');
             } else {
-                console.error('No friends playingg error');
-                showAlert('alertOngoingGamesDiv', 'noFriensdInGameAlertDiv', 'No friends playing in this game (need at least ten same games)');
+                console.error('No friends playing error');
+                showAlert('alertOngoingGamesDiv', 'noFriendsInGameAlertDiv', 'No friends playing in this game (need at least ten same games)');
             }
         } else {
             console.error('Authentication error');
@@ -319,7 +319,7 @@ function showGames(gameList) {
             joinGame(game.id);
         });
         const joinGameBtnDiv = createElementWithIdAndClasses('div', null, 'col-1');
-        
+
         const leaveGameButton = createElementWithIdAndClasses('button', 'leaveGameButton' + game.id, 'btn btn-primary leaveThisGameButton');
         if (!game.imInThisGame) leaveGameButton.disabled = true;
         leaveGameButton.innerText = 'Leave';
@@ -365,11 +365,11 @@ function showOnGoingGames(gameList) {
         loginRow.appendChild(loginCol2);
         onGoingGameListContainer.appendChild(loginRow);
     }
-    
+
     removeElementById('gamesContainerDiv');
     const gamesContainerDiv = createElementWithIdAndClasses('div', 'gamesContainerDiv', 'row', { style: "overflow-y:auto; height: 700px;" });
 
-    const dateformatoptions = {
+    const dateFormatOptions = {
         year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false,
     };
     let currentStatus = -1;
@@ -387,7 +387,7 @@ function showOnGoingGames(gameList) {
 
         const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row onGoingGameRow onGoingGameRowStatus'+gameStatus);
         const gameStarted = new Date(game.created).getTime();
-        const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
+        const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateFormatOptions).format(gameStarted) : '';
         const reportDateDiv = createElementWithIdAndClasses('div', null, 'col-3 report-date');
         reportDateDiv.innerText = dateStr;
         gameContainerDiv.appendChild(reportDateDiv);
@@ -407,7 +407,7 @@ function showOnGoingGames(gameList) {
             const observeGameButtonContainer = createElementWithIdAndClasses('div', null, 'col-2');
             observeGameButtonContainer.appendChild(observeGameButton);
             gameContainerDiv.appendChild(observeGameButtonContainer);
-    
+
             const deleteBtnId = 'deleteGameButton' + game.id;
             const deleteGameButton = createElementWithIdAndClasses('button', deleteBtnId, 'btn btn-primary deleteGameButton', { value: game.id });
             deleteGameButton.innerText = 'Delete game';
@@ -607,7 +607,7 @@ function showObserverList(observersList) {
             sendObserveValue(this);
         });
         obsAllowWithCardsCol.appendChild(allowWithCardsButton);
-        
+
         obsRow.appendChild(obsNameCol);
         obsRow.appendChild(obsDenyCol);
         obsRow.appendChild(obsUnsetCol);
@@ -687,7 +687,7 @@ function initShowReportButton() {
 }
 
 function initButtons() {
-    initcreateNewGameButton();
+    initCreateNewGameButton();
     initRulesCheck();
     initLeavingButtons();
     initJoinByIdButton();
@@ -1011,10 +1011,10 @@ function showTabulatorReport(reportData) {
             legendAlign:"left",
         } },
     ];
-    
+
     const tabledata = generateTabulatorData(reportData);
 
-    new Tabulator("#tabulatorRepotrGrid", {
+    new Tabulator("#tabulatorReportGrid", {
         //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
         data:tabledata, //assign data to table
         layout:"fitColumns", //fit columns to width of table (optional)
@@ -1033,7 +1033,7 @@ function getReportData() {
 
         document.getElementById('vanillaGames').innerHTML = response.vanillaGamesCount+' games played with original rules, otherwise rules were used:';
         document.getElementById('usedRules').innerHTML = usedRulesToHtml(response.usedRulesCount);
-        
+
         document.getElementById('playerCount').innerHTML = playerCountToHtml(response.playerCount);
 
         const melterStr = melterToHtml(response.meltingGame);

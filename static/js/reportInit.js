@@ -19,7 +19,7 @@ function showGamesPlayed(reportObject) {
             },
         }
     };
-    
+
     const datasetsData = [];
     const playersArr = [];
     const playedGamesArr = [];
@@ -74,7 +74,7 @@ function showAveragePointsPerGames(reportObject) {
             },
         }
     };
-    
+
     const datasetsData = [];
     const playersArr = [];
     const avgAllArr = [];
@@ -125,13 +125,13 @@ function showAverages(gameObject) {
 function showGamesToReport(gameList) {
     const gameListContainer = document.getElementById('chooseGameCollapse');
     console.log(gameList);
-    const dateformatoptions = {
+    const dateFormatOptions = {
         year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false,
     };
     gameList.forEach(function (game) {
         const gameContainerDiv = createElementWithIdAndClasses('div', 'gameContainerDiv'+ game.id, 'row game-container-div');
         const gameStarted = new Date(game.created).getTime();
-        const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateformatoptions).format(gameStarted) : '';
+        const dateStr = !isNaN(gameStarted) ? new Intl.DateTimeFormat('fi-FI', dateFormatOptions).format(gameStarted) : '';
         const winnerName = game.gameStatistics.winnerName;
         const reportDateDiv = createElementWithIdAndClasses('div', null, 'col-2 report-date');
         reportDateDiv.innerText = dateStr;
@@ -192,7 +192,7 @@ function initAverageEvent() {
                 showAverages(response);
             });
         });
-    
+
         averageReportCollapseEl.addEventListener('hidden.bs.collapse', function () {
             emptyElementById('averageReportCollapse');
         });
@@ -221,7 +221,7 @@ function initNickChangeEvent() {
                 }
             });
         });
-    
+
         chooseNickGameCollapseEl.addEventListener('hidden.bs.collapse', function () {
             emptyElementById('chooseNickGameCollapse');
         });
