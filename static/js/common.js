@@ -63,7 +63,7 @@ function showOneGameReport(reportObject) {
             backgroundColor: '#E5FFE5',
         }
     ];
-    
+
     const pointsOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -108,7 +108,7 @@ function showOneGameReport(reportObject) {
             }
         }
     };
-    
+
     const labelsData = reportObject.rounds;
 
     const datasetsData = [];
@@ -261,7 +261,7 @@ function showOnePointsReport(reportObject) {
             }
         }
     };
-    
+
     const labelsData = reportObject.players;
     const datasetsBigData = {
         label: 'Big rounds',
@@ -328,7 +328,7 @@ function showCardsReport(reportObject) {
             }
         }
     };
-    
+
     const labelsData = reportObject.players;
     const datasetsTrumpsData = {
         label: 'Trumps',
@@ -385,7 +385,7 @@ function getOneGameReport(gameId) {
             showOnePointsReport(gameReportData);
             showCardsReport(gameReportData);
         });
-    });
+    }, {once: true});
     const bsModal = bootstrap.Modal.getOrCreateInstance(reportModalEl);
     bsModal.show();
 }
