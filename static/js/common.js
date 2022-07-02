@@ -211,10 +211,6 @@ function showOneKeepsReport(reportObject) {
         datasets:[datasetsBigData, datasetsSmallData],
     };
 
-    Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.canvas.id == canvasIdStr) instance.destroy();
-    });
-
     const ctx = document.getElementById(canvasIdStr);
     new Chart(ctx, {
         type: 'bar',
@@ -280,10 +276,6 @@ function showOnePointsReport(reportObject) {
         labels: labelsData,
         datasets:[datasetsBigData, datasetsSmallData],
     };
-
-    Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.canvas.id == canvasIdStr) instance.destroy();
-    });
 
     const ctx = document.getElementById(canvasIdStr);
     new Chart(ctx, {
@@ -360,11 +352,6 @@ function showCardsReport(reportObject) {
         datasets:[datasetsTrumpsData, datasetsBigsData, datasetsSmallsData, datasetsOthersData],
     };
 
-
-    Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.canvas.id == canvasIdStr) instance.destroy();
-    });
-
     const ctx = document.getElementById(canvasIdStr);
     new Chart(ctx, {
         type: 'bar',
@@ -373,8 +360,23 @@ function showCardsReport(reportObject) {
     });
 }
 
+function resetOneGameReportCanvases() {
+    const oneGameReportBodyCanvas = 'oneGameReportBody';
+    const oneGameKeepsBodyCanvas = 'oneGameKeepsBody';
+    const oneGamePointsBodyCanvas = 'oneGamePointsBody';
+    const cardsByPlayerBodyCanvas = 'cardsByPlayerBody';
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.canvas.id == oneGameReportBodyCanvas) { instance.destroy(); return; }
+        if (instance.canvas.id == oneGameKeepsBodyCanvas) { instance.destroy(); return; }
+        if (instance.canvas.id == oneGamePointsBodyCanvas) { instance.destroy(); return; }
+        if (instance.canvas.id == cardsByPlayerBodyCanvas) { instance.destroy(); return; }
+    });
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getOneGameReport(gameId) {
+    resetOneGameReportCanvases();
     const reportModalEl = document.getElementById('oneGameReportModal');
     reportModalEl.addEventListener('shown.bs.modal', function() {
         const getReportObj = { gameId: gameId };
