@@ -1647,10 +1647,12 @@ try {
                     spurtingGame: null,
                     avgPercentagePoints: null,
                     cardsInHandCount: null,
+                    timesUsed: null,
                 };
 
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
+                const statsCollection = database.collection(statsCollectionStr);
 
                 // game count
                 console.log('get report data - report data - game count');
@@ -2232,6 +2234,63 @@ try {
                 retObj.usedRulesCount = usedRulesCount;
                 // ********
 
+                // time used per player
+                console.log('get report data - report data - time used per player');
+                const aggregationTimesUsed = [
+                    {
+                      '$match': {
+                        'promiseTime': {
+                          '$gt': 0
+                        },
+                        'playTime': {
+                          '$gt': 0
+                        }
+                      }
+                    }, {
+                      '$group': {
+                        '_id': '$name',
+                        'totalRounds': {
+                          '$sum': 1
+                        },
+                        'totalPromiseTime': {
+                          '$sum': '$promiseTime'
+                        },
+                        'totalPlayTime': {
+                          '$sum': '$playTime'
+                        },
+                        'totalCards': {
+                          '$sum': '$cardsInRound'
+                        }
+                      }
+                    }, {
+                      '$match': {
+                        'totalRounds': {
+                          '$gte': 20
+                        },
+                        'totalCards': {
+                          '$gte': 100
+                        }
+                      }
+                    }
+                  ];
+
+                const cursorTimesUsed = await statsCollection.aggregate(aggregationTimesUsed);
+                const timesUsed = [];
+                await cursorTimesUsed.forEach(function(val) {
+                    const timesUsedByPlayer = {
+                        _id: val._id,
+                        totalRounds: val.totalRounds,
+                        totalPromiseTime: val.totalPromiseTime,
+                        totalPlayTime: val.totalPlayTime,
+                        totalCards: val.totalCards,
+                        avgPlayTime: (val.totalPlayTime / val.totalCards) / 1000, // seconds
+                        avgPromiseTime: (val.totalPromiseTime / val.totalRounds) / 1000, // seconds
+                    }
+                    timesUsed.push(timesUsedByPlayer);
+                });
+                retObj.timesUsed = timesUsed;
+                // ********
+
                 console.log('get report data', retObj);
 
                 fn(retObj);
@@ -2523,8 +2582,8 @@ try {
                             name: newName,
                         }
                     };
-                    const collectionStats = database.collection(statsCollectionStr);
-                    await collectionStats.updateMany(updateStatsDocQuery, updateStatsDocSet);
+                    const statsCollection = database.collection(statsCollectionStr);
+                    await statsCollection.updateMany(updateStatsDocQuery, updateStatsDocSet);
                 }
 
                 fn(retObj);

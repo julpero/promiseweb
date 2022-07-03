@@ -817,6 +817,12 @@ function generateTabulatorData(reportData) {
         dataMap.get(name).smallNotZeroTryP = (reportData.avgZerosPerPlayer[i].totalSmallNotZeroKeeps+reportData.avgZerosPerPlayer[i].totalSmallNotZeroFails)*100/reportData.avgZerosPerPlayer[i].totalSmallRounds;
         dataMap.get(name).smallNotZeroKeepP = reportData.avgZerosPerPlayer[i].totalSmallNotZeroKeeps*100/(reportData.avgZerosPerPlayer[i].totalSmallNotZeroKeeps+reportData.avgZerosPerPlayer[i].totalSmallNotZeroFails);
     }
+    for (let i = 0; i < reportData.timesUsed.length; i++) {
+        const name = reportData.timesUsed[i]._id;
+        if (!dataMap.has(name)) dataMap.set(name, new dataObj());
+        dataMap.get(name).hitTime = reportData.timesUsed[i].avgPlayTime;
+        dataMap.get(name).promiseTime = reportData.timesUsed[i].avgPromiseTime;
+    }
     console.log(dataMap);
     const retArr = [];
     let count = 1;
@@ -838,6 +844,8 @@ function generateTabulatorData(reportData) {
             bigZeroKeepP: v.bigZeroKeepP,
             smallNotZeroTryP: v.smallNotZeroTryP,
             smallNotZeroKeepP: v.smallNotZeroKeepP,
+            hitTime: v.hitTime,
+            promiseTime: v.promiseTime,
         }
         retArr.push(retVal);
         count++;
@@ -854,6 +862,8 @@ function getMaxValuesFromReportData(reportData) {
         scorePoints: 0,
         wons: 0,
         winP: 0,
+        playTime: 0,
+        promiseTime: 0,
     }
     for (let i = 0; i < reportData.mostGamesPlayed.length; i++) {
         maxValues.games = Math.max(maxValues.games, reportData.mostGamesPlayed[i].count);
@@ -872,6 +882,10 @@ function getMaxValuesFromReportData(reportData) {
     }
     for (let i = 0; i < reportData.playerWinPercentage.length; i++) {
         maxValues.winP = Math.max(maxValues.winP, reportData.playerWinPercentage[i].winPercentage*100);
+    }
+    for (let i = 0; i < reportData.timesUsed.length; i++) {
+        maxValues.playTime = Math.max(maxValues.playTime, reportData.timesUsed[i].avgPlayTime);
+        maxValues.promiseTime = Math.max(maxValues.promiseTime, reportData.timesUsed[i].avgPromiseTime);
     }
     return maxValues;
 }
@@ -1007,6 +1021,22 @@ function showTabulatorReport(reportData) {
             max: 100,
             color: colorArr,
             legend: function (val) { return parseFloat(val).toFixed(1)+"%"; },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"Avg Hit Time (s)", field:"hitTime", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: maxValues.playTime,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(2); },
+            legendColor:"#000000",
+            legendAlign:"left",
+        } },
+        { title:"Avg Promise Time (s)", field:"promiseTime", sorter:"number", formatter:"progress", formatterParams: {
+            min: 0,
+            max: maxValues.promiseTime,
+            color: colorArr,
+            legend: function (val) { return parseFloat(val).toFixed(2); },
             legendColor:"#000000",
             legendAlign:"left",
         } },
