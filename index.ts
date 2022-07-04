@@ -1187,6 +1187,7 @@ try {
                     const promiseInt = parseInt(promise, 10);
                     const playerName = pf.getPlayerNameById(myId, gameInDb.humanPlayers);
                     let speedPromisePoints = null;
+                    let promiseTime = -1;
                     for (let i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
                         let chkInd = 1 + i; // start from next to dealer
                         if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-= (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
@@ -1196,6 +1197,7 @@ try {
                                 // update promise
                                 if (gameInDb.evenPromisesAllowed || !pf.isLastPromiser(gameInDb.game.rounds[roundInd]) || gameInDb.game.rounds[roundInd].totalPromise + promiseInt != gameInDb.game.rounds[roundInd].cardsInRound) {
                                     gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promise = promiseInt;
+                                    promiseTime = Date.now() - gameInDb.game.lastTimeStamp;
                                     gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promiseStarted = gameInDb.game.lastTimeStamp;
                                     gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promiseMade = Date.now();
                                     speedPromisePoints = gameInDb.game.rounds[roundInd].roundPlayers[chkInd].speedPromisePoints;
@@ -1239,6 +1241,7 @@ try {
                                 chatLine+= ' with '+speedPromisePoints+' penalty points';
                             }
                         }
+                        if (promiseTime > -1) chatLine+= ' in '+(promiseTime/1000).toFixed(1)+' seconds';
                         io.to(gameIdStr).emit('new chat line', chatLine);
                         // fn(gameInfo); // just DEBUG
                     } else {
@@ -1275,6 +1278,7 @@ try {
                     let gameOver = false;
                     let logStr1 = '';
                     let logStr2 = '';
+                    let hitTime = -1;
                     if (pf.okToPlayCard(playedCard, playerName, gameInDb)) {
                         const roundInDb = pf.getCurrentRoundIndex(gameInDb);
                         if (roundInDb == roundInd) {
@@ -1283,6 +1287,9 @@ try {
                             const playerInd = pf.getPlayerIndexByName(playerName, round.roundPlayers)
                             const newHandObj = pf.takeCardOut(round.roundPlayers[playerInd].cards, playedCard);
                             const newHand = newHandObj.newHand;
+                            hitTime = Date.now() - gameInDb.game.lastTimeStamp;
+                            io.to(gameIdStr).emit('new chat line', playerName+' hit card in '+ (hitTime/1000).toFixed(1)+' seconds');
+
                             round.cardsPlayed[play].push({
                                 name: playerName,
                                 card: playedCard,
