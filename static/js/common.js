@@ -47,6 +47,8 @@ function colorizeDatasets(datasets) {
     return datasets;
 }
 
+function fmtMSS(s){return(s-(s%=60))/60+(9<s?':':':0')+s}
+
 function showOneGameReport(reportObject) {
     const canvasIdStr = 'oneGameReportBody';
     const annotations = reportObject.smallStart == null && reportObject.smallEnd == null ? [] : [
@@ -285,6 +287,79 @@ function showOnePointsReport(reportObject) {
     });
 }
 
+function showTimesUsed(reportObject) {
+    const canvasIdStr = 'timesUsedByPlayerBody';
+    const players = [];
+    const hitTimes = [];
+    const promiseTimes = [];
+    reportObject.timesUsed.forEach(timeUsed => {
+        players.push(timeUsed._id);
+        hitTimes.push(timeUsed.totalPlayTime);
+        promiseTimes.push(timeUsed.totalPromiseTime);
+    });
+
+    const labelsData = players;
+    const datasetsHitTimesData = {
+        label: 'Hit Time',
+        data: hitTimes,
+        borderWidth: 1,
+        backgroundColor: 'rgba(255,153,0,0.6)',
+    };
+    const datasetsPromiseTimesData = {
+        label: 'Promise Time',
+        data: promiseTimes,
+        borderWidth: 1,
+        backgroundColor: 'lightgreen',
+    };
+
+    const timeUsedData = {
+        labels: labelsData,
+        datasets:[datasetsHitTimesData, datasetsPromiseTimesData],
+    };
+
+    const timeUsedOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: {
+            x: {
+                stacked: true,
+                max: Math.max(...reportObject.timesUsed.map(v => parseInt(v.totalPromiseTime, 10) + parseInt(v.totalPlayTime, 10))),
+                min: 0,
+            },
+            y: {
+                stacked: true,
+            }
+        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'Used time in game by nickname'
+            },
+            tooltip: {
+                callbacks: {
+                    footer: function(tooltipItem) {
+                        let total = 0;
+                        for (let i = 0; i < timeUsedData.datasets.length; i++) {
+                            total += parseInt(timeUsedData.datasets[i].data[tooltipItem[0].dataIndex], 10);
+                        }
+                        return 'TOTAL: '+fmtMSS(total);
+                    },
+                    label: function(context) {
+                        return ' '+context.dataset.label+': '+fmtMSS(parseInt(context.raw, 10));
+                    },
+                }
+            }
+        }
+    };
+
+    const ctx = document.getElementById(canvasIdStr);
+    new Chart(ctx, {
+        type: 'bar',
+        data: timeUsedData,
+        options: timeUsedOptions,
+    });
+}
 
 function showCardsReport(reportObject) {
     const canvasIdStr = 'cardsByPlayerBody';
@@ -364,12 +439,14 @@ function resetOneGameReportCanvases() {
     const oneGameReportBodyCanvas = 'oneGameReportBody';
     const oneGameKeepsBodyCanvas = 'oneGameKeepsBody';
     const oneGamePointsBodyCanvas = 'oneGamePointsBody';
+    const timesUsedByPlayerBodyCanvas = 'timesUsedByPlayerBody';
     const cardsByPlayerBodyCanvas = 'cardsByPlayerBody';
 
     Chart.helpers.each(Chart.instances, function(instance){
         if (instance.canvas.id == oneGameReportBodyCanvas) { instance.destroy(); return; }
         if (instance.canvas.id == oneGameKeepsBodyCanvas) { instance.destroy(); return; }
         if (instance.canvas.id == oneGamePointsBodyCanvas) { instance.destroy(); return; }
+        if (instance.canvas.id == timesUsedByPlayerBodyCanvas) { instance.destroy(); return; }
         if (instance.canvas.id == cardsByPlayerBodyCanvas) { instance.destroy(); return; }
     });
 }
@@ -385,6 +462,7 @@ function getOneGameReport(gameId) {
             showOneGameReport(gameReportData);
             showOneKeepsReport(gameReportData);
             showOnePointsReport(gameReportData);
+            showTimesUsed(gameReportData);
             showCardsReport(gameReportData);
         });
     }, {once: true});

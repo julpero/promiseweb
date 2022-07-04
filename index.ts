@@ -2309,8 +2309,41 @@ try {
                 };
                 const gameInDb = await collection.findOne(query);
 
+                const statsCollection = database.collection(statsCollectionStr);
+                const aggregationTimesUsed = [
+                    {
+                      '$match': {
+                        'game': {
+                          '$eq': gameIdStr
+                        }
+                      }
+                    }, {
+                      '$group': {
+                        '_id': '$name',
+                        'totalPromiseTime': {
+                          '$sum': '$promiseTime'
+                        },
+                        'totalPlayTime': {
+                          '$sum': '$playTime'
+                        }
+                      }
+                    }
+                  ];
+
+                const cursorTimesUsed = await statsCollection.aggregate(aggregationTimesUsed);
+                const timesUsed = [];
+                await cursorTimesUsed.forEach(function(val) {
+                    const timesUsedByPlayer = {
+                        _id: val._id,
+                        totalPromiseTime: (val.totalPromiseTime / 1000).toFixed(0),
+                        totalPlayTime: (val.totalPlayTime / 1000).toFixed(0),
+                    }
+                    timesUsed.push(timesUsedByPlayer);
+                });
+
                 console.log('get game report', gameInDb);
                 const retObj = rf.getGameReport(gameInDb.game, gameInDb.gameStatistics.playersStatistics);
+                retObj.timesUsed = timesUsed;
                 fn(retObj);
             });
 
