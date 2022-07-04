@@ -86,7 +86,7 @@ function revealTrumpCard(trumpCard) {
     if (trumpsInDeck > 0) {
         document.getElementById('trumpDiv').children[trumpsInDeck-1].remove();
     }
-    
+
     const $deckDiv = document.getElementById('trumpDiv');
     const deck = Deck();
     const cardIndex = getCardIndex(deck.cards, trumpCard);
@@ -160,7 +160,7 @@ function drawMyCards(myRound, speedPromise) {
                 duration: 0,
                 rot: randomNegToPos(5),
             });
-        });    
+        });
     }
 }
 
@@ -315,7 +315,7 @@ function makeSpeedPromise(speedPromiseObj) {
                 initSpeedPromiseTimer(resultObj.round);
             }
         } else {
-            alert('Oops, something went wrong... Please refesh this page.\n\n'+resultObj.debug);
+            alert('Oops, something went wrong... Please refresh this page.\n\n'+resultObj.debug);
             console.log(resultObj);
         }
     });
@@ -485,7 +485,7 @@ function showPlayerPromises(myRound, showPromise, showSpeedPromise) {
             }
             emptyElementById('player'+tableIdx+'ProgressBar');
             document.getElementById('player'+tableIdx+'ProgressBar').appendChild(drawPromiseAsProgress(myRound.cardsInRound, player.promise, player.keeps));
-            
+
         } else {
             emptyElementById('player'+tableIdx+'Promised');
             emptyElementById('player'+tableIdx+'Keeps');
@@ -683,7 +683,7 @@ function initCardsToPlay(myRound, freeTrump) {
     } else {
         // i can play only suit of card in charge
         return initCardEvents(myRound, myRound.cardInCharge.suit);
-    }    
+    }
 }
 
 function highlightWinningCard(myRound) {
@@ -697,7 +697,7 @@ function highlightWinningCard(myRound) {
 
     for (let i = 0; i < playedCards.length; i++) {
         const playerIndex = mapPlayerNameToTable(playedCards[i].name);
-        
+
         let cardPlayedDivs = document.getElementById('player'+playerIndex+'CardPlayedDiv').children;
         if (cardPlayedDivs.length == 1) {
             const cardPlayedDiv = cardPlayedDivs[0];
@@ -727,7 +727,7 @@ function showPlayedCards(myRound) {
     for (let i = 0; i < playedCards.length; i++) {
         const playerIndex = mapPlayerNameToTable(playedCards[i].name);
         const cardPlayed = playedCards[i].card;
-        
+
         const $container = document.getElementById('player'+playerIndex+'CardPlayedDiv');
         const cardIndex = cardPlayed.suit == 'dummy' ? dummyCardIndex++ : getCardIndex(deck.cards, cardPlayed);
         const card = cardPlayed.suit == 'dummy' ? dummyDeck.cards[cardIndex] :  deck.cards[cardIndex];
@@ -968,7 +968,7 @@ async function moveCardFromTableToWinDeck(winnerName, players) {
         const cardIndex = getCardIndex(deck.cards, cardToCheck);
         movingCards[i] = deck.cards[cardIndex];
         emptyElementById(divIdStr);
-        
+
         movingCards[i].mount($containerTo);
         movingCards[i].setSide('front');
         movingCards[i].animateTo({
@@ -1028,7 +1028,7 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
         console.log('moveCardFromHandToTable, cardsInThisPlay:', cardsInThisPlay);
         for (let i = 0; i < cardsInThisPlay.length; i++) {
             if (playerName == cardsInThisPlay[i].name) continue; // animate this player card
-    
+
             const thisPlayerIndex = mapPlayerNameToTable(cardsInThisPlay[i].name);
             const divIdStr = 'player'+thisPlayerIndex+'CardPlayedDiv';
             const cardToCheck = getCardFromDiv(divIdStr);
@@ -1048,7 +1048,7 @@ async function moveCardFromHandToTable(card, playerName, cardsInThisPlay, hidden
     console.log('moveCardFromHandToTable, cardIndex:', cardIndex);
     const movingCard = deck.cards[cardIndex];
     console.log('moveCardFromHandToTable, movingCard:', movingCard);
-    
+
     const playerIndex = mapPlayerNameToTable(playerName);
     console.log('moveCardFromHandToTable, playerIndex:', playerIndex);
     const containerIndex = playerIndex == 0 && !iAmObserver ? getCurrentCardContainer(card) : getLastCardContainer(playerIndex);
@@ -1166,7 +1166,7 @@ function initPromiseTable(promiseTable) {
 
 function initScoreBoard(promiseTable, gameOver, avgStats) {
     if (document.getElementById('scoreboard').children.length == 0) createScoreboard(promiseTable);
-    
+
     const totalPoints = [];
     for (let i = 0; i < promiseTable.promisesByPlayers.length; i++) {
         let playerPoints = 0;
@@ -1251,7 +1251,7 @@ async function cardPlayedCallback(gameInfo) {
         const iAmObserver = players.find(p => p.name == myName) == null;
         newRound = gameInfo.eventInfo.newRound;
         gameOver = gameInfo.eventInfo.gameOver;
-        
+
         await moveCardFromHandToTable(playedCard, cardPlayedBy, gameInfo.eventInfo.cardsInThisPlay, gameInfo.hiddenCardsMode, iAmObserver);
         if (gameInfo.eventInfo.newPlay) {
             const winnerName = gameInfo.eventInfo.winnerName;
@@ -1431,7 +1431,7 @@ function observerInit(myRound) {
         return;
     }
     if (givenPermissionToObserve(myRound)) {
-        console.log('givenPermissionToObsereve');
+        console.log('givenPermissionToObserve');
         document.getElementById('openObserversButton').classList.remove('disabled');
         document.getElementById('openObserversButton').classList.remove('btn-secondary');
         document.getElementById('openObserversButton').classList.remove('btn-success');

@@ -24,6 +24,7 @@ const pf = require(__dirname + '/promiseFunctions.js');
 const rf = require(__dirname + '/reportFunctions.js');
 const sm = require(__dirname + '/clientSocketMapper.js');
 // const ai = require(__dirname + '/aiPlayer.js');
+// just dummy
 
 const GAMESTATUS = {
     Created: 0,
@@ -52,6 +53,7 @@ const vanillaGameRules = {
     privateSpeedGame: {$in: [null, false]},
     opponentPromiseCardValue: {$in: [null, false]},
     opponentGameCardValue: {$in: [null, false]},
+    thisIsDemoGame: {$in: [null, false]},
     hiddenCardsMode: {$in: [null, 0]},
 };
 
@@ -98,7 +100,7 @@ try {
                 res.send(data.replace('{{ver}}', ver));
             });
         });
-        
+
         app.get('/css/faces/:face', (req, res) => {
             if (req.params && req.params.face) {
                 const faceName = sanitizeFileName(req.params.face);
@@ -123,7 +125,7 @@ try {
                 res.status(500).send('Request error, no face!');
             }
         });
-    
+
         io.on('connection', (socket) => {
             console.log('connection - a user connected');
             socket.on('disconnect', () => {
@@ -149,7 +151,7 @@ try {
                 io.to(gameIdStr).emit('new chat line', chatLine);
                 fn();
             });
-    
+
             socket.on('check game', async (gameCheck) => {
                 console.log('check game', gameCheck);
                 const myId = gameCheck.myId;
@@ -178,7 +180,7 @@ try {
                         }
                     });
                 }
-    
+
                 if (!gameFound) {
                     const query2 = {
                         gameStatus: GAMESTATUS.Created,
@@ -326,10 +328,10 @@ try {
                         }
                     }
                 }
-    
+
                 fn(retVal);
             });
-    
+
             socket.on('delete game', async (deleteGameObj, fn) => {
                 const gameIdStr = deleteGameObj.gameToDelete;
                 const deleteFromDB = deleteGameObj.deleteFromDB;
@@ -377,10 +379,10 @@ try {
                         }
                     }
                 }
-    
+
                 fn(retObj);
             });
-    
+
             socket.on('leave game', async (leaveGame, fn) => {
                 const gameIdStr = leaveGame.gameId;
                 const retVal = {
@@ -429,9 +431,9 @@ try {
                         }
                     }
                 }
-    
+
                 fn(retVal);
-    
+
                 if (retVal.leavingResult == 'LEAVED') {
                     if (retVal.gameDeleted) {
                         io.emit('delete gameinfo', gameIdStr);
@@ -439,7 +441,7 @@ try {
                         // let's update info to clients
                         const val = await collection.findOne(query);
                         const resultGameInfo = pf.gameToGameInfo(val);
-        
+
                         io.emit('update gameinfo', resultGameInfo);
                     }
                 }
@@ -485,7 +487,7 @@ try {
                                             }
                                         }
                                     }
-                                    
+
                                     if (ping) {
                                         console.log('join game by id - joining failed because user was active', gameIdStr, playAsName);
                                         resultObj.debugStr = 'user '+playAsName+' is still connected';
@@ -516,7 +518,7 @@ try {
 
                 fn(resultObj);
             });
-    
+
             socket.on('join game', async (newPlayer, fn) => {
                 const gameIdStr = newPlayer.gameId;
                 const myName = newPlayer.myName;
@@ -524,7 +526,7 @@ try {
                     joiningResult: 'NOTSET',
                     gameId: gameIdStr,
                 }
-                
+
                 const loginObj = await checkLogin(myName, newPlayer.myPass1, newPlayer.myPass2);
                 retVal.joiningResult = loginObj.resultStr;
                 const okToJoin = loginObj.loginOk;
@@ -555,7 +557,7 @@ try {
                             if (player.name == myName) nameFree = false;
                             if (player.playerId == myId) socketFree = false;
                         });
-    
+
                         if (nameFree && socketFree) {
                             const players = game.humanPlayers;
                             players.push({name: myName, playerId: myId, type: 'human', active: true, playerStats: await getGamesStatistics(game, myName)});
@@ -586,17 +588,17 @@ try {
                 } else if (game == null) {
                     retVal.joiningResult = 'GAMENOTFOUND';
                 }
-    
+
                 fn(retVal);
-    
+
                 console.log('join game', retVal.joiningResult, gameIdStr, myName);
                 if (retVal.joiningResult == 'OK') {
                     // let's update info to clients
                     const val = await collection.findOne(query);
                     const resultGameInfo = pf.gameToGameInfo(val);
-    
+
                     io.emit('update gameinfo', resultGameInfo);
-    
+
                     if (resultGameInfo.humanPlayersCount == resultGameInfo.humanPlayers.length) {
                         // start game
                         await startGame(resultGameInfo);
@@ -620,7 +622,7 @@ try {
                 const loginObj = await checkLogin(observerName, observeGameOptions.observerPass, null);
                 if (loginObj.loginOk) {
                     retObj.passOk = true;
-                    
+
                     // get game players
                     const ObjectId = require('mongodb').ObjectId;
                     const searchId = new ObjectId(gameIdStr);
@@ -946,12 +948,12 @@ try {
                                         io.to(socketFromMap).emit('observe deleted by player');
                                     });
                                 }
-                                
+
                                 io.to(gameIdStr).emit('observe deleted', retObj);
-                                
+
                                 const chatLine = myName + ' denied ' + observerName + '\'s observation';
                                 io.to(gameIdStr).emit('new chat line', chatLine);
-                                
+
                                 fn(retObj);
                                 return;
                             }
@@ -1000,17 +1002,17 @@ try {
 
                 fn(retObj);
             });
-    
+
             socket.on('create game', async (gameOptions, fn) => {
                 let okToCreate = true;
                 let errorCode = 'NOT OK';
 
                 const adminUserName = gameOptions.adminName;
                 const adminId = gameOptions.humanPlayers[0].playerId;
-    
+
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
-    
+
                 const query = {
                     gameStatus: { $lte: GAMESTATUS.OnGoing },
                     'humanPlayers.playerId': { $eq: adminId }
@@ -1035,7 +1037,7 @@ try {
 
                 // logging after nulled passwords
                 console.log('create game', gameOptions);
-                
+
                 if (okToCreate) {
                     gameOptions.humanPlayers[0].playerStats = await getGamesStatistics(gameOptions, gameOptions.adminName);
                     const result = await collection.insertOne(gameOptions);
@@ -1047,22 +1049,22 @@ try {
                     fn(errorCode);
                 }
             });
-    
+
             socket.on('get round', async (getRound, fn) => {
                 const gameIdStr = getRound.gameId;
                 const myId = getRound.myId;
                 const roundInd = getRound.round;
-    
+
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
-    
+
                 const doReload = getRound.doReload;
                 const newRound = getRound.newRound;
                 const gameOver = getRound.gameOver;
                 const gameStatus = gameOver ? GAMESTATUS.Played : GAMESTATUS.OnGoing;
-                
+
                 const query = {
                     _id: searchId,
                     gameStatus: gameStatus,
@@ -1078,7 +1080,7 @@ try {
 
                     const playerRound = pf.roundToPlayer(myId, roundInd, game, doReload, newRound, gameOver, obsGame);
                     console.log('get round', playerRound, gameIdStr);
-        
+
                     fn(playerRound);
                 }
             });
@@ -1114,7 +1116,7 @@ try {
                         if (gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promise == null) {
                             // this should be same as playerName
                             if (gameInDb.game.rounds[roundInd].roundPlayers[chkInd].name == playerName) {
-                                // make speedpromise substraction
+                                // make speedpromise subtraction
                                 if (gameInDb.game.rounds[roundInd].roundPlayers[chkInd].speedPromisePoints >= -9) {
                                     gameInDb.game.rounds[roundInd].roundPlayers[chkInd].speedPromisePoints--;
                                     const options = { upsert: true };
@@ -1160,7 +1162,7 @@ try {
 
                 fn(resultObj);
             });
-    
+
             socket.on('make promise', async (promiseDetails) => {
                 const gameIdStr = promiseDetails.gameId;
                 console.log('make promise', promiseDetails, gameIdStr);
@@ -1169,12 +1171,12 @@ try {
                 const promise = promiseDetails.promise;
 
                 let promiseMadeOk = false;
-    
+
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
-                
+
                 const query = {
                     _id: searchId,
                     gameStatus: GAMESTATUS.OnGoing,
@@ -1185,6 +1187,7 @@ try {
                     const promiseInt = parseInt(promise, 10);
                     const playerName = pf.getPlayerNameById(myId, gameInDb.humanPlayers);
                     let speedPromisePoints = null;
+                    let promiseTime = -1;
                     for (let i = 0; i < gameInDb.humanPlayersCount + gameInDb.botPlayersCount; i++) {
                         let chkInd = 1 + i; // start from next to dealer
                         if (chkInd >= gameInDb.humanPlayersCount + gameInDb.botPlayersCount) chkInd-= (gameInDb.humanPlayersCount + gameInDb.botPlayersCount);
@@ -1194,6 +1197,7 @@ try {
                                 // update promise
                                 if (gameInDb.evenPromisesAllowed || !pf.isLastPromiser(gameInDb.game.rounds[roundInd]) || gameInDb.game.rounds[roundInd].totalPromise + promiseInt != gameInDb.game.rounds[roundInd].cardsInRound) {
                                     gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promise = promiseInt;
+                                    promiseTime = Date.now() - gameInDb.game.lastTimeStamp;
                                     gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promiseStarted = gameInDb.game.lastTimeStamp;
                                     gameInDb.game.rounds[roundInd].roundPlayers[chkInd].promiseMade = Date.now();
                                     speedPromisePoints = gameInDb.game.rounds[roundInd].roundPlayers[chkInd].speedPromisePoints;
@@ -1219,13 +1223,13 @@ try {
                     }
 
                     const thisGame = await collection.findOne(query);
-        
+
                     const gameInfo = pf.gameToGameInfo(thisGame);
                     gameInfo.currentRound = roundInd;
 
                     if (promiseMadeOk) {
                         io.to(gameIdStr).emit('promise made', gameInfo);
-                        
+
                         let chatLine = playerName+' promised';
                         if (thisGame.visiblePromiseRound) chatLine+= ' '+promiseInt;
                         if (thisGame.speedPromise) {
@@ -1237,6 +1241,7 @@ try {
                                 chatLine+= ' with '+speedPromisePoints+' penalty points';
                             }
                         }
+                        if (promiseTime > -1) chatLine+= ' in '+(promiseTime/1000).toFixed(1)+' seconds';
                         io.to(gameIdStr).emit('new chat line', chatLine);
                         // fn(gameInfo); // just DEBUG
                     } else {
@@ -1244,7 +1249,7 @@ try {
                     }
                 }
             });
-    
+
             socket.on('play card', async (playDetails, fn) => {
                 const gameIdStr = playDetails.gameId;
                 const myId = playDetails.myId;
@@ -1252,16 +1257,16 @@ try {
                 const playedCard = playDetails.playedCard;
 
                 let cardPlayedOk = false;
-    
+
                 let eventInfo = null;
                 let eventInfoToCardPlayer = null;
-    
+
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
                 const statsCollection = database.collection(statsCollectionStr);
                 const ObjectId = require('mongodb').ObjectId;
                 const searchId = new ObjectId(gameIdStr);
-                
+
                 const query = {
                     _id: searchId,
                     gameStatus: GAMESTATUS.OnGoing,
@@ -1273,6 +1278,7 @@ try {
                     let gameOver = false;
                     let logStr1 = '';
                     let logStr2 = '';
+                    let hitTime = -1;
                     if (pf.okToPlayCard(playedCard, playerName, gameInDb)) {
                         const roundInDb = pf.getCurrentRoundIndex(gameInDb);
                         if (roundInDb == roundInd) {
@@ -1281,18 +1287,21 @@ try {
                             const playerInd = pf.getPlayerIndexByName(playerName, round.roundPlayers)
                             const newHandObj = pf.takeCardOut(round.roundPlayers[playerInd].cards, playedCard);
                             const newHand = newHandObj.newHand;
+                            hitTime = Date.now() - gameInDb.game.lastTimeStamp;
+                            io.to(gameIdStr).emit('new chat line', playerName+' hit card in '+ (hitTime/1000).toFixed(1)+' seconds');
+
                             round.cardsPlayed[play].push({
                                 name: playerName,
                                 card: playedCard,
                                 playedTime: Date.now(),
                                 playStarted: gameInDb.game.lastTimeStamp,
                             });
-    
+
                             const gameAfterPlay = gameInDb.game;
                             gameAfterPlay.lastTimeStamp = Date.now();
                             gameAfterPlay.rounds[roundInDb].cardsPlayed = round.cardsPlayed;
                             gameAfterPlay.rounds[roundInDb].roundPlayers[playerInd].cards = newHand;
-    
+
                             let newPlay = false;
                             let newRound = false;
                             let cardsInThisPlay = null;
@@ -1300,23 +1309,23 @@ try {
                             let gameStatus = GAMESTATUS.OnGoing;
 
                             let gameStatistics = null;
-                            
+
                             if (gameAfterPlay.rounds[roundInDb].cardsPlayed[play].length == gameInDb.humanPlayersCount + gameInDb.botPlayersCount) {
                                 // this was the last card of the play
                                 // let's see who wins this play and will be starter of the next play
                                 newPlay = true;
                                 const winnerIndex = pf.getPlayerIndexByName(winnerName, round.roundPlayers);
-    
+
                                 gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps++;
 
                                 cardsInThisPlay = gameAfterPlay.rounds[roundInDb].cardsPlayed[play];
 
                                 io.to(gameIdStr).emit('new chat line', winnerName+' won this play');
-                                
+
                                 if (gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].keeps == gameAfterPlay.rounds[roundInDb].roundPlayers[winnerIndex].promise + 1) {
                                     if (!gameInDb.onlyTotalPromise) io.to(gameIdStr).emit('new chat line', winnerName+' Pitkäksi Oy:stä PÄIVÄÄ!');
                                 }
-    
+
                                 if (gameAfterPlay.rounds[roundInDb].cardsPlayed.length == gameAfterPlay.rounds[roundInDb].cardsInRound) {
                                     // this was the last card of the round
                                     newRound = true;
@@ -1358,7 +1367,7 @@ try {
                                         const statsResult = await statsCollection.insertOne(statsPlayer);
                                         console.log('play card - statsResult inserted ' + statsResult.insertedCount + ' with _id: ' + statsResult.insertedId, gameIdStr, playerName);
                                     }
-    
+
                                     if (gameAfterPlay.rounds.length == roundInDb + 1) {
                                         // this was the last round of the game
                                         gameOver = true;
@@ -1378,7 +1387,7 @@ try {
 
                             // let's update game statistics after every card hit
                             gameStatistics = rf.generateGameStatistics(gameAfterPlay, gameOver);
-    
+
                             const options = { upsert: true };
                             const updateDoc = {
                                 $set: {
@@ -1392,7 +1401,7 @@ try {
 
                             if (result.modifiedCount == 1) {
                                 cardPlayedOk = true;
-                                
+
                                 eventInfo = {
                                     playedCard: pf.okToReturnCard(gameInDb.hiddenCardsMode, (round.cardsPlayed[play].length == 1), (newPlay || newRound || gameOver), winnerName == playerName) ? playedCard : { suit: 'dummy', rank: 0 },
                                     cardPlayedBy: playerName,
@@ -1444,7 +1453,7 @@ try {
                             }
                         }
                         const thisGame = await collection.findOne(queryUsed);
-            
+
                         const gameInfo = pf.gameToGameInfo(thisGame);
                         gameInfo.currentRound = roundInd;
                         gameInfo.eventInfo = eventInfo;
@@ -1452,17 +1461,17 @@ try {
                         // this gameInfo to all other players than the one who just played card
                         console.log('play card', logStr1, gameInfo, gameIdStr, playerName);
                         socket.to(gameInfo.id).emit('card played', gameInfo);
-                        
+
                         // this gameInfo to the player who just played card
                         gameInfo.eventInfo = eventInfoToCardPlayer;
                         console.log('play card', logStr2, gameInfo, gameIdStr, playerName);
                         fn(gameInfo);
                         //socket.emit('card played', gameInfo);
-            
+
                     }
                 }
             });
-    
+
             socket.on('get games', async (data, fn) => {
                 console.log('get games - start to get games');
                 const myId = data.myId;
@@ -1472,7 +1481,7 @@ try {
                     gameStatus: GAMESTATUS.Created,
                 };
                 const cursor = await collection.find(query);
-    
+
                 const games = [];
                 await cursor.forEach(function(val) {
                     games.push({
@@ -1493,11 +1502,12 @@ try {
                         privateSpeedGame: val.privateSpeedGame,
                         opponentPromiseCardValue: val.opponentPromiseCardValue,
                         opponentGameCardValue: val.opponentGameCardValue,
+                        thisIsDemoGame: val.thisIsDemoGame,
                         hiddenCardsMode: val.hiddenCardsMode,
                         imInThisGame: pf.imInThisGame(val.humanPlayers, myId)
                     });
                 });
-    
+
                 fn(games);
             });
 
@@ -1526,7 +1536,7 @@ try {
                         });
                     }
                 });
-    
+
                 fn(games);
             });
 
@@ -1562,7 +1572,7 @@ try {
                         games[gameIdStr] = [];
                         gameIds.push(gameIdStr);
                     });
-    
+
                     for (let i = 0; i < gameIds.length; i++) {
                         const gameIdStr = gameIds[i];
                         const queryStatsGamesPlayersAggregation = [{$match: {
@@ -1576,7 +1586,7 @@ try {
                             games[gameIdStr].push(player._id);
                         });
                     }
-    
+
                     const collection = database.collection(promisewebCollection);
                     const queryAggregation = [{$match: {
                         gameStatus: {$eq: GAMESTATUS.Played}
@@ -1589,7 +1599,7 @@ try {
                     await cursor.forEach(function(val) {
                         const gameIdStr = val._id.toString();
                         const statNames = games[gameIdStr] != null ? games[gameIdStr] : [];
-        
+
                         retArr.push({
                             id: gameIdStr,
                             gameStatistics: val.gameStatistics,
@@ -1607,16 +1617,17 @@ try {
                             privateSpeedGame: val.privateSpeedGame,
                             opponentPromiseCardValue: val.opponentPromiseCardValue,
                             opponentGameCardValue: val.opponentGameCardValue,
+                            thisIsDemoGame: val.thisIsDemoGame,
                             hiddenCardsMode: val.hiddenCardsMode,
                             playerNameErrors: pf.checkPlayerNames(val, statNames),
                         });
                     });
-    
+
                     retObj.data = retArr;
                 } else {
                     console.log("secure data - wrong credentials");
                 }
-    
+
                 fn(retObj);
             });
 
@@ -1643,10 +1654,12 @@ try {
                     spurtingGame: null,
                     avgPercentagePoints: null,
                     cardsInHandCount: null,
+                    timesUsed: null,
                 };
 
                 const database = mongoUtil.getDb();
                 const collection = database.collection(promisewebCollection);
+                const statsCollection = database.collection(statsCollectionStr);
 
                 // game count
                 console.log('get report data - report data - game count');
@@ -1752,41 +1765,41 @@ try {
                       }
                     }, {
                       $unwind: {
-                        path: '$gameStatistics.playersStatistics', 
+                        path: '$gameStatistics.playersStatistics',
                         preserveNullAndEmptyArrays: false
                       }
                     }, {
                         $addFields: {
-                            'gameStatistics.playersStatistics.tBigs': '$gameStatistics.bigRoundsPlayed', 
+                            'gameStatistics.playersStatistics.tBigs': '$gameStatistics.bigRoundsPlayed',
                             'gameStatistics.playersStatistics.tSmalls': '$gameStatistics.smallRoundsPlayed'
                         }
                     }, {
                       $group: {
-                        _id: '$gameStatistics.playersStatistics.playerName', 
+                        _id: '$gameStatistics.playersStatistics.playerName',
                         playerTotalGames: {
                           $sum: 1
-                        }, 
+                        },
                         totalBigZeroPoints: {
                           $sum: '$gameStatistics.playersStatistics.bigPointsByZero'
-                        }, 
+                        },
                         totalBigZeroKeeps: {
                           $sum: '$gameStatistics.playersStatistics.bigZeroKeepPromisesCount'
-                        }, 
+                        },
                         totalBigZeroFails: {
                           $sum: '$gameStatistics.playersStatistics.bigZeroFailPromisesCount'
-                        }, 
+                        },
                         totalBigRounds: {
                           $sum: '$gameStatistics.playersStatistics.tBigs'
-                        }, 
+                        },
                         totalSmallNotZeroPoints: {
                           $sum: '$gameStatistics.playersStatistics.smallPointsNotZero'
-                        }, 
+                        },
                         totalSmallNotZeroKeeps: {
                           $sum: '$gameStatistics.playersStatistics.smallNotZeroKeepPromisesCount'
-                        }, 
+                        },
                         totalSmallNotZeroFails: {
                           $sum: '$gameStatistics.playersStatistics.smallNotZeroFailPromisesCount'
-                        }, 
+                        },
                         totalSmallRounds: {
                           $sum: '$gameStatistics.playersStatistics.tSmalls'
                         }
@@ -1950,7 +1963,7 @@ try {
                     playerTotalGames: {$gte: minGamesToReport}
                   }}, {$sort: {
                     playerAvgScorePoints: -1
-                  }}, 
+                  }},
                 ];
 
                 const cursorAvgScorePointsPerPlayer = await collection.aggregate(aggregationAvgScorePointsPerPlayer);
@@ -2055,24 +2068,24 @@ try {
                       }
                     }, {
                       $unwind: {
-                        path: '$gameStatistics.playersStatistics', 
+                        path: '$gameStatistics.playersStatistics',
                         preserveNullAndEmptyArrays: false
                       }
                     }, {
                       $group: {
-                        _id: '$gameStatistics.playersStatistics.playerName', 
+                        _id: '$gameStatistics.playersStatistics.playerName',
                         trumps: {
                           $sum: '$gameStatistics.playersStatistics.trumpsInGame'
-                        }, 
+                        },
                         bigs: {
                           $sum: '$gameStatistics.playersStatistics.bigsCardsInGame'
-                        }, 
+                        },
                         smalls: {
                           $sum: '$gameStatistics.playersStatistics.smallCardsInGame'
-                        }, 
+                        },
                         others: {
                           $sum: '$gameStatistics.playersStatistics.otherCardsInGame'
-                        }, 
+                        },
                         games: {
                           $sum: 1
                         }
@@ -2106,7 +2119,7 @@ try {
                     game: 0
                   }}
                 ];
-                
+
                 const cursorMeltingGame = await collection.aggregate(aggregationMeltingGame);
                 let meltingGame = null;
                 try {
@@ -2168,6 +2181,7 @@ try {
                 console.log('get report data - report data - used rules');
                 const aggregationUsedRules = [{$match: {
                     gameStatus: { $eq: GAMESTATUS.Played },
+                    thisIsDemoGame: {$in: [null, false]}
                   }}, {$project: {
                     item: 1,
                     evenPromisesDisallowed: {$cond: [{ $eq: ["$evenPromisesAllowed", false]}, 1, 0]},
@@ -2227,11 +2241,68 @@ try {
                 retObj.usedRulesCount = usedRulesCount;
                 // ********
 
+                // time used per player
+                console.log('get report data - report data - time used per player');
+                const aggregationTimesUsed = [
+                    {
+                      '$match': {
+                        'promiseTime': {
+                          '$gt': 0
+                        },
+                        'playTime': {
+                          '$gt': 0
+                        }
+                      }
+                    }, {
+                      '$group': {
+                        '_id': '$name',
+                        'totalRounds': {
+                          '$sum': 1
+                        },
+                        'totalPromiseTime': {
+                          '$sum': '$promiseTime'
+                        },
+                        'totalPlayTime': {
+                          '$sum': '$playTime'
+                        },
+                        'totalCards': {
+                          '$sum': '$cardsInRound'
+                        }
+                      }
+                    }, {
+                      '$match': {
+                        'totalRounds': {
+                          '$gte': 20
+                        },
+                        'totalCards': {
+                          '$gte': 100
+                        }
+                      }
+                    }
+                  ];
+
+                const cursorTimesUsed = await statsCollection.aggregate(aggregationTimesUsed);
+                const timesUsed = [];
+                await cursorTimesUsed.forEach(function(val) {
+                    const timesUsedByPlayer = {
+                        _id: val._id,
+                        totalRounds: val.totalRounds,
+                        totalPromiseTime: val.totalPromiseTime,
+                        totalPlayTime: val.totalPlayTime,
+                        totalCards: val.totalCards,
+                        avgPlayTime: (val.totalPlayTime / val.totalCards) / 1000, // seconds
+                        avgPromiseTime: (val.totalPromiseTime / val.totalRounds) / 1000, // seconds
+                    }
+                    timesUsed.push(timesUsedByPlayer);
+                });
+                retObj.timesUsed = timesUsed;
+                // ********
+
                 console.log('get report data', retObj);
 
                 fn(retObj);
             });
-            
+
             socket.on('get game report', async (data, fn) => {
                 const gameIdStr = data.gameId;
                 console.log('get game report - get game report', gameIdStr);
@@ -2244,12 +2315,45 @@ try {
                     _id: searchId,
                 };
                 const gameInDb = await collection.findOne(query);
-   
+
+                const statsCollection = database.collection(statsCollectionStr);
+                const aggregationTimesUsed = [
+                    {
+                      '$match': {
+                        'game': {
+                          '$eq': gameIdStr
+                        }
+                      }
+                    }, {
+                      '$group': {
+                        '_id': '$name',
+                        'totalPromiseTime': {
+                          '$sum': '$promiseTime'
+                        },
+                        'totalPlayTime': {
+                          '$sum': '$playTime'
+                        }
+                      }
+                    }
+                  ];
+
+                const cursorTimesUsed = await statsCollection.aggregate(aggregationTimesUsed);
+                const timesUsed = [];
+                await cursorTimesUsed.forEach(function(val) {
+                    const timesUsedByPlayer = {
+                        _id: val._id,
+                        totalPromiseTime: (val.totalPromiseTime / 1000).toFixed(0),
+                        totalPlayTime: (val.totalPlayTime / 1000).toFixed(0),
+                    }
+                    timesUsed.push(timesUsedByPlayer);
+                });
+
                 console.log('get game report', gameInDb);
                 const retObj = rf.getGameReport(gameInDb.game, gameInDb.gameStatistics.playersStatistics);
+                retObj.timesUsed = timesUsed;
                 fn(retObj);
             });
-            
+
             socket.on('update all game reports', async (data, fn) => {
                 console.log('update all game reports - start to update all game reports');
                 const updatedIds = [];
@@ -2281,7 +2385,7 @@ try {
 
                 fn(updatedIds);
             });
-            
+
             socket.on('get average report', async (data, fn) => {
                 console.log('get average report - start to get games for average report');
                 const averageReport = {
@@ -2310,7 +2414,7 @@ try {
                     }}
                 ];
                 const cursorA = await collection.aggregate(aggregationA);
-    
+
                 const gamesPlayed = [];
                 await cursorA.forEach(function(val) {
                     gamesPlayed.push(val);
@@ -2366,6 +2470,7 @@ try {
                         privateSpeedGame: {$in: [false, null]},
                         opponentPromiseCardValue: {$in: [false, null]},
                         opponentGameCardValue: {$in: [false, null]},
+                        thisIsDemoGame: {$in: [false, null]},
                         hiddenCardsMode: {$in: [0, null]},
                     }},
                     {$project: {
@@ -2409,7 +2514,7 @@ try {
                 const adminUser = data.adminUser;
                 const adminPass = data.adminPass;
                 retObj.passOk = await checkAdminAccess(adminUser, adminPass);
-                
+
                 if (retObj.passOk) {
                     const database = mongoUtil.getDb();
                     const gameIdStr = data.gameId;
@@ -2442,19 +2547,19 @@ try {
                 }
                 const gameIdStr = data.gameId;
                 console.log('change nick - start to change nick', gameIdStr);
-                
+
                 const adminUser = data.adminUser;
                 const adminPass = data.adminPass;
                 retObj.passOk = await checkAdminAccess(adminUser, adminPass);
-                
+
                 if (retObj.passOk) {
                     const database = mongoUtil.getDb();
                     const ObjectId = require('mongodb').ObjectId;
                     const oldName = data.oldName;
                     const newName = data.newName;
-    
+
                     console.log('change nick - game database %s to %s', oldName, newName, gameIdStr);
-    
+
                     const searchId = new ObjectId(gameIdStr);
                     const collection = database.collection(promisewebCollection);
                     const query = {
@@ -2506,7 +2611,7 @@ try {
                         }
                     };
                     await collection.updateOne(query, updateDoc, options);
-                    
+
                     console.log('change nick - stats database %s to %s', oldName, newName, gameIdStr);
                     const updateStatsDocQuery = {
                             name: oldName,
@@ -2517,37 +2622,37 @@ try {
                             name: newName,
                         }
                     };
-                    const collectionStats = database.collection(statsCollectionStr);
-                    await collectionStats.updateMany(updateStatsDocQuery, updateStatsDocSet);
+                    const statsCollection = database.collection(statsCollectionStr);
+                    await statsCollection.updateMany(updateStatsDocQuery, updateStatsDocSet);
                 }
-                
+
                 fn(retObj);
             });
-            
+
             socket.on('show players with password', async (getObj, fn) => {
                 const retObj = {
                     passOk: false,
                     playersWithPassword: []
                 }
-                
+
                 const adminUser = getObj.adminUser;
                 const adminPass = getObj.adminPass;
                 retObj.passOk = await checkAdminAccess(adminUser, adminPass);
-                
+
                 if (retObj.passOk) {
                     const database = mongoUtil.getDb();
                     const uCollection = database.collection(userCollection);
                     const usersQuery = {
                         playerName: { $ne: adminUser }
                     }
-                    const usersCusrsor = await uCollection.find(usersQuery);
-                    await usersCusrsor.forEach(function(val) {
+                    const usersCursor = await uCollection.find(usersQuery);
+                    await usersCursor.forEach(function(val) {
                         retObj.playersWithPassword.push(val.playerName);
                     });
                 }
                 fn(retObj);
             });
-    
+
             socket.on('reset user password', async (resetObj, fn) => {
                 const userToReset = resetObj.userToReset;
                 const retObj = {
@@ -2577,7 +2682,7 @@ try {
                 }
                 fn(retObj);
             });
-    
+
         });
     });
 } catch (error) {
@@ -2707,7 +2812,7 @@ async function observeOk(observeObject) {
         return observersPermissions.playersInGame.filter(player => player.observeMode == OBSERVE_MODE.Allow).length == observersPermissions.playersInGame.length
             || observersPermissions.playersInGame.filter(player => player.observeMode == OBSERVE_MODE.AllowWithCards).length == observersPermissions.playersInGame.length;
     }
-    
+
 }
 
 async function startGame(gameInfo) {
@@ -2762,7 +2867,7 @@ async function startRound(gameInfo, roundInd) {
                 game: thisGame.game,
             }
         };
-    
+
         await collection.updateOne(query, updateDoc, options);
     }
 
@@ -2780,7 +2885,7 @@ async function getPlayerAvgPoints(playerName, roundsInGame) {
           $match: {
             gameStatus: {
               $eq: GAMESTATUS.Played
-            }, 
+            },
             "humanPlayers.name": {$eq: playerName}
           }
         }, {

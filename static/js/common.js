@@ -47,6 +47,8 @@ function colorizeDatasets(datasets) {
     return datasets;
 }
 
+function fmtMSS(s){return(s-(s%=60))/60+(9<s?':':':0')+s}
+
 function showOneGameReport(reportObject) {
     const canvasIdStr = 'oneGameReportBody';
     const annotations = reportObject.smallStart == null && reportObject.smallEnd == null ? [] : [
@@ -63,7 +65,7 @@ function showOneGameReport(reportObject) {
             backgroundColor: '#E5FFE5',
         }
     ];
-    
+
     const pointsOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -108,7 +110,7 @@ function showOneGameReport(reportObject) {
             }
         }
     };
-    
+
     const labelsData = reportObject.rounds;
 
     const datasetsData = [];
@@ -159,6 +161,26 @@ function showOneGameReport(reportObject) {
 
 function showOneKeepsReport(reportObject) {
     const canvasIdStr = 'oneGameKeepsBody';
+
+    const labelsData = reportObject.players;
+    const datasetsBigData = {
+        label: 'Big rounds',
+        data: reportObject.keepsBig,
+        borderWidth: 1,
+        backgroundColor: 'rgba(255,153,0,0.6)',
+    };
+    const datasetsSmallData = {
+        label: 'Small rounds',
+        data: reportObject.keepsSmall,
+        borderWidth: 1,
+        backgroundColor: 'lightgreen',
+    };
+
+    const keepsData = {
+        labels: labelsData,
+        datasets:[datasetsBigData, datasetsSmallData],
+    };
+
     const keepsOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -180,40 +202,17 @@ function showOneKeepsReport(reportObject) {
             },
             tooltip: {
                 callbacks: {
-                    afterTitle: function(context) {
-                        var totalKeeps = 0;
-                        context.forEach(function (row) {
-                            totalKeeps+= row.raw;
-                        });
-                        return 'Total: '+totalKeeps;
+                    footer: function(tooltipItem) {
+                        let total = 0;
+                        for (let i = 0; i < keepsData.datasets.length; i++) {
+                            total += parseInt(keepsData.datasets[i].data[tooltipItem[0].dataIndex], 10);
+                        }
+                        return 'TOTAL: '+total;
                     }
                 }
             }
         }
     };
-
-    const labelsData = reportObject.players;
-    const datasetsBigData = {
-        label: 'Big rounds',
-        data: reportObject.keepsBig,
-        borderWidth: 1,
-        backgroundColor: 'rgba(255,153,0,0.6)',
-    };
-    const datasetsSmallData = {
-        label: 'Small rounds',
-        data: reportObject.keepsSmall,
-        borderWidth: 1,
-        backgroundColor: 'lightgreen',
-    };
-
-    const keepsData = {
-        labels: labelsData,
-        datasets:[datasetsBigData, datasetsSmallData],
-    };
-
-    Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.canvas.id == canvasIdStr) instance.destroy();
-    });
 
     const ctx = document.getElementById(canvasIdStr);
     new Chart(ctx, {
@@ -225,6 +224,26 @@ function showOneKeepsReport(reportObject) {
 
 function showOnePointsReport(reportObject) {
     const canvasIdStr = 'oneGamePointsBody';
+
+    const labelsData = reportObject.players;
+    const datasetsBigData = {
+        label: 'Big rounds',
+        data: reportObject.pointsBig,
+        borderWidth: 1,
+        backgroundColor: 'rgba(255,153,0,0.6)',
+    };
+    const datasetsSmallData = {
+        label: 'Small rounds',
+        data: reportObject.pointsSmall,
+        borderWidth: 1,
+        backgroundColor: 'lightgreen',
+    };
+
+    const pointsData = {
+        labels: labelsData,
+        datasets:[datasetsBigData, datasetsSmallData],
+    };
+
     const pointsOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -250,40 +269,17 @@ function showOnePointsReport(reportObject) {
             },
             tooltip: {
                 callbacks: {
-                    afterTitle: function(context) {
-                        var totalPoints = 0;
-                        context.forEach(function (row) {
-                            totalPoints+= row.raw;
-                        });
-                        return 'Total: '+totalPoints;
+                    footer: function(tooltipItem) {
+                        let total = 0;
+                        for (let i = 0; i < pointsData.datasets.length; i++) {
+                            total += parseInt(pointsData.datasets[i].data[tooltipItem[0].dataIndex], 10);
+                        }
+                        return 'TOTAL: '+total;
                     }
                 }
             }
         }
     };
-    
-    const labelsData = reportObject.players;
-    const datasetsBigData = {
-        label: 'Big rounds',
-        data: reportObject.pointsBig,
-        borderWidth: 1,
-        backgroundColor: 'rgba(255,153,0,0.6)',
-    };
-    const datasetsSmallData = {
-        label: 'Small rounds',
-        data: reportObject.pointsSmall,
-        borderWidth: 1,
-        backgroundColor: 'lightgreen',
-    };
-
-    const pointsData = {
-        labels: labelsData,
-        datasets:[datasetsBigData, datasetsSmallData],
-    };
-
-    Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.canvas.id == canvasIdStr) instance.destroy();
-    });
 
     const ctx = document.getElementById(canvasIdStr);
     new Chart(ctx, {
@@ -293,6 +289,79 @@ function showOnePointsReport(reportObject) {
     });
 }
 
+function showTimesUsed(reportObject) {
+    const canvasIdStr = 'timesUsedByPlayerBody';
+    const players = [];
+    const hitTimes = [];
+    const promiseTimes = [];
+    reportObject.timesUsed.forEach(timeUsed => {
+        players.push(timeUsed._id);
+        hitTimes.push(timeUsed.totalPlayTime);
+        promiseTimes.push(timeUsed.totalPromiseTime);
+    });
+
+    const labelsData = players;
+    const datasetsHitTimesData = {
+        label: 'Hit Time',
+        data: hitTimes,
+        borderWidth: 1,
+        backgroundColor: 'rgba(255,153,0,0.6)',
+    };
+    const datasetsPromiseTimesData = {
+        label: 'Promise Time',
+        data: promiseTimes,
+        borderWidth: 1,
+        backgroundColor: 'lightgreen',
+    };
+
+    const timeUsedData = {
+        labels: labelsData,
+        datasets:[datasetsHitTimesData, datasetsPromiseTimesData],
+    };
+
+    const timeUsedOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: {
+            x: {
+                stacked: true,
+                max: Math.max(...reportObject.timesUsed.map(v => parseInt(v.totalPromiseTime, 10) + parseInt(v.totalPlayTime, 10))),
+                min: 0,
+            },
+            y: {
+                stacked: true,
+            }
+        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'Used time in game by nickname'
+            },
+            tooltip: {
+                callbacks: {
+                    footer: function(tooltipItem) {
+                        let total = 0;
+                        for (let i = 0; i < timeUsedData.datasets.length; i++) {
+                            total += parseInt(timeUsedData.datasets[i].data[tooltipItem[0].dataIndex], 10);
+                        }
+                        return 'TOTAL: '+fmtMSS(total);
+                    },
+                    label: function(context) {
+                        return ' '+context.dataset.label+': '+fmtMSS(parseInt(context.raw, 10));
+                    },
+                }
+            }
+        }
+    };
+
+    const ctx = document.getElementById(canvasIdStr);
+    new Chart(ctx, {
+        type: 'bar',
+        data: timeUsedData,
+        options: timeUsedOptions,
+    });
+}
 
 function showCardsReport(reportObject) {
     const canvasIdStr = 'cardsByPlayerBody';
@@ -315,20 +384,9 @@ function showCardsReport(reportObject) {
                 display: true,
                 text: 'Cards in game by nickname'
             },
-            tooltip: {
-                callbacks: {
-                    afterTitle: function(context) {
-                        var totalKeeps = 0;
-                        context.forEach(function (row) {
-                            totalKeeps+= row.raw;
-                        });
-                        return 'Total: '+totalKeeps;
-                    }
-                }
-            }
         }
     };
-    
+
     const labelsData = reportObject.players;
     const datasetsTrumpsData = {
         label: 'Trumps',
@@ -360,11 +418,6 @@ function showCardsReport(reportObject) {
         datasets:[datasetsTrumpsData, datasetsBigsData, datasetsSmallsData, datasetsOthersData],
     };
 
-
-    Chart.helpers.each(Chart.instances, function(instance){
-        if (instance.canvas.id == canvasIdStr) instance.destroy();
-    });
-
     const ctx = document.getElementById(canvasIdStr);
     new Chart(ctx, {
         type: 'bar',
@@ -373,8 +426,25 @@ function showCardsReport(reportObject) {
     });
 }
 
+function resetOneGameReportCanvases() {
+    const oneGameReportBodyCanvas = 'oneGameReportBody';
+    const oneGameKeepsBodyCanvas = 'oneGameKeepsBody';
+    const oneGamePointsBodyCanvas = 'oneGamePointsBody';
+    const timesUsedByPlayerBodyCanvas = 'timesUsedByPlayerBody';
+    const cardsByPlayerBodyCanvas = 'cardsByPlayerBody';
+
+    Chart.helpers.each(Chart.instances, function(instance){
+        if (instance.canvas.id == oneGameReportBodyCanvas) { instance.destroy(); return; }
+        if (instance.canvas.id == oneGameKeepsBodyCanvas) { instance.destroy(); return; }
+        if (instance.canvas.id == oneGamePointsBodyCanvas) { instance.destroy(); return; }
+        if (instance.canvas.id == timesUsedByPlayerBodyCanvas) { instance.destroy(); return; }
+        if (instance.canvas.id == cardsByPlayerBodyCanvas) { instance.destroy(); return; }
+    });
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getOneGameReport(gameId) {
+    resetOneGameReportCanvases();
     const reportModalEl = document.getElementById('oneGameReportModal');
     reportModalEl.addEventListener('shown.bs.modal', function() {
         const getReportObj = { gameId: gameId };
@@ -383,9 +453,10 @@ function getOneGameReport(gameId) {
             showOneGameReport(gameReportData);
             showOneKeepsReport(gameReportData);
             showOnePointsReport(gameReportData);
+            showTimesUsed(gameReportData);
             showCardsReport(gameReportData);
         });
-    });
+    }, {once: true});
     const bsModal = bootstrap.Modal.getOrCreateInstance(reportModalEl);
     bsModal.show();
 }

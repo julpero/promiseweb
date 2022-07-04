@@ -17,25 +17,25 @@ function initTableFor3() {
     const col22 = createElementWithIdAndClasses('div', null, 'col-2');
     col22.appendChild(myPlayedCardDiv(0));
     const col23 = createElementWithIdAndClasses('div', null, 'col-4');
-    
+
     row2.appendChild(col21);
     row2.appendChild(col22);
     row2.appendChild(col23);
 
     const row3 = createElementWithIdAndClasses('div', null, 'row');
     const col31 = initPlayerTable(0, 'left', 10, 3);
-    
+
     const col32 = createElementWithIdAndClasses('div', null, 'col-9');
     const myCardsRow = initMyCardsContainer(10);
     const myPromiseRow = initMyPromiseRow();
-    
+
     col32.appendChild(myPromiseRow);
     col32.appendChild(myCardsRow);
 
     row3.appendChild(col31);
     row3.appendChild(col32);
-    
-    
+
+
     nodeCol.appendChild(row1);
     nodeCol.appendChild(row2);
     nodeCol.appendChild(row3);
@@ -104,7 +104,7 @@ function initTableFor5() {
     const carCols = createElementWithIdAndClasses('div', null, 'col cardCol');
     const cardRow0 = createElementWithIdAndClasses('div', null, 'row');
     const carCols0 = createElementWithIdAndClasses('div', null, 'col cardCol');
-    
+
     const cardRow1 = createElementWithIdAndClasses('div', null, 'row');
     const carCols1 = createElementWithIdAndClasses('div', null, 'col');
     carCols1.appendChild(myPlayedCardDiv(0));
@@ -119,12 +119,12 @@ function initTableFor5() {
 
     const row3 = createElementWithIdAndClasses('div', null, 'row');
     const col31 = initPlayerTable(0, 'left', 10, 3);
-    
+
     const col32 = createElementWithIdAndClasses('div', null, 'col-9');
     const myCardsRow = initMyCardsContainer(10);
-    
+
     const myPromiseRow = initMyPromiseRow();
-    
+
     col32.appendChild(myPromiseRow);
     col32.appendChild(myCardsRow);
 
@@ -195,12 +195,12 @@ function initTableFor6() {
 
     const row3 = createElementWithIdAndClasses('div', null, 'row');
     const col31 = initPlayerTable(0, 'left', 8, 2);
-    
+
     const col32 = createElementWithIdAndClasses('div', null, 'col-5');
     const myCardsRow = initMyCardsContainer(8);
-    
+
     const myPromiseRow = initMyPromiseRow();
-    
+
     col32.appendChild(myPromiseRow);
     col32.appendChild(myCardsRow);
 
@@ -230,7 +230,7 @@ function initTrumpTable() {
     const nodeCol = createElementWithIdAndClasses('div', null, 'col-2');
 
     const row1= createElementWithIdAndClasses('div', null, 'row');
-    const col11 = createElementWithIdAndClasses('div', null, 'col nameCol trumpNameCol'); //>Valtti</div>').classList.add();
+    const col11 = createElementWithIdAndClasses('div', null, 'col nameCol trumpNameCol');
     const row2= createElementWithIdAndClasses('div', null, 'row');
     const col21 = createElementWithIdAndClasses('div', 'trumpDiv', 'col cardCol trumpCardCol');
     const row3= createElementWithIdAndClasses('div', null, 'row');
@@ -241,12 +241,12 @@ function initTrumpTable() {
     row2.appendChild(col21);
     row3.appendChild(col31);
     row4.appendChild(col41);
-    
+
     nodeCol.appendChild(row1);
     nodeCol.appendChild(row2);
     nodeCol.appendChild(row3);
     nodeCol.appendChild(row4);
-    
+
     return nodeCol;
 }
 
@@ -259,7 +259,7 @@ function initPlayerTable(index, align, maxCards, colCount) {
     row1.appendChild(createElementWithIdAndClasses('div', 'player'+index+'Promised', 'col-3 playerInfoCol'));
     row1.appendChild(createElementWithIdAndClasses('div', 'player'+index+'Keeps', 'col-2 playerInfoCol'));
     row1.appendChild(createElementWithIdAndClasses('div', 'player'+index+'ProgressBar', 'col-4'));
-    
+
     let row2 = null;
     if (index > 0) {
         row2 = createElementWithIdAndClasses('div', null, 'row');
@@ -281,7 +281,7 @@ function initPlayerTable(index, align, maxCards, colCount) {
         cardsWonRow.appendChild(createElementWithIdAndClasses('div', 'player'+index+'CardsWon'+i+'Div', classStr));
     }
     const playedCardRow = createElementWithIdAndClasses('div', null, 'row inner-row');
-    
+
     const statsCol = createElementWithIdAndClasses('div', 'player'+index+'StatsCol', 'col');
     const statsRow1 = createElementWithIdAndClasses('div', null, 'row');
     const statsCol1 = createElementWithIdAndClasses('div', 'player'+index+'StatsCol1', 'col hand-value-col');
@@ -344,7 +344,7 @@ function initCardTable(myRound) {
 
 function initMyCardsContainer(maxCards) {
     const node = createElementWithIdAndClasses('div', 'myCardsRowDiv', 'row myCardsRowClass');
-    
+
     for (let i = 0; i < maxCards; i++) {
         node.appendChild(drawCardCol(i));
     }
@@ -361,7 +361,7 @@ function drawCardCol(idx) {
 function initMyPromiseRow() {
     const node = createElementWithIdAndClasses('div', 'myPromiseRow', 'row myCardsRowClass');
     const col2 = createElementWithIdAndClasses('div', 'myPromiseCol', 'col promiseButtons');
-    
+
     node.appendChild(col2);
 
     return node;
@@ -373,7 +373,7 @@ function createPromiseTable(promiseTable) {
     const table = document.createElement('table');
     const tableHeader = document.createElement('thead');
     const tableHeaderRow = document.createElement('tr');
-    
+
     tableHeaderRow.appendChild(createElementWithIdAndClasses('th', null, 'promiseTableHeader', {scope: 'col'}));
     for (let i = 0; i < promiseTable.rounds.length; i++) {
         const tableHeaderCol = createElementWithIdAndClasses('th', 'promiseTableHeader'+i, 'promiseTableHeader promTooltip', {scope: 'col'});
@@ -394,7 +394,7 @@ function createPromiseTable(promiseTable) {
             const promiseCol = createElementWithIdAndClasses('td', 'player'+i+'Prom'+j, 'promiseTableCol playerPromiseCol');
             tableBodyRow.appendChild(promiseCol);
         }
-        
+
         tableBody.appendChild(tableBodyRow);
     }
     table.appendChild(tableHeader);
@@ -430,7 +430,7 @@ function createScoreboard(promiseTable) {
             pointCol.innerHTML = '&nbsp;';
             tableBodyRow.appendChild(pointCol);
         }
-        
+
         tableBody.appendChild(tableBodyRow);
     }
     table.appendChild(tableHeader);

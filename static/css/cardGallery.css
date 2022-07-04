@@ -329,25 +329,3 @@ body {
 .card.joker.rank3 .face {
   background-image: url("faces/4_3.svg");
 }
-/* @media (max-width: 540px) {
-  #topbar {
-    text-align: left;
-  }
-  .gh-ribbon {
-    -webkit-transform: scale(0.5);
-    -moz-transform: scale(0.5);
-    -o-transform: scale(0.5);
-    -ms-transform: scale(0.5);
-    transform: scale(0.5);
-    -webkit-transform-origin: 100% 0;
-    -moz-transform-origin: 100% 0;
-    -o-transform-origin: 100% 0;
-    -ms-transform-origin: 100% 0;
-    transform-origin: 100% 0;
-  }
-} */
-/* @media (min-height: 850px) {
-  html {
-    font-size: 125%;
-  }
-} */

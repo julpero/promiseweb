@@ -26,7 +26,7 @@
         <link rel="stylesheet" href="/css/bootstrap.min.css">
     </head>
     <body data-bs-no-jquery>
-        
+
         <div class="container-fluid" id="reportChooser">
             <div class="row">
                 <div class="col">Choose report</div>
@@ -67,6 +67,9 @@
                         <canvas id="oneGamePointsBody" style="height: 210px"></canvas>
                     </div>
                     <div class="modal-body">
+                        <canvas id="timesUsedByPlayerBody" style="height: 230px"></canvas>
+                    </div>
+                    <div class="modal-body">
                         <canvas id="cardsByPlayerBody" style="height: 230px"></canvas>
                     </div>
                     <div class="modal-footer">
@@ -75,7 +78,7 @@
                 </div>
             </div>
         </div>
-        
+
         <script src="/socket.io/socket.io.js"></script>
         <script src="/dist/chart.min.js"></script>
         <script src="/dist/chartjs-plugin-annotation.js"></script>
