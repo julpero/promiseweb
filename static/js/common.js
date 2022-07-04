@@ -161,6 +161,26 @@ function showOneGameReport(reportObject) {
 
 function showOneKeepsReport(reportObject) {
     const canvasIdStr = 'oneGameKeepsBody';
+
+    const labelsData = reportObject.players;
+    const datasetsBigData = {
+        label: 'Big rounds',
+        data: reportObject.keepsBig,
+        borderWidth: 1,
+        backgroundColor: 'rgba(255,153,0,0.6)',
+    };
+    const datasetsSmallData = {
+        label: 'Small rounds',
+        data: reportObject.keepsSmall,
+        borderWidth: 1,
+        backgroundColor: 'lightgreen',
+    };
+
+    const keepsData = {
+        labels: labelsData,
+        datasets:[datasetsBigData, datasetsSmallData],
+    };
+
     const keepsOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -182,35 +202,16 @@ function showOneKeepsReport(reportObject) {
             },
             tooltip: {
                 callbacks: {
-                    afterTitle: function(context) {
-                        var totalKeeps = 0;
-                        context.forEach(function (row) {
-                            totalKeeps+= row.raw;
-                        });
-                        return 'Total: '+totalKeeps;
+                    footer: function(tooltipItem) {
+                        let total = 0;
+                        for (let i = 0; i < keepsData.datasets.length; i++) {
+                            total += parseInt(keepsData.datasets[i].data[tooltipItem[0].dataIndex], 10);
+                        }
+                        return 'TOTAL: '+total;
                     }
                 }
             }
         }
-    };
-
-    const labelsData = reportObject.players;
-    const datasetsBigData = {
-        label: 'Big rounds',
-        data: reportObject.keepsBig,
-        borderWidth: 1,
-        backgroundColor: 'rgba(255,153,0,0.6)',
-    };
-    const datasetsSmallData = {
-        label: 'Small rounds',
-        data: reportObject.keepsSmall,
-        borderWidth: 1,
-        backgroundColor: 'lightgreen',
-    };
-
-    const keepsData = {
-        labels: labelsData,
-        datasets:[datasetsBigData, datasetsSmallData],
     };
 
     const ctx = document.getElementById(canvasIdStr);
@@ -223,6 +224,26 @@ function showOneKeepsReport(reportObject) {
 
 function showOnePointsReport(reportObject) {
     const canvasIdStr = 'oneGamePointsBody';
+
+    const labelsData = reportObject.players;
+    const datasetsBigData = {
+        label: 'Big rounds',
+        data: reportObject.pointsBig,
+        borderWidth: 1,
+        backgroundColor: 'rgba(255,153,0,0.6)',
+    };
+    const datasetsSmallData = {
+        label: 'Small rounds',
+        data: reportObject.pointsSmall,
+        borderWidth: 1,
+        backgroundColor: 'lightgreen',
+    };
+
+    const pointsData = {
+        labels: labelsData,
+        datasets:[datasetsBigData, datasetsSmallData],
+    };
+
     const pointsOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -248,35 +269,16 @@ function showOnePointsReport(reportObject) {
             },
             tooltip: {
                 callbacks: {
-                    afterTitle: function(context) {
-                        var totalPoints = 0;
-                        context.forEach(function (row) {
-                            totalPoints+= row.raw;
-                        });
-                        return 'Total: '+totalPoints;
+                    footer: function(tooltipItem) {
+                        let total = 0;
+                        for (let i = 0; i < pointsData.datasets.length; i++) {
+                            total += parseInt(pointsData.datasets[i].data[tooltipItem[0].dataIndex], 10);
+                        }
+                        return 'TOTAL: '+total;
                     }
                 }
             }
         }
-    };
-
-    const labelsData = reportObject.players;
-    const datasetsBigData = {
-        label: 'Big rounds',
-        data: reportObject.pointsBig,
-        borderWidth: 1,
-        backgroundColor: 'rgba(255,153,0,0.6)',
-    };
-    const datasetsSmallData = {
-        label: 'Small rounds',
-        data: reportObject.pointsSmall,
-        borderWidth: 1,
-        backgroundColor: 'lightgreen',
-    };
-
-    const pointsData = {
-        labels: labelsData,
-        datasets:[datasetsBigData, datasetsSmallData],
     };
 
     const ctx = document.getElementById(canvasIdStr);
@@ -382,17 +384,6 @@ function showCardsReport(reportObject) {
                 display: true,
                 text: 'Cards in game by nickname'
             },
-            tooltip: {
-                callbacks: {
-                    afterTitle: function(context) {
-                        var totalKeeps = 0;
-                        context.forEach(function (row) {
-                            totalKeeps+= row.raw;
-                        });
-                        return 'Total: '+totalKeeps;
-                    }
-                }
-            }
         }
     };
 
