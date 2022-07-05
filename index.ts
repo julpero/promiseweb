@@ -23,7 +23,6 @@ app.use(express.static('node_modules/tabulator-tables/dist'))
 const pf = require(__dirname + '/promiseFunctions.js');
 const rf = require(__dirname + '/reportFunctions.js');
 const sm = require(__dirname + '/clientSocketMapper.js');
-// const ai = require(__dirname + '/aiPlayer.js');
 // just dummy
 
 const GAMESTATUS = {
