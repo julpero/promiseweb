@@ -1,16 +1,18 @@
-const express = require('express');
-const app = express();
-const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+import express, { Express, Request, Response } from 'express';
+const app: Express = express();
+import http from 'http';
+const server = http.createServer(app);
+import { Server } from 'socket.io'
+const io = new Server(server);
 
 const port = process.env.PORT || 3000;
 server.listen(port, () => {
     console.log('server listening on *:' + port);
 });
 
-const bcrypt = require('bcrypt');
+import bcrypt from 'bcrypt';
 
-const sanitizeFileName = require("sanitize-filename");
+import sanitizeFileName from "sanitize-filename";
 
 app.use(express.static('static'))
 app.use(express.static('node_modules/bootstrap/dist'))
@@ -63,17 +65,157 @@ const userCollection = 'userCollection';
 const observeCollection = 'observeCollection';
 
 const mongoUtil = require(__dirname + '/mongoUtil.js');
-const fs = require('fs');
+import fs from 'fs';
+import { type } from 'os';
+
+type PlayerType = 'human';
+type HiddenCardModeType = 1 | 2;
+
+interface Player {
+    name: string;
+    playerId: string;
+}
+
+interface HumanPlayer extends Player {
+    name: string;
+    playerId: string;
+    active: boolean;
+    playerStats: []
+}
+
+interface ObservedPlayer extends Player {
+    observeMode: typeof OBSERVE_MODE
+}
+
+interface Observer {
+    name: string;
+    observerId: string;
+    playersInGame: ObservedPlayer[]
+}
+
+interface GetObserversResponseChoice {
+    name: string;
+    myChoice: typeof OBSERVE_MODE
+}
+
+interface GetObserversResponse {
+    observers: GetObserversResponseChoice[]
+}
+
+interface GetGamesForReportData {
+    id: string;
+    gameStatistics: [];
+    created: string;
+    startRound: number;
+    turnRound: number;
+    endRound: number;
+    humanPlayers: ParsedHumanPlayer[];
+    evenPromisesAllowed: boolean;
+    visiblePromiseRound: boolean;
+    onlyTotalPromise: boolean;
+    freeTrump: boolean;
+    hiddenTrump: boolean;
+    speedPromise: boolean;
+    privateSpeedGame: boolean;
+    opponentPromiseCardValue: boolean;
+    opponentGameCardValue: boolean;
+    thisIsDemoGame: boolean;
+    hiddenCardsMode: HiddenCardModeType;
+    playerNameErrors: string[];
+}
+interface GetGamesForReportResponse {
+    passOk: boolean;
+    data: GetGamesForReportData[];
+}
+
+interface GetGamesResponse {
+    id: string;
+    humanPlayersCount: number;
+    computerPlayersCount: number;
+    startRound: number;
+    turnRound: number;
+    endRound: number;
+    humanPlayers: HumanPlayer[];
+    hasPassword: boolean;
+    evenPromisesAllowed: boolean;
+    visiblePromiseRound: boolean;
+    onlyTotalPromise: boolean;
+    freeTrump: boolean;
+    hiddenTrump: boolean;
+    speedPromise: boolean;
+    privateSpeedGame: boolean;
+    opponentPromiseCardValue: boolean;
+    opponentGameCardValue: boolean;
+    thisIsDemoGame: boolean;
+    hiddenCardsMode: HiddenCardModeType;
+    imInThisGame: boolean;
+}
+
+interface ParsedHumanPlayer {
+    name: string;
+    type: PlayerType
+}
+
+interface GetOngoingGamesResponse {
+    id: string;
+    gameStatus: typeof GAMESTATUS;
+    humanPlayers: ParsedHumanPlayer[];
+    created: string;
+    hasPassword: boolean;
+}
+
+interface Stats {
+    _id: string;
+    game: string;
+    played: number;
+    round: number;
+    name: string;
+    promise: number;
+    promiseTime: number;
+    playTime: number;
+    keeps: number;
+    points: number;
+    kept: boolean;
+    cardsInRound: number;
+    playersInGame: number;
+}
+interface Game {
+    _id: string;
+    humanPlayersCount: number;
+    botPlayersCount: number;
+    startRound: number;
+    turnRound: number;
+    endRound: number;
+    adminName: string;
+    password: string;
+    gameStatus: typeof GAMESTATUS;
+    humanPlayers: HumanPlayer[];
+    createDateTime: string;
+    evenPromisesAllowed: boolean;
+    visiblePromiseRound: boolean;
+    onlyTotalPromise: boolean;
+    freeTrump: boolean;
+    hiddenTrump: boolean;
+    speedPromise: boolean;
+    privateSpeedGame: boolean;
+    opponentPromiseCardValue: boolean;
+    opponentGameCardValue: boolean;
+    thisIsDemoGame: boolean;
+    hiddenCardsMode: 1 | 2;
+    imInThisGame: boolean;
+    gameStatistics: [];
+}
+
 try {
-    mongoUtil.connectToServer(async function(err) {
+    mongoUtil.connectToServer(async function(err: unknown) {
 
         if (err) console.log('server', err);
 
-        app.get('/', (req, res) => {
+        app.get('/', (req: Request, res: Response) => {
             res.sendFile('index.html');
         });
 
-        app.get('/ping', async (req, res) => {
+        app.get('/ping', async (req: Request, res: Response) => {
             console.log('ping');
             const database = mongoUtil.getDb();
             const collection = database.collection(pingCollection);
@@ -94,13 +236,13 @@ try {
 
             const q = req.query.ver;
             const ver = q ? process.version : '';
-            fs.readFile(__dirname +'/static/ping.html', 'utf-8', (err, data) => {
+            fs.readFile(__dirname +'/static/ping.html', 'utf-8', (err: NodeJS.ErrnoException | null, data: string) => {
                 if (err) throw err;
                 res.send(data.replace('{{ver}}', ver));
             });
         });
 
-        app.get('/css/faces/:face', (req, res) => {
+        app.get('/css/faces/:face', (req: Request, res: Response) => {
             if (req.params && req.params.face) {
                 const faceName = sanitizeFileName(req.params.face);
                 try {
@@ -128,11 +270,11 @@ try {
         io.on('connection', (socket) => {
             console.log('connection - a user connected');
             socket.on('disconnect', () => {
-                let gameIdStr = null;
+                let gameIdStr: string | null = null;
                 let userName = sm.getClientNameFromMap(socket.id);
                 const mapping = sm.userSocketIdMap.get(userName);
                 if (mapping != null && mapping.games != null) {
-                    const gameIds = Array.from(mapping.games.values());
+                    const gameIds: string[] = Array.from(mapping.games.values());
                     gameIdStr = gameIds != null && gameIds.length > 0 ? gameIds[0] : null;
                 }
                 if (userName == null) userName = 'unknown';
@@ -163,7 +305,7 @@ try {
                 };
                 const game = await collection.findOne(query);
                 if (game) {
-                    game.humanPlayers.forEach(function(player) {
+                    game.humanPlayers.forEach(function(player: HumanPlayer) {
                         if (player.playerId == myId) {
                             const gameIdStr = game._id.toString();
                             console.log('check game - found game 1', gameIdStr);
@@ -187,7 +329,7 @@ try {
                     };
                     const game2 = await collection.findOne(query2);
                     if (game2) {
-                        game2.humanPlayers.forEach(function(player) {
+                        game2.humanPlayers.forEach(function(player: HumanPlayer) {
                             if (player.playerId == myId) {
                                 const gameIdStr = game2._id.toString();
                                 console.log('check game - found game 0', gameIdStr);
@@ -213,7 +355,7 @@ try {
                     const obsCollection = database.collection(observeCollection);
                     const game3 = await obsCollection.findOne(query3);
                     if (game3) {
-                        const userName = game3.observers.find(function(observer) {
+                        const userName = game3.observers.find(function(observer: Observer) {
                             return observer.observerId == myId;
                         }).name;
                         const realGameIdStr = game3.gameId;
@@ -297,7 +439,7 @@ try {
                         }
                     }
                     let activePlayersInGame = 0;
-                    game.humanPlayers.forEach(function (player) {
+                    game.humanPlayers.forEach(function (player: HumanPlayer) {
                         if (player.active) {
                             activePlayersInGame++;
                         }
@@ -552,7 +694,7 @@ try {
                     if (game.humanPlayersCount > game.humanPlayers.length && game.adminName != myName) {
                         let nameFree = true;
                         let socketFree = true;
-                        game.humanPlayers.forEach(function(player) {
+                        game.humanPlayers.forEach(function(player: HumanPlayer) {
                             if (player.name == myName) nameFree = false;
                             if (player.playerId == myId) socketFree = false;
                         });
@@ -610,7 +752,7 @@ try {
                 const retObj = {
                     passOk: false,
                     playerOk: false,
-                    data: null
+                    data: ''
                 }
 
                 const observerName = observeGameOptions.observerName;
@@ -760,7 +902,9 @@ try {
                 };
                 const obsGame = await obsCollection.findOne(obsQuery);
                 if (obsGame) {
-                    const observer = obsGame.observers.find(observer => observer.observerId == myId).name;
+                    const observer = obsGame.observers.find( function(observer: Observer) {
+                        observer.observerId == myId
+                    }).name;
                     const pullObserver = { $pull: { 'observers': { observerId: myId} } };
                     await obsCollection.updateOne(obsQuery, pullObserver);
                     sm.removeClientFromMap(observer, socket.id, gameIdStr);
@@ -770,7 +914,7 @@ try {
             });
 
             socket.on('get observers', async (getObj, fn) => {
-                const retObj = {
+                const retObj: GetObserversResponse = {
                     observers: []
                 }
                 const gameIdStr = getObj.gameId;
@@ -942,7 +1086,7 @@ try {
 
                                 const socketsFromMap = sm.getSocketsFromMap(observerName);
                                 if (socketsFromMap) {
-                                    socketsFromMap.forEach(socketFromMap => {
+                                    socketsFromMap.forEach(function (socketFromMap: string | string[]) {
                                         sm.removeClientFromMap(observerName, socketFromMap, gameIdStr);
                                         io.to(socketFromMap).emit('observe deleted by player');
                                     });
@@ -978,15 +1122,15 @@ try {
                     // check if this was last allowance
                     const obsGameAfter = await obsCollection.findOne(obsQuery);
                     if (obsGameAfter != null) {
-                        const observersPermissions = obsGameAfter.observers.filter(obs => obs.name == observerName)[0];
-                        if (observersPermissions.playersInGame.filter(player => player.observeMode == OBSERVE_MODE.NoSet).length == 0) {
+                        const observersPermissions = obsGameAfter.observers.filter(function(obs: Observer) {obs.name == observerName})[0];
+                        if (observersPermissions.playersInGame.filter(function(player: ObservedPlayer) { player.observeMode == OBSERVE_MODE.NoSet }).length == 0) {
                             // all players have set permission
                             // notify players
                             io.to(gameIdStr).emit('observe allowed', obsGameAfter);
                             // join observer to game
                             const socketsFromMap = sm.getSocketsFromMap(observerName);
                             if (socketsFromMap) {
-                                socketsFromMap.forEach(socketFromMap => {
+                                socketsFromMap.forEach(function(socketFromMap: string | string[]) {
                                     console.log('sending join to observer');
                                     io.to(socketFromMap).emit('start observe game', obsGameAfter);
                                 });
@@ -1017,7 +1161,7 @@ try {
                     'humanPlayers.playerId': { $eq: adminId }
                 };
                 const cursor = await collection.find(query);
-                await cursor.forEach(function(val) {
+                await cursor.forEach(function(val: Game) {
                     for (let i = 0; i < val.humanPlayers.length; i++) {
                         if (val.humanPlayers[i].playerId == adminId) {
                             okToCreate = false;
@@ -1094,7 +1238,7 @@ try {
                     speedOk: false,
                     fullSpeedPromises: false,
                     round: null,
-                    debug: null,
+                    debug: '',
                 }
 
                 const database = mongoUtil.getDb();
@@ -1140,7 +1284,7 @@ try {
 
                                         const playerRound = pf.roundToPlayer(myId, roundInd, gameInDb, false, false, false, obsGame);
                                         resultObj.round = playerRound;
-                                        resultObj.debug = null;
+                                        resultObj.debug = '';
                                         break;
                                     } else {
                                         resultObj.debug = 'DB error when updating speed promise';
@@ -1481,8 +1625,8 @@ try {
                 };
                 const cursor = await collection.find(query);
 
-                const games = [];
-                await cursor.forEach(function(val) {
+                const games: GetGamesResponse[] = [];
+                await cursor.forEach(function(val: Game) {
                     games.push({
                         id: val._id.toString(),
                         humanPlayersCount: val.humanPlayersCount,
@@ -1523,8 +1667,8 @@ try {
                 ];
                 const cursor = await collection.aggregate(queryAggregation);
 
-                const games = [];
-                await cursor.forEach(function(val) {
+                const games: GetOngoingGamesResponse[] = [];
+                await cursor.forEach(function(val: Game) {
                     if (!pf.imInThisGame(val.humanPlayers, myId)) {
                         games.push({
                             id: val._id.toString(),
@@ -1543,9 +1687,9 @@ try {
 
             socket.on('get games for report', async (data, fn) => {
                 console.log('get games for report - start to get games for report');
-                const retObj = {
+                const retObj: GetGamesForReportResponse = {
                     passOk: false,
-                    data: null
+                    data: []
                 }
                 const database = mongoUtil.getDb();
                 const dataIsSecure = data.isSecure;
@@ -1558,15 +1702,15 @@ try {
                 }
 
                 if (retObj.passOk) {
-                    const games = [];
-                    const gameIds = [];
+                    const games: [] = [];
+                    const gameIds: string[] = [];
                     const queryStatsGamesAggregation = [{$group: {
                         _id: "$game",
                       }}
                     ];
                     const statsCollection = database.collection(statsCollectionStr);
                     const cursorStatGames = await statsCollection.aggregate(queryStatsGamesAggregation);
-                    await cursorStatGames.forEach(function (game) {
+                    await cursorStatGames.forEach(function (game: Stats) {
                         const gameIdStr = game._id.toString();
                         games[gameIdStr] = [];
                         gameIds.push(gameIdStr);
@@ -1581,7 +1725,7 @@ try {
                           }}
                         ];
                         const cursorStatGamePlayers = await statsCollection.aggregate(queryStatsGamesPlayersAggregation);
-                        await cursorStatGamePlayers.forEach(function (player) {
+                        await cursorStatGamePlayers.forEach(function (player: Stats) {
                             games[gameIdStr].push(player._id);
                         });
                     }
@@ -1594,8 +1738,8 @@ try {
                       }}
                     ];
                     const cursor = await collection.aggregate(queryAggregation);
-                    const retArr = [];
-                    await cursor.forEach(function(val) {
+                    const retArr:GetGamesForReportData[] = [];
+                    await cursor.forEach(function(val: Game) {
                         const gameIdStr = val._id.toString();
                         const statNames = games[gameIdStr] != null ? games[gameIdStr] : [];
 
@@ -2695,7 +2839,7 @@ try {
  * @param adminPass string
  * @returns boolean if user is admin
  */
-async function checkAdminAccess(adminUser, adminPass) {
+async function checkAdminAccess(adminUser: string, adminPass: string) {
     if (!adminUser || !adminPass) return false;
 
     const database = mongoUtil.getDb();
@@ -2729,7 +2873,7 @@ async function checkAdminAccess(adminUser, adminPass) {
  * @param userPass2 string
  * @returns object with resultStr string and loginOk boolean
  */
-async function checkLogin(userName, userPass1, userPass2) {
+async function checkLogin(userName: string, userPass1: string, userPass2: string) {
     const loginObj = {
         resultStr: "",
         loginOk: true
@@ -2924,7 +3068,7 @@ async function getPlayerAvgPoints(playerName, roundsInGame) {
     return stats.map(v => v/gameStats.length);
 }
 
-async function getGamesStatistics(gameInDb, playerName) {
+async function getGamesStatistics(gameInDb: Game, playerName: string) {
     const statsGamesObj = {
         playerAvgPointsInRounds: await getPlayerAvgPoints(playerName, (gameInDb.startRound-gameInDb.turnRound+1)+(gameInDb.endRound-gameInDb.turnRound))
     }
