@@ -66,7 +66,6 @@ const observeCollection = 'observeCollection';
 
 const mongoUtil = require(__dirname + '/mongoUtil.js');
 import fs from 'fs';
-import { type } from 'os';
 
 type PlayerType = 'human';
 type HiddenCardModeType = 1 | 2;
