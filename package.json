@@ -32,7 +32,7 @@
         "chartjs-plugin-annotation": "^1.4.0",
         "deck-of-cards": "^0.1.8",
         "express": "^4.18.1",
-        "mongodb": "^4.7.0",
+        "mongodb": "^5.0.1",
         "sanitize-filename": "^1.6.3",
         "socket.io": "^4.5.1",
         "tabulator-tables": "^5.2.7",
